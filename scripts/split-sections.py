@@ -30,12 +30,16 @@ GROUPS = [
     ("chrome", "顶部页签", "会话页签与「加载更早」区域。", [13]),
     ("detail", "展开详情", "diff / 终端 / 读取 / 搜索等展开块，以及本轮变更汇总卡。", [14, 15]),
     ("actions", "答案操作行", "答案下方的复制、点赞、分享与用量操作行。", [16]),
-    ("cards", "清单与面板", "任务清单卡、目标条、智能体团队与子智能体面板。", [19, 21, 22]),
+    ("cards", "清单与目标", "任务清单卡与目标条。", [19, 21]),
     ("polish", "全局细节", "滚动条与键盘焦点环。", [10, 18]),
 ]
 
 # Sections that must never be switchable: the plugin's own settings-row styling.
 ALWAYS_ON = {17, 20}
+
+# Dropped outright. 22 restyled the agent-team chip and panel; the shipped look
+# is wanted there, so it is not emitted at all (removing it beats hiding it).
+DROPPED = {22}
 
 MARKER = re.compile(r"^/\* ═+ (\d+)\.\s*(.*?) ?═*\s*\*/?\s*$")
 
@@ -75,8 +79,11 @@ def main():
     base, chunks = split_sections(body)
 
     assigned = {number for _, _, _, numbers in GROUPS for number in numbers}
-    always = [number for number in sorted(chunks) if number not in assigned or number in ALWAYS_ON]
-    covered = set(assigned) | set(always)
+    always = [
+        number for number in sorted(chunks)
+        if (number not in assigned and number not in DROPPED) or number in ALWAYS_ON
+    ]
+    covered = set(assigned) | set(always) | DROPPED
     missing = set(chunks) - covered
     if missing:
         raise SystemExit(f"sections without a group: {sorted(missing)}")
