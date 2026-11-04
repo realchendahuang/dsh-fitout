@@ -85,7 +85,7 @@ export const SECTIONS = Object.freeze([
   {
     id: "tools",
     title: "工具行与步骤",
-    desc: "步骤/思考行的高度与字号、行尾箭头、入场动效、展开缩进、子调用竖线。",
+    desc: "工具调用是走过的痕迹，不是一叠卡片。",
     css: `/* ═══ 1. 工具行 ═══════════════════════════════════════════════════════ */
 [data-disclosure-row]{
   height:var(--fto-h);
@@ -200,7 +200,7 @@ export const SECTIONS = Object.freeze([
   {
     id: "disclosures",
     title: "折叠头",
-    desc: "步骤折叠头与轮次折叠头：星芒图标、进行中的品牌色点、详情视图小标题。",
+    desc: "折起来是一行，展开才知道它做了什么。",
     css: `/* ═══ 3. 步骤折叠头 ═══════════════════════════════════════════════════ */
 [data-step-process] > div:first-child{
   height:var(--fto-h);
@@ -353,7 +353,7 @@ button.fto-turn[data-open] .fto-turn-chevron{ transform:rotate(90deg); }
   {
     id: "prose",
     title: "正文排版",
-    desc: "assistant 答案的段落、标题、列表、引用与表格。",
+    desc: "答案的呼吸：段落、标题、引用、列表。",
     css: `/* ═══ 5. 正文排版（assistant 答案） ═══════════════════════════════════ */
 [class*="_markdown_"]{
   font-size:var(--fto-fs);
@@ -429,7 +429,7 @@ button.fto-turn[data-open] .fto-turn-chevron{ transform:rotate(90deg); }
   {
     id: "code",
     title: "代码块",
-    desc: "代码块底色、圆角、标题栏与复制按钮。",
+    desc: "代码要像代码，不像截图。",
     css: `/* ═══ 7. 代码块 ═══════════════════════════════════════════════════════ */
 .md-code-block{
   border-radius:12px !important;
@@ -476,7 +476,7 @@ button.fto-turn[data-open] .fto-turn-chevron{ transform:rotate(90deg); }
   {
     id: "messages",
     title: "消息与状态",
-    desc: "用户气泡、消息操作行、运行/等待状态行、3×3 像素 loader。",
+    desc: "你说话的样子，和它等你的样子。",
     css: `/* ═══ 8. 用户气泡 ═════════════════════════════════════════════════════ */
 [class*="_bubble"]{
   border-radius:12px !important;
@@ -563,7 +563,7 @@ button.fto-turn[data-open] .fto-turn-chevron{ transform:rotate(90deg); }
   {
     id: "polish",
     title: "全局细节",
-    desc: "滚动条细化与键盘焦点环。",
+    desc: "滚动与焦点，用起来才知道的地方。",
     css: `/* ═══ 10. 滚动条：细、半透明、悬浮才清晰 ═════════════════════════════ */
 [class*="_scrollBody"]{ scrollbar-width:thin; scrollbar-color:transparent transparent; }
 [class*="_scrollBody"]:hover{ scrollbar-color:var(--dsw-alias-border-stronger,#c8ccd5) transparent; }
@@ -605,7 +605,7 @@ button.fto-turn:focus-visible,
   {
     id: "composer",
     title: "输入框",
-    desc: "composer 卡片的圆角、内边距与底部工具栏。",
+    desc: "打字的地方，应该安静。",
     css: `/* ═══ 11. 输入框（composer） ═══════════════════════════════════════════ */
 [data-composer-card]{
   border-radius:16px !important;
@@ -623,7 +623,7 @@ button.fto-turn:focus-visible,
   {
     id: "sidebar",
     title: "侧栏",
-    desc: "会话行与项目行的密度、字号、选中状态。",
+    desc: "一屏能看见多少事。",
     css: `/* ═══ 12. 侧栏：会话行与项目行 ═════════════════════════════════════════ */
 [class*="_sessionRow"], [class*="_projectRow"]{
   height:32px;
@@ -641,7 +641,7 @@ button.fto-turn:focus-visible,
   {
     id: "chrome",
     title: "顶部页签",
-    desc: "会话页签与「加载更早」区域。",
+    desc: "上面那一行，越少越好。",
     css: `/* ═══ 13. 顶部页签 / 加载更早 ══════════════════════════════════════════ */
 [role="tab"]{
   font-size:13px;
@@ -655,7 +655,7 @@ button.fto-turn:focus-visible,
   {
     id: "detail",
     title: "展开详情",
-    desc: "diff / 终端 / 读取 / 搜索等展开块，以及本轮变更汇总卡。",
+    desc: "展开以后看到的东西，也要体面。",
     css: `/* ═══ 14. 工具展开详情里的各类块（diff / 终端 / 代码 / 读取 / 搜索） ═════ */
 :is([data-tool],[data-variant]) [class*="_bodyWrap"] > [class*="_card"]{
   border-radius:12px !important;
@@ -788,7 +788,7 @@ button.fto-turn:focus-visible,
   {
     id: "actions",
     title: "答案操作行",
-    desc: "答案下方的复制、点赞、分享与用量操作行。",
+    desc: "答案说完，退一步站好。",
     css: `/* ═══ 16. 答案下方的操作行（复制/点赞/分享/用量） ═════════════════════ */
 [data-chat-flow-kind="turn-tail"] [class*="_actions"]{
   gap:2px;
@@ -813,7 +813,7 @@ button.fto-turn:focus-visible,
   {
     id: "cards",
     title: "清单与面板",
-    desc: "任务清单卡、目标条、智能体团队与子智能体面板。",
+    desc: "它在忙什么，一眼看得见。",
     css: `/* ═══ 19. 任务清单卡（TodoPanel）═════════════════════════════════════ */
 [class*="_root"][aria-label="任务"]{
   border-radius:12px !important;
