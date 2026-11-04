@@ -171,7 +171,7 @@ html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
 /* --- the theme shelf: a card is a whole look, not a setting --- */
 .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
-.fto-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.fto-themes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 10px}
 .fto-theme{position:relative}
 .fto-themePick,.fto-theme.fto-themeAdd{display:flex;flex-direction:column;gap:7px;width:100%;
   padding:0;border:0;background:transparent;cursor:pointer;text-align:left;font:inherit}
@@ -183,8 +183,8 @@ html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 .fto-theme:hover .fto-themeDel{opacity:1}
 .fto-themeDel:hover{color:var(--dsw-alias-state-error-primary,#dc2626);border-color:currentColor}
 .fto-themeAdd{cursor:pointer}
-.fto-addArt{display:flex;align-items:center;justify-content:center;border-style:dashed;
-  color:var(--dsw-alias-label-tertiary);font-size:18px;line-height:1}
+.fto-themeArt.fto-addArt{display:flex;align-items:center;justify-content:center;height:58px;
+  border-style:dashed;background:transparent;color:var(--dsw-alias-label-tertiary);font-size:17px;line-height:1}
 .fto-themeAdd:hover .fto-addArt{border-color:var(--dsw-alias-border-l3);color:var(--dsw-alias-label-secondary)}
 .fto-addInput{width:100%;height:54px;padding:0 10px;border:1px solid var(--dsw-alias-link,#0284c7);
   border-radius:10px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
@@ -193,7 +193,7 @@ html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
   background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l2);
   transition:border-color .14s ease,box-shadow .14s ease}
 .fto-themeSide{position:absolute;left:0;top:0;bottom:0;width:27%;
-  background:var(--dsw-alias-bg-layer-2);border-right:1px solid var(--dsw-alias-border-l1)}
+  background:var(--dsw-alias-bg-layer-3);border-right:1px solid var(--dsw-alias-border-l1)}
 .fto-themeSideDash{position:absolute;left:7%;width:13%;height:3px;border-radius:1.5px;
   background:var(--dsw-alias-label-tertiary);opacity:.3}
 .fto-themeLine{position:absolute;left:35%;height:4px;border-radius:2px;
@@ -254,6 +254,8 @@ body,textarea,pre,code{-webkit-font-smoothing:antialiased}
 .fto-row>.fto-swatches,.fto-feature>.fto-swatches{flex:0 0 auto}
 .fto-segBtn[data-on="true"]:hover{background:var(--dsw-alias-interactive-bg-hover)}
 .fto-btnRow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:14px}
+.fto-btnGap{flex:1}
+.fto-note{margin-top:10px;color:var(--dsw-alias-label-secondary);font-size:11.5px;line-height:17px}
 .fto-btn[data-tone="primary"]{border-color:transparent;background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-base)}
 .fto-btn[data-tone="primary"]:hover{background:var(--dsw-alias-label-primary-dimmed,var(--dsw-alias-label-primary))}
 .fto-btn[data-tone="danger"]{color:var(--dsw-alias-state-error-primary,#dc2626)}

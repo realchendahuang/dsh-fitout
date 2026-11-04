@@ -19,14 +19,19 @@ export function useSkinSettings() {
 
 const GRADIENT = 'linear-gradient(135deg, var(--dsw-alias-link, #0284c7) 0%, var(--dsw-alias-state-business-primary, #0ea5e9) 58%, #7dd3fc 100%)'
 
-function Frame({ size, children }) {
+/** `plain` renders the glyph alone — used inside the icon picker, where four
+ *  identical gradient tiles would be indistinguishable at 20px. */
+function Frame({ size, children, plain }) {
   const px = typeof size === 'number' && size > 0 ? size : 24
+  const fill = plain === true
+    ? { background: 'transparent', color: 'var(--dsw-alias-label-secondary, #5b6070)' }
+    : { background: GRADIENT, color: '#fff' }
   return React.createElement(
     'span',
     {
       style: {
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto',
-        width: px + 'px', height: px + 'px', borderRadius: '7px', background: GRADIENT, color: '#fff',
+        width: px + 'px', height: px + 'px', borderRadius: '7px', ...fill,
       },
       'aria-hidden': 'true',
     },
@@ -39,14 +44,14 @@ export const MARK_PRESETS = [
   {
     id: 'chevron',
     label: '折线',
-    render: (size) => React.createElement(Frame, { size }, React.createElement('svg', {
+    render: (size, plain) => React.createElement(Frame, { size, plain }, React.createElement('svg', {
       width: Math.round(size * 0.6), height: Math.round(size * 0.6), viewBox: '0 0 14 14', fill: 'none',
     }, React.createElement('path', { d: 'M2.6 3.1h8.8L6.1 7.6h5.3L2.6 11.2l4.1-4.1H2.6z', fill: 'currentColor' }))),
   },
   {
     id: 'spark',
     label: '火花',
-    render: (size) => React.createElement(Frame, { size }, React.createElement('svg', {
+    render: (size, plain) => React.createElement(Frame, { size, plain }, React.createElement('svg', {
       width: Math.round(size * 0.62), height: Math.round(size * 0.62), viewBox: '0 0 14 14', fill: 'none',
     }, React.createElement('path', {
       d: 'M7 1.4c.28 2.7 1.9 4.32 4.6 4.6v.02c-2.7.28-4.32 1.9-4.6 4.6h-.02c-.28-2.7-1.9-4.32-4.6-4.6v-.02C5.08 5.72 6.7 4.1 6.98 1.4z',
@@ -56,16 +61,16 @@ export const MARK_PRESETS = [
   {
     id: 'orbit',
     label: '轨道',
-    render: (size) => React.createElement(Frame, { size }, React.createElement('svg', {
+    render: (size, plain) => React.createElement(Frame, { size, plain }, React.createElement('svg', {
       width: Math.round(size * 0.64), height: Math.round(size * 0.64), viewBox: '0 0 14 14', fill: 'none',
     },
-    React.createElement('circle', { cx: 7, cy: 7, r: 4.4, stroke: 'currentColor', 'stroke-width': 1.5 }),
+    React.createElement('circle', { cx: 7, cy: 7, r: 4.4, stroke: 'currentColor', strokeWidth: 1.5 }),
     React.createElement('circle', { cx: 11.1, cy: 4.1, r: 1.5, fill: 'currentColor' }))),
   },
   {
     id: 'grid',
     label: '网格',
-    render: (size) => React.createElement(Frame, { size }, React.createElement('svg', {
+    render: (size, plain) => React.createElement(Frame, { size, plain }, React.createElement('svg', {
       width: Math.round(size * 0.58), height: Math.round(size * 0.58), viewBox: '0 0 14 14', fill: 'currentColor',
     },
     React.createElement('rect', { x: 2.2, y: 2.2, width: 4, height: 4, rx: 1.2 }),

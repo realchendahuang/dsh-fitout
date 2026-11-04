@@ -15,6 +15,7 @@ import {
 import { PRESETS, matchesPreset } from './presets.js'
 import { MARK_PRESETS, renderMark } from './brand.jsx'
 import { SECTIONS } from './sections.js'
+import { readPack, writePack } from './theme-pack.js'
 
 const MAX_ICON_BYTES = 256 * 1024
 const ALL_GROUPS = SECTIONS.map((section) => section.id)
@@ -155,7 +156,7 @@ function IconPicker({ t, settings }) {
 
   const options = [
     { kind: 'official', label: t('page.iconOfficial'), node: null },
-    ...MARK_PRESETS.map((preset) => ({ kind: preset.id, label: preset.label, node: preset.render(20) })),
+    ...MARK_PRESETS.map((preset) => ({ kind: preset.id, label: preset.label, node: preset.render(20, true) })),
   ]
   if (settings.icon.kind === 'custom' && settings.icon.value !== '') {
     options.push({ kind: 'custom', label: t('page.iconCustom'), node: renderMark(settings.icon, 20) })
@@ -200,9 +201,9 @@ function AppearancePicker({ t }) {
 
 /* --- page ------------------------------------------------------------------ */
 
-export function FitoutSettingsPage({ t }) {
+export function FitoutSettingsPage({ t, initialTuning = false }) {
   const settings = useSettings()
-  const [tuning, setTuning] = React.useState(false)
+  const [tuning, setTuning] = React.useState(initialTuning)
   const translate = typeof t === 'function' ? t : (key) => key
   const saved = settings.themes ?? []
   const cards = [...PRESETS, ...saved]
@@ -215,6 +216,46 @@ export function FitoutSettingsPage({ t }) {
     saveTheme(draft)
     setSaving(false)
     setDraft('')
+  }
+
+  const [notice, setNotice] = React.useState('')
+  const importRef = React.useRef(null)
+
+  const onImport = (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (file === undefined) return
+    file.text().then((text) => {
+      let spec = null
+      try {
+        spec = readPack(JSON.parse(text))
+      } catch {
+        spec = null
+      }
+      if (spec === null) {
+        setNotice(translate('page.importBad'))
+        return
+      }
+      setAccent(spec.accent)
+      setRadius(spec.radius)
+      setDensity(spec.density)
+      setAllLayoutGroups(true, ALL_GROUPS)
+      for (const id of spec.layout) setLayoutGroup(id, false)
+      saveTheme(spec.name)
+      setNotice(translate('page.importDone').replace('{name}', spec.name))
+    })
+  }
+
+  const onExport = () => {
+    const active = cards.find((theme) => theme.id === settings.preset)
+    const pack = writePack(settings, active === undefined ? '我的主题' : active.name)
+    const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = pack.name + '.json'
+    link.click()
+    globalThis.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return React.createElement('div', { className: 'fto-page' },
@@ -336,9 +377,21 @@ export function FitoutSettingsPage({ t }) {
       React.createElement(Group, { title: translate('page.maintainGroup') },
         React.createElement('div', { className: 'fto-btnRow' },
           React.createElement('button', {
+            type: 'button', className: 'fto-btn', onClick: () => importRef.current?.click(),
+          }, translate('page.import')),
+          React.createElement('button', {
+            type: 'button', className: 'fto-btn', onClick: onExport,
+          }, translate('page.export')),
+          React.createElement('span', { className: 'fto-btnGap' }),
+          React.createElement('button', {
             type: 'button', className: 'fto-btn', onClick: resetAppearance,
           }, translate('page.reset')),
           React.createElement('button', {
             type: 'button', className: 'fto-btn', 'data-tone': 'danger', onClick: resetAll,
-          }, translate('page.resetAll'))))) : null)
+          }, translate('page.resetAll')),
+          React.createElement('input', {
+            ref: importRef, type: 'file', accept: 'application/json,.json',
+            style: { display: 'none' }, onChange: onImport,
+          })),
+        notice === '' ? null : React.createElement('div', { className: 'fto-note' }, notice))) : null)
 }

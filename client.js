@@ -1691,7 +1691,7 @@ window.__ModuleLoader__.load({
 
     /* --- the theme shelf: a card is a whole look, not a setting --- */
     .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
-    .fto-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+    .fto-themes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 10px}
     .fto-theme{position:relative}
     .fto-themePick,.fto-theme.fto-themeAdd{display:flex;flex-direction:column;gap:7px;width:100%;
       padding:0;border:0;background:transparent;cursor:pointer;text-align:left;font:inherit}
@@ -1703,8 +1703,8 @@ window.__ModuleLoader__.load({
     .fto-theme:hover .fto-themeDel{opacity:1}
     .fto-themeDel:hover{color:var(--dsw-alias-state-error-primary,#dc2626);border-color:currentColor}
     .fto-themeAdd{cursor:pointer}
-    .fto-addArt{display:flex;align-items:center;justify-content:center;border-style:dashed;
-      color:var(--dsw-alias-label-tertiary);font-size:18px;line-height:1}
+    .fto-themeArt.fto-addArt{display:flex;align-items:center;justify-content:center;height:58px;
+      border-style:dashed;background:transparent;color:var(--dsw-alias-label-tertiary);font-size:17px;line-height:1}
     .fto-themeAdd:hover .fto-addArt{border-color:var(--dsw-alias-border-l3);color:var(--dsw-alias-label-secondary)}
     .fto-addInput{width:100%;height:54px;padding:0 10px;border:1px solid var(--dsw-alias-link,#0284c7);
       border-radius:10px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
@@ -1713,7 +1713,7 @@ window.__ModuleLoader__.load({
       background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l2);
       transition:border-color .14s ease,box-shadow .14s ease}
     .fto-themeSide{position:absolute;left:0;top:0;bottom:0;width:27%;
-      background:var(--dsw-alias-bg-layer-2);border-right:1px solid var(--dsw-alias-border-l1)}
+      background:var(--dsw-alias-bg-layer-3);border-right:1px solid var(--dsw-alias-border-l1)}
     .fto-themeSideDash{position:absolute;left:7%;width:13%;height:3px;border-radius:1.5px;
       background:var(--dsw-alias-label-tertiary);opacity:.3}
     .fto-themeLine{position:absolute;left:35%;height:4px;border-radius:2px;
@@ -1774,6 +1774,8 @@ window.__ModuleLoader__.load({
     .fto-row>.fto-swatches,.fto-feature>.fto-swatches{flex:0 0 auto}
     .fto-segBtn[data-on="true"]:hover{background:var(--dsw-alias-interactive-bg-hover)}
     .fto-btnRow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:14px}
+    .fto-btnGap{flex:1}
+    .fto-note{margin-top:10px;color:var(--dsw-alias-label-secondary);font-size:11.5px;line-height:17px}
     .fto-btn[data-tone="primary"]{border-color:transparent;background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-base)}
     .fto-btn[data-tone="primary"]:hover{background:var(--dsw-alias-label-primary-dimmed,var(--dsw-alias-label-primary))}
     .fto-btn[data-tone="danger"]{color:var(--dsw-alias-state-error-primary,#dc2626)}
@@ -1806,8 +1808,9 @@ window.__ModuleLoader__.load({
       return import_react.default.useSyncExternalStore(subscribe, getSettings, getSettings);
     }
     var GRADIENT = "linear-gradient(135deg, var(--dsw-alias-link, #0284c7) 0%, var(--dsw-alias-state-business-primary, #0ea5e9) 58%, #7dd3fc 100%)";
-    function Frame({ size, children }) {
+    function Frame({ size, children, plain }) {
       const px = typeof size === "number" && size > 0 ? size : 24;
+      const fill = plain === true ? { background: "transparent", color: "var(--dsw-alias-label-secondary, #5b6070)" } : { background: GRADIENT, color: "#fff" };
       return import_react.default.createElement(
         "span",
         {
@@ -1819,8 +1822,7 @@ window.__ModuleLoader__.load({
             width: px + "px",
             height: px + "px",
             borderRadius: "7px",
-            background: GRADIENT,
-            color: "#fff"
+            ...fill
           },
           "aria-hidden": "true"
         },
@@ -1831,7 +1833,7 @@ window.__ModuleLoader__.load({
       {
         id: "chevron",
         label: "\u6298\u7EBF",
-        render: (size) => import_react.default.createElement(Frame, { size }, import_react.default.createElement("svg", {
+        render: (size, plain) => import_react.default.createElement(Frame, { size, plain }, import_react.default.createElement("svg", {
           width: Math.round(size * 0.6),
           height: Math.round(size * 0.6),
           viewBox: "0 0 14 14",
@@ -1841,7 +1843,7 @@ window.__ModuleLoader__.load({
       {
         id: "spark",
         label: "\u706B\u82B1",
-        render: (size) => import_react.default.createElement(Frame, { size }, import_react.default.createElement("svg", {
+        render: (size, plain) => import_react.default.createElement(Frame, { size, plain }, import_react.default.createElement("svg", {
           width: Math.round(size * 0.62),
           height: Math.round(size * 0.62),
           viewBox: "0 0 14 14",
@@ -1854,7 +1856,7 @@ window.__ModuleLoader__.load({
       {
         id: "orbit",
         label: "\u8F68\u9053",
-        render: (size) => import_react.default.createElement(Frame, { size }, import_react.default.createElement(
+        render: (size, plain) => import_react.default.createElement(Frame, { size, plain }, import_react.default.createElement(
           "svg",
           {
             width: Math.round(size * 0.64),
@@ -1862,14 +1864,14 @@ window.__ModuleLoader__.load({
             viewBox: "0 0 14 14",
             fill: "none"
           },
-          import_react.default.createElement("circle", { cx: 7, cy: 7, r: 4.4, stroke: "currentColor", "stroke-width": 1.5 }),
+          import_react.default.createElement("circle", { cx: 7, cy: 7, r: 4.4, stroke: "currentColor", strokeWidth: 1.5 }),
           import_react.default.createElement("circle", { cx: 11.1, cy: 4.1, r: 1.5, fill: "currentColor" })
         ))
       },
       {
         id: "grid",
         label: "\u7F51\u683C",
-        render: (size) => import_react.default.createElement(Frame, { size }, import_react.default.createElement(
+        render: (size, plain) => import_react.default.createElement(Frame, { size, plain }, import_react.default.createElement(
           "svg",
           {
             width: Math.round(size * 0.58),
@@ -2015,6 +2017,77 @@ window.__ModuleLoader__.load({
       const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key]);
       const sameLayout = preset.layout.disabled.length === settings.layout.disabled.length && preset.layout.disabled.every((id) => settings.layout.disabled.includes(id));
       return preset.accent === settings.accent && preset.radius === settings.radius && preset.density === settings.density && sameEffects && sameLayout;
+    }
+
+    // src/client/theme-pack.js
+    var OUR_FORMAT = "dsh-fitout/theme";
+    function hexToRgb(value) {
+      if (typeof value !== "string") return null;
+      const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim());
+      if (match === null) return null;
+      const raw = match[1];
+      const full = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw;
+      return [
+        parseInt(full.slice(0, 2), 16),
+        parseInt(full.slice(2, 4), 16),
+        parseInt(full.slice(4, 6), 16)
+      ];
+    }
+    function nearestAccent(value) {
+      const target = hexToRgb(value);
+      if (target === null) return null;
+      let best = null;
+      let bestDistance = Infinity;
+      for (const accent of ACCENTS) {
+        const candidate = hexToRgb(accent.light);
+        if (candidate === null) continue;
+        const distance = (target[0] - candidate[0]) ** 2 + (target[1] - candidate[1]) ** 2 + (target[2] - candidate[2]) ** 2;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = accent.id;
+        }
+      }
+      return best;
+    }
+    var ACCENT_IDS = ACCENTS.map((accent) => accent.id);
+    function readPack(json) {
+      if (json === null || typeof json !== "object") return null;
+      if (json.format === OUR_FORMAT || typeof json.accent === "string" && typeof json.radius === "string" && json.manifest === void 0) {
+        return {
+          name: String(json.name ?? "\u5BFC\u5165\u7684\u4E3B\u9898").slice(0, 20),
+          accent: ACCENT_IDS.includes(json.accent) ? json.accent : "sky",
+          radius: RADIUS_SCALES[json.radius] === void 0 ? "default" : json.radius,
+          density: json.density === "compact" ? "compact" : "default",
+          layout: Array.isArray(json.layout?.disabled) ? json.layout.disabled.filter((id) => typeof id === "string") : [],
+          source: "fitout"
+        };
+      }
+      const manifest = json.manifest;
+      if (manifest !== null && typeof manifest === "object") {
+        const tokens = manifest.tokens !== null && typeof manifest.tokens === "object" ? manifest.tokens : {};
+        const probe = manifest.accent ?? tokens["--dsw-alias-link"] ?? tokens["--dsw-alias-brand-primary-new-colorprimary-new-color"] ?? tokens["--dsw-alias-brand-primary"] ?? tokens["--dsw-alias-state-business-primary"];
+        return {
+          name: String(manifest.nameZh ?? manifest.name ?? "\u5BFC\u5165\u7684\u4E3B\u9898").slice(0, 20),
+          accent: nearestAccent(probe) ?? "sky",
+          radius: "default",
+          density: "default",
+          layout: [],
+          source: "pack"
+        };
+      }
+      return null;
+    }
+    function writePack(settings, name2) {
+      return {
+        format: OUR_FORMAT,
+        version: 1,
+        name: String(name2 ?? "\u6211\u7684\u4E3B\u9898").slice(0, 20),
+        accent: settings.accent,
+        radius: settings.radius,
+        density: settings.density,
+        effects: { underline: settings.effects.underline, chip: settings.effects.chip },
+        layout: { disabled: [...settings.layout.disabled] }
+      };
     }
 
     // src/client/settings-page.jsx
@@ -2193,7 +2266,7 @@ window.__ModuleLoader__.load({
       };
       const options = [
         { kind: "official", label: t("page.iconOfficial"), node: null },
-        ...MARK_PRESETS.map((preset) => ({ kind: preset.id, label: preset.label, node: preset.render(20) }))
+        ...MARK_PRESETS.map((preset) => ({ kind: preset.id, label: preset.label, node: preset.render(20, true) }))
       ];
       if (settings.icon.kind === "custom" && settings.icon.value !== "") {
         options.push({ kind: "custom", label: t("page.iconCustom"), node: renderMark(settings.icon, 20) });
@@ -2248,9 +2321,9 @@ window.__ModuleLoader__.load({
         }
       });
     }
-    function FitoutSettingsPage({ t }) {
+    function FitoutSettingsPage({ t, initialTuning = false }) {
       const settings = useSettings();
-      const [tuning, setTuning] = import_react3.default.useState(false);
+      const [tuning, setTuning] = import_react3.default.useState(initialTuning);
       const translate = typeof t === "function" ? t : (key) => key;
       const saved = settings.themes ?? [];
       const cards = [...PRESETS, ...saved];
@@ -2262,6 +2335,43 @@ window.__ModuleLoader__.load({
         saveTheme(draft);
         setSaving(false);
         setDraft("");
+      };
+      const [notice, setNotice] = import_react3.default.useState("");
+      const importRef = import_react3.default.useRef(null);
+      const onImport = (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (file === void 0) return;
+        file.text().then((text) => {
+          let spec = null;
+          try {
+            spec = readPack(JSON.parse(text));
+          } catch {
+            spec = null;
+          }
+          if (spec === null) {
+            setNotice(translate("page.importBad"));
+            return;
+          }
+          setAccent(spec.accent);
+          setRadius(spec.radius);
+          setDensity(spec.density);
+          setAllLayoutGroups(true, ALL_GROUPS2);
+          for (const id of spec.layout) setLayoutGroup(id, false);
+          saveTheme(spec.name);
+          setNotice(translate("page.importDone").replace("{name}", spec.name));
+        });
+      };
+      const onExport = () => {
+        const active = cards.find((theme) => theme.id === settings.preset);
+        const pack = writePack(settings, active === void 0 ? "\u6211\u7684\u4E3B\u9898" : active.name);
+        const blob = new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = pack.name + ".json";
+        link.click();
+        globalThis.setTimeout(() => URL.revokeObjectURL(url), 1e3);
       };
       return import_react3.default.createElement(
         "div",
@@ -2466,6 +2576,17 @@ window.__ModuleLoader__.load({
               import_react3.default.createElement("button", {
                 type: "button",
                 className: "fto-btn",
+                onClick: () => importRef.current?.click()
+              }, translate("page.import")),
+              import_react3.default.createElement("button", {
+                type: "button",
+                className: "fto-btn",
+                onClick: onExport
+              }, translate("page.export")),
+              import_react3.default.createElement("span", { className: "fto-btnGap" }),
+              import_react3.default.createElement("button", {
+                type: "button",
+                className: "fto-btn",
                 onClick: resetAppearance
               }, translate("page.reset")),
               import_react3.default.createElement("button", {
@@ -2473,8 +2594,16 @@ window.__ModuleLoader__.load({
                 className: "fto-btn",
                 "data-tone": "danger",
                 onClick: resetAll
-              }, translate("page.resetAll"))
-            )
+              }, translate("page.resetAll")),
+              import_react3.default.createElement("input", {
+                ref: importRef,
+                type: "file",
+                accept: "application/json,.json",
+                style: { display: "none" },
+                onChange: onImport
+              })
+            ),
+            notice === "" ? null : import_react3.default.createElement("div", { className: "fto-note" }, notice)
           )
         ) : null
       );
@@ -2975,6 +3104,11 @@ window.__ModuleLoader__.load({
       "page.maintainGroup": "\u7EF4\u62A4",
       "page.reset": "\u6062\u590D\u9ED8\u8BA4",
       "page.resetAll": "\u5168\u90E8\u91CD\u7F6E",
+      "page.import": "\u5BFC\u5165\u4E3B\u9898",
+      "page.export": "\u5BFC\u51FA\u5F53\u524D",
+      "page.importBad": "\u65E0\u6CD5\u8BC6\u522B\u8FD9\u4E2A\u6587\u4EF6\u3002\u652F\u6301\u88C5\u4FEE\u5BFC\u51FA\u7684 JSON\uFF0C\u6216 dsh-dream-skin \u7684\u4E3B\u9898\u5305\u3002",
+      "page.importDone": "\u5DF2\u5BFC\u5165\u300C{name}\u300D",
+      "page.loadingTheme": "",
       "list.title": "\u4EFB\u52A1",
       "list.group": "\u5206\u7EC4",
       "list.recent": "\u6700\u8FD1",
@@ -3035,6 +3169,11 @@ window.__ModuleLoader__.load({
       "page.maintainGroup": "Maintenance",
       "page.reset": "Reset to defaults",
       "page.resetAll": "Reset everything",
+      "page.import": "Import theme",
+      "page.export": "Export current",
+      "page.importBad": "Unrecognised file. Expected a Fitout export or a dsh-dream-skin theme pack.",
+      "page.importDone": "Imported \u201C{name}\u201D",
+      "page.loadingTheme": "",
       "list.title": "Tasks",
       "list.group": "Groups",
       "list.recent": "Recent",
