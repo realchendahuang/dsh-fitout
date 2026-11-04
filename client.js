@@ -3862,10 +3862,8 @@ window.__ModuleLoader__.load({
       const elapsed = turn.start === void 0 || turn.end === void 0 ? void 0 : Math.max(1e3, turn.end.time - turn.start.time);
       const data = node.data ?? {};
       const calls = data.toolCallCount ?? 0;
-      const subagents = data.subagentCount ?? 0;
       const meta = [];
       if (calls > 0) meta.push(`${calls} \u6B21\u5DE5\u5177\u8C03\u7528`);
-      if (subagents > 0) meta.push(`${subagents} \u4E2A\u5B50\u667A\u80FD\u4F53`);
       const title = stopped ? "\u5DF2\u505C\u6B62" : failed ? "\u5904\u7406\u5931\u8D25" : elapsed === void 0 ? "\u5DF2\u5904\u7406" : "\u5DF2\u5B8C\u6210";
       const announcement = stopped ? "\u672C\u8F6E\u5DF2\u505C\u6B62" : failed ? "\u672C\u8F6E\u5904\u7406\u5931\u8D25" : "\u672C\u8F6E\u5DF2\u5B8C\u6210";
       const showDuration = !stopped && !failed && elapsed !== void 0;
@@ -3886,7 +3884,6 @@ window.__ModuleLoader__.load({
             "data-turn-process": data.turn,
             "data-turn-process-messages": data.messageCount,
             "data-turn-process-tool-calls": data.toolCallCount,
-            "data-turn-process-subagents": data.subagentCount,
             "data-open": open || void 0,
             "aria-expanded": turnProcess.hasContent ? open : void 0,
             disabled: !canCollapse,

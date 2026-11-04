@@ -40,10 +40,8 @@ export function TurnProcessHeader({ node, turnProcess }) {
 
   const data = node.data ?? {}
   const calls = data.toolCallCount ?? 0
-  const subagents = data.subagentCount ?? 0
   const meta = []
   if (calls > 0) meta.push(`${calls} 次工具调用`)
-  if (subagents > 0) meta.push(`${subagents} 个子智能体`)
 
   const title = stopped ? '已停止' : failed ? '处理失败' : elapsed === undefined ? '已处理' : '已完成'
   const announcement = stopped ? '本轮已停止' : failed ? '本轮处理失败' : '本轮已完成'
@@ -66,7 +64,6 @@ export function TurnProcessHeader({ node, turnProcess }) {
         'data-turn-process': data.turn,
         'data-turn-process-messages': data.messageCount,
         'data-turn-process-tool-calls': data.toolCallCount,
-        'data-turn-process-subagents': data.subagentCount,
         'data-open': open || undefined,
         'aria-expanded': turnProcess.hasContent ? open : undefined,
         disabled: !canCollapse,

@@ -1,6 +1,6 @@
 /** Header workspace chip: the folder + project name ZCode shows next to the
  * session title. Additive only — it is one list row in the shipped header
- * actions slot, so the agent-team / mode chips from other plugins stay put.
+ * actions slot, so the chips other plugins put there stay put.
  *
  * Data comes from the standard hooks: the current session (retained by the main
  * view) and the workspace that owns it. A session outside every workspace falls
