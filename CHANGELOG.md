@@ -1,5 +1,39 @@
 # 变更记录
 
+## 0.11.1 — 字重之前根本没生效：正文用的是 font 简写
+
+上一版加的 `[data-chat-node-key]{font-weight:500}` 是无效的。原因在官方的正文规则：
+
+```css
+._markdown_xxx{ font: var(--dsw-font-markdown-base); color: var(--dsw-alias-label-primary) }
+```
+
+正文用的是 **`font` 简写**，而它引用的复合 token 里没有字重分量：
+
+```css
+--dsw-font-markdown-base: var(--dsh-content-font-size,14px) / calc(24px + ...) var(--dsw-font-family);
+```
+
+`font` 简写不带字重时会把字重**重置成 400**。所以任何祖先元素上的 `font-weight`
+在下一层就被抹掉了——规则写得再对也没用。
+
+改成覆盖复合 token 本身，把字重补回简写前面：
+
+```css
+--dsw-font-markdown-base: 500 var(--dsh-content-font-size,14px) / calc(24px + ...) var(--dsw-font-family);
+```
+
+同一套公式覆盖五条：正文、正文斜体、表格、小字、小字斜体。粗体（600）和标题
+（600/700）的复合 token 不动。字号、行高、字族全部用原来的 var() 表达式，
+所以字号滑杆照旧联动。
+
+按官方这条规则做了对照验证：400 → 500 墨量 +27%，→ 600 +39%。
+
+另外按「不够黑」的说法查了颜色：浅色下我们的正文色是 `#0a0a0a`，官方是 `#0f1115`，
+本来就比官方深；深色下是 `#f5f5f5`，官方 `#f9fafb`，确实暗一点，已提到 `#fafafa`。
+
+同时删掉了那条没用的 `[data-chat-node-key]` 规则——插件现在没有任何指向官方 DOM 的 CSS。
+
 ## 0.11.0 — 字重可调，默认中等
 
 反馈：正文看着细、费劲，ZCode 那套「厚实」更舒服。

@@ -103,8 +103,8 @@ window.__ModuleLoader__.load({
       "--dsw-alias-label-deep-diving-shimmer": { light: "color-mix(in srgb, #0284c7 30%, #0a0a0a)", dark: "color-mix(in srgb, #7dd3fc 65%, #38bdf8)" },
       "--dsw-alias-label-dimmed": { light: "#e5e5e5", dark: "#404040" },
       "--dsw-alias-label-document-preview": { light: "#525252", dark: "#d4d4d4" },
-      "--dsw-alias-label-primary": { light: "#0a0a0a", dark: "#f5f5f5" },
-      "--dsw-alias-label-primary-bluish": { light: "#0a0a0a", dark: "#f5f5f5" },
+      "--dsw-alias-label-primary": { light: "#0a0a0a", dark: "#fafafa" },
+      "--dsw-alias-label-primary-bluish": { light: "#0a0a0a", dark: "#fafafa" },
       "--dsw-alias-label-primary-dimmed": { light: "#262626", dark: "#ededed" },
       "--dsw-alias-label-primary-foreground": { light: "#ffffff", dark: "#0a0a0a" },
       "--dsw-alias-label-primary-inverted": { light: "#ffffff", dark: "#262626" },
@@ -962,6 +962,20 @@ window.__ModuleLoader__.load({
     });
     var MEASURES = Object.freeze({ auto: null, narrow: "620px", wide: "960px" });
     var WEIGHTS = Object.freeze({ normal: "400", medium: "500", heavy: "600" });
+    var CONTENT_SIZE = "var(--dsh-content-font-size,14px)";
+    var CONTENT_LINE = "calc(24px + var(--dsh-content-font-delta))";
+    var SECONDARY_SIZE = "var(--dsh-content-font-size-secondary,13px)";
+    var SECONDARY_LINE = "calc(22px + var(--dsh-content-font-delta-secondary,0px))";
+    var FAMILY = "var(--dsw-font-family)";
+    function weightedMarkdownTokens(weight) {
+      return {
+        "--dsw-font-markdown-base": weight + " " + CONTENT_SIZE + " / " + CONTENT_LINE + " " + FAMILY,
+        "--dsw-font-markdown-base-italic": "italic " + weight + " " + CONTENT_SIZE + " / " + CONTENT_LINE + " " + FAMILY,
+        "--dsw-font-markdown-table": weight + " " + SECONDARY_SIZE + "/" + SECONDARY_LINE + " " + FAMILY,
+        "--dsw-font-markdown-small": weight + " 12px/20px " + FAMILY,
+        "--dsw-font-markdown-small-italic": "italic " + weight + " 12px/20px " + FAMILY
+      };
+    }
     function customRadiusScale(value) {
       return {
         xs: Math.round(value * 0.34),
@@ -1037,7 +1051,12 @@ window.__ModuleLoader__.load({
         }
       }
       const weight = WEIGHTS[settings?.weight];
-      if (weight !== void 0) out["--fto-body-weight"] = both(weight);
+      if (weight !== void 0) {
+        out["--fto-body-weight"] = both(weight);
+        for (const [token, value] of Object.entries(weightedMarkdownTokens(weight))) {
+          out[token] = both(value);
+        }
+      }
       const measure = MEASURES[settings?.measure];
       if (measure !== void 0 && measure !== null) {
         out["--dsh-chat-content-width"] = both(measure);
@@ -1220,10 +1239,6 @@ window.__ModuleLoader__.load({
     .fto-tuneBtn[data-open="true"] .fto-tuneChevron{transform:rotate(-90deg)}
 
 
-    /* --- reading weight: the only rule we point at official DOM, and it only sets
-       font-weight. Conversation text inherits it; headings and <strong> keep their
-       own heavier weights. --- */
-    [data-chat-node-key]{font-weight:var(--fto-body-weight,400)}
     ::selection{background:color-mix(in srgb, var(--dsw-alias-link,#0284c7) 28%, transparent)}
 
     /* --- settings page: grouped sections --- */
@@ -2593,7 +2608,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.11.0";
+    var VERSION = "0.11.1";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",

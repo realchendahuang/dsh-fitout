@@ -145,10 +145,6 @@ body[data-ds-dark-theme] .fto-themeDot{background:var(--fto-card-accent-dark,var
 .fto-tuneBtn[data-open="true"] .fto-tuneChevron{transform:rotate(-90deg)}
 
 
-/* --- reading weight: the only rule we point at official DOM, and it only sets
-   font-weight. Conversation text inherits it; headings and <strong> keep their
-   own heavier weights. --- */
-[data-chat-node-key]{font-weight:var(--fto-body-weight,400)}
 ::selection{background:color-mix(in srgb, var(--dsw-alias-link,#0284c7) 28%, transparent)}
 
 /* --- settings page: grouped sections --- */

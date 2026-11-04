@@ -36,8 +36,32 @@ const CODE_TONES = Object.freeze({
 
 const MEASURES = Object.freeze({ auto: null, narrow: '620px', wide: '960px' })
 
-/** Reading weight for conversation text. 400 is the shipped value. */
+/** Reading weight for conversation text. 400 is the shipped value.
+ *
+ * These have to land on the *composite* font tokens, not on font-weight: the
+ * shipped markdown rule is `font: var(--dsw-font-markdown-base)`, and a `font`
+ * shorthand without a weight component resets it to 400 — so a `font-weight`
+ * rule on any ancestor is overridden one level down. Rebuilding the shorthand
+ * with a weight in front is the only way that survives.
+ */
 const WEIGHTS = Object.freeze({ normal: '400', medium: '500', heavy: '600' })
+
+const CONTENT_SIZE = 'var(--dsh-content-font-size,14px)'
+const CONTENT_LINE = 'calc(24px + var(--dsh-content-font-delta))'
+const SECONDARY_SIZE = 'var(--dsh-content-font-size-secondary,13px)'
+const SECONDARY_LINE = 'calc(22px + var(--dsh-content-font-delta-secondary,0px))'
+const FAMILY = 'var(--dsw-font-family)'
+
+/** The shipped markdown shorthands, re-emitted with an explicit weight. */
+function weightedMarkdownTokens(weight) {
+  return {
+    '--dsw-font-markdown-base': weight + ' ' + CONTENT_SIZE + ' / ' + CONTENT_LINE + ' ' + FAMILY,
+    '--dsw-font-markdown-base-italic': 'italic ' + weight + ' ' + CONTENT_SIZE + ' / ' + CONTENT_LINE + ' ' + FAMILY,
+    '--dsw-font-markdown-table': weight + ' ' + SECONDARY_SIZE + '/' + SECONDARY_LINE + ' ' + FAMILY,
+    '--dsw-font-markdown-small': weight + ' 12px/20px ' + FAMILY,
+    '--dsw-font-markdown-small-italic': 'italic ' + weight + ' 12px/20px ' + FAMILY,
+  }
+}
 
 /** Continuous radius: one px value drives the whole ladder. */
 function customRadiusScale(value) {
@@ -140,7 +164,12 @@ function applyOptions(out, settings) {
   }
 
   const weight = WEIGHTS[settings?.weight]
-  if (weight !== undefined) out['--fto-body-weight'] = both(weight)
+  if (weight !== undefined) {
+    out['--fto-body-weight'] = both(weight)
+    for (const [token, value] of Object.entries(weightedMarkdownTokens(weight))) {
+      out[token] = both(value)
+    }
+  }
 
   const measure = MEASURES[settings?.measure]
   if (measure !== undefined && measure !== null) {

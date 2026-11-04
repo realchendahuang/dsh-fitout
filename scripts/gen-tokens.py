@@ -103,8 +103,9 @@ ALIAS = {
     ),
     "--dsw-alias-label-dimmed": (N["200"], N["700"]),
     "--dsw-alias-label-document-preview": (N["600"], N["300"]),
-    "--dsw-alias-label-primary": (N["1000"], N["100"]),
-    "--dsw-alias-label-primary-bluish": (N["1000"], N["100"]),
+    # dark lifts from neutral-100 to neutral-50: light-on-dark text reads thinner
+    "--dsw-alias-label-primary": (N["1000"], N["50"]),
+    "--dsw-alias-label-primary-bluish": (N["1000"], N["50"]),
     "--dsw-alias-label-primary-dimmed": (N["800"], "#ededed"),
     "--dsw-alias-label-primary-foreground": (N["0"], N["1000"]),
     "--dsw-alias-label-primary-inverted": (N["0"], N["800"]),
