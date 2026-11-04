@@ -38,12 +38,12 @@ const NS = 'settings.fitout'
 const VERSION = '0.1.0'
 
 const ZH = {
-  title: '装折',
+  title: '装修',
   description: '更自由的个性化，更优雅的精装房。',
-  section: '装折',
-  'page.title': '装折',
-  'page.description': '明人计成《园冶》有「装折」一篇，专讲可拆可合的室内构件。屋子的骨架已经立好，剩下的每一扇，你自己定。',
-  'page.enable': '启用装折',
+  section: '装修',
+  'page.title': '装修',
+  'page.description': '骨架是官方的。颜色、边角、疏密、十二扇版式——装上去的每一件，都能再拆下来。',
+  'page.enable': '启用装修',
   'page.enableDesc': '合上便回到原样。你定过的每一处，都留着。',
   'page.presetGroup': '成屋 · 择一',
   'page.presetNote': '三间屋子已经装好，直接住下。挑哪一间，都不动你的名称、图标与任务列表。',
@@ -127,7 +127,7 @@ const EN = {
   description: 'More freedom to be yourself, more grace in the finish.',
   section: 'Fitout',
   'page.title': 'Fitout',
-  'page.description': 'Ji Cheng\'s 1631 treatise on gardens has a chapter called zhuangzhe — fittings made to fold and unfold. The frame stands; every leaf after it is yours.',
+  'page.description': 'The frame is the product\'s. Colour, corners, density, twelve leaves — everything fitted on can be taken off again.',
   'page.enable': 'Enable fitout',
   'page.enableDesc': 'Close it and the shipped room returns. Everything you set is kept.',
   'page.presetGroup': 'Finished rooms · pick one',

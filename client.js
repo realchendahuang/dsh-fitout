@@ -2765,12 +2765,12 @@ window.__ModuleLoader__.load({
     var NS = "settings.fitout";
     var VERSION = "0.1.0";
     var ZH = {
-      title: "\u88C5\u6298",
+      title: "\u88C5\u4FEE",
       description: "\u66F4\u81EA\u7531\u7684\u4E2A\u6027\u5316\uFF0C\u66F4\u4F18\u96C5\u7684\u7CBE\u88C5\u623F\u3002",
-      section: "\u88C5\u6298",
-      "page.title": "\u88C5\u6298",
-      "page.description": "\u660E\u4EBA\u8BA1\u6210\u300A\u56ED\u51B6\u300B\u6709\u300C\u88C5\u6298\u300D\u4E00\u7BC7\uFF0C\u4E13\u8BB2\u53EF\u62C6\u53EF\u5408\u7684\u5BA4\u5185\u6784\u4EF6\u3002\u5C4B\u5B50\u7684\u9AA8\u67B6\u5DF2\u7ECF\u7ACB\u597D\uFF0C\u5269\u4E0B\u7684\u6BCF\u4E00\u6247\uFF0C\u4F60\u81EA\u5DF1\u5B9A\u3002",
-      "page.enable": "\u542F\u7528\u88C5\u6298",
+      section: "\u88C5\u4FEE",
+      "page.title": "\u88C5\u4FEE",
+      "page.description": "\u9AA8\u67B6\u662F\u5B98\u65B9\u7684\u3002\u989C\u8272\u3001\u8FB9\u89D2\u3001\u758F\u5BC6\u3001\u5341\u4E8C\u6247\u7248\u5F0F\u2014\u2014\u88C5\u4E0A\u53BB\u7684\u6BCF\u4E00\u4EF6\uFF0C\u90FD\u80FD\u518D\u62C6\u4E0B\u6765\u3002",
+      "page.enable": "\u542F\u7528\u88C5\u4FEE",
       "page.enableDesc": "\u5408\u4E0A\u4FBF\u56DE\u5230\u539F\u6837\u3002\u4F60\u5B9A\u8FC7\u7684\u6BCF\u4E00\u5904\uFF0C\u90FD\u7559\u7740\u3002",
       "page.presetGroup": "\u6210\u5C4B \xB7 \u62E9\u4E00",
       "page.presetNote": "\u4E09\u95F4\u5C4B\u5B50\u5DF2\u7ECF\u88C5\u597D\uFF0C\u76F4\u63A5\u4F4F\u4E0B\u3002\u6311\u54EA\u4E00\u95F4\uFF0C\u90FD\u4E0D\u52A8\u4F60\u7684\u540D\u79F0\u3001\u56FE\u6807\u4E0E\u4EFB\u52A1\u5217\u8868\u3002",
@@ -2851,7 +2851,7 @@ window.__ModuleLoader__.load({
       description: "More freedom to be yourself, more grace in the finish.",
       section: "Fitout",
       "page.title": "Fitout",
-      "page.description": "Ji Cheng's 1631 treatise on gardens has a chapter called zhuangzhe \u2014 fittings made to fold and unfold. The frame stands; every leaf after it is yours.",
+      "page.description": "The frame is the product's. Colour, corners, density, twelve leaves \u2014 everything fitted on can be taken off again.",
       "page.enable": "Enable fitout",
       "page.enableDesc": "Close it and the shipped room returns. Everything you set is kept.",
       "page.presetGroup": "Finished rooms \xB7 pick one",
