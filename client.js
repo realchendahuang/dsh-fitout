@@ -211,6 +211,11 @@ window.__ModuleLoader__.load({
       effects: { underline: true, chip: true },
       layout: { disabled: [] },
       surface: "neutral",
+      glass: "off",
+      measure: "auto",
+      lineHeight: "normal",
+      radiusCustom: 0,
+      fontFamilyCustom: "",
       fontSize: "auto",
       fontFamily: "default",
       shadow: "soft",
@@ -223,6 +228,9 @@ window.__ModuleLoader__.load({
     });
     var OPTIONS = Object.freeze({
       surface: Object.freeze(["neutral", "paper", "night", "nord"]),
+      glass: Object.freeze(["off", "cards", "all"]),
+      measure: Object.freeze(["auto", "narrow", "wide"]),
+      lineHeight: Object.freeze(["tight", "normal", "loose"]),
       fontSize: Object.freeze(["auto", "compact", "standard", "large"]),
       fontFamily: Object.freeze(["default", "serif", "mono", "rounded"]),
       shadow: Object.freeze(["flat", "soft", "lifted"]),
@@ -247,6 +255,11 @@ window.__ModuleLoader__.load({
         effects: { ...state2.effects },
         layout: { disabled: [...state2.layout.disabled] },
         surface: state2.surface,
+        glass: state2.glass,
+        measure: state2.measure,
+        lineHeight: state2.lineHeight,
+        radiusCustom: state2.radiusCustom,
+        fontFamilyCustom: state2.fontFamilyCustom,
         background: { ...state2.background },
         accentCustom: state2.accentCustom,
         fontSize: state2.fontSize,
@@ -270,6 +283,9 @@ window.__ModuleLoader__.load({
         effects: { ...theme.effects },
         layout: { disabled: [...theme.layout.disabled] },
         surface: theme.surface ?? DEFAULTS.surface,
+        glass: theme.glass ?? DEFAULTS.glass,
+        measure: theme.measure ?? DEFAULTS.measure,
+        lineHeight: theme.lineHeight ?? DEFAULTS.lineHeight,
         fontSize: theme.fontSize ?? DEFAULTS.fontSize,
         fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
         shadow: theme.shadow ?? DEFAULTS.shadow,
@@ -334,6 +350,11 @@ window.__ModuleLoader__.load({
           background: { ...DEFAULTS.background },
           accentCustom: DEFAULTS.accentCustom,
           surface: DEFAULTS.surface,
+          glass: DEFAULTS.glass,
+          measure: DEFAULTS.measure,
+          lineHeight: DEFAULTS.lineHeight,
+          radiusCustom: DEFAULTS.radiusCustom,
+          fontFamilyCustom: DEFAULTS.fontFamilyCustom,
           fontSize: DEFAULTS.fontSize,
           fontFamily: DEFAULTS.fontFamily,
           shadow: DEFAULTS.shadow,
@@ -357,6 +378,13 @@ window.__ModuleLoader__.load({
         opacity: clamp(raw.opacity, 0, 100, DEFAULTS.background.opacity),
         blur: clamp(raw.blur, 0, 40, DEFAULTS.background.blur)
       };
+    }
+    function readRadiusCustom(raw) {
+      const n = Number(raw);
+      return Number.isFinite(n) ? Math.min(24, Math.max(0, Math.round(n))) : 0;
+    }
+    function readFontFamily(raw) {
+      return typeof raw === "string" ? raw.replace(/[<>{}]/g, "").slice(0, 120) : "";
     }
     function readAccent(raw) {
       return typeof raw === "string" && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : "";
@@ -385,6 +413,11 @@ window.__ModuleLoader__.load({
             background: readBackground(parsed?.background),
             accentCustom: readAccent(parsed?.accentCustom),
             surface: readOption("surface", parsed?.surface),
+            glass: readOption("glass", parsed?.glass),
+            measure: readOption("measure", parsed?.measure),
+            lineHeight: readOption("lineHeight", parsed?.lineHeight),
+            radiusCustom: readRadiusCustom(parsed?.radiusCustom),
+            fontFamilyCustom: readFontFamily(parsed?.fontFamilyCustom),
             fontSize: readOption("fontSize", parsed?.fontSize),
             fontFamily: readOption("fontFamily", parsed?.fontFamily),
             shadow: readOption("shadow", parsed?.shadow),
@@ -450,6 +483,11 @@ window.__ModuleLoader__.load({
         radius: preset.radius,
         density: preset.density,
         surface: preset.surface ?? DEFAULTS.surface,
+        glass: preset.glass ?? DEFAULTS.glass,
+        measure: preset.measure ?? DEFAULTS.measure,
+        lineHeight: preset.lineHeight ?? DEFAULTS.lineHeight,
+        radiusCustom: DEFAULTS.radiusCustom,
+        fontFamilyCustom: DEFAULTS.fontFamilyCustom,
         background: { ...DEFAULTS.background },
         accentCustom: "",
         fontSize: preset.fontSize ?? DEFAULTS.fontSize,
@@ -479,6 +517,11 @@ window.__ModuleLoader__.load({
         effects: state.effects,
         layout: state.layout,
         surface: state.surface,
+        glass: state.glass,
+        measure: state.measure,
+        lineHeight: state.lineHeight,
+        radiusCustom: state.radiusCustom,
+        fontFamilyCustom: state.fontFamilyCustom,
         fontSize: state.fontSize,
         fontFamily: state.fontFamily,
         shadow: state.shadow,
@@ -537,6 +580,16 @@ window.__ModuleLoader__.load({
       const next = readBackground({ ...state.background, ...patch });
       if (next.image === state.background.image && next.opacity === state.background.opacity && next.blur === state.background.blur) return;
       commit(custom({ ...state, background: next }));
+    }
+    function setRadiusCustom(value) {
+      const next = readRadiusCustom(value);
+      if (next === state.radiusCustom) return;
+      commit(custom({ ...state, radiusCustom: next }));
+    }
+    function setFontFamilyCustom(value) {
+      const next = readFontFamily(value);
+      if (next === state.fontFamilyCustom) return;
+      commit(custom({ ...state, fontFamilyCustom: next }));
     }
     function setAccentCustom(hex) {
       const next = readAccent(hex);
@@ -876,6 +929,17 @@ window.__ModuleLoader__.load({
       light: { light: "#f5f5f5", dark: "#262626" },
       dark: { light: "#1b1b1c", dark: "#0f0f10" }
     });
+    var MEASURES = Object.freeze({ auto: null, narrow: "620px", wide: "960px" });
+    function customRadiusScale(value) {
+      return {
+        xs: Math.round(value * 0.34),
+        sm: Math.round(value * 0.5),
+        md: Math.round(value * 0.67),
+        lg: Math.round(value),
+        xl: Math.round(value * 1.33),
+        panel: Math.round(value * 1.33)
+      };
+    }
     var RADIUS_SLOTS = Object.freeze({
       "--dsw-radius-xs": "xs",
       "--dsw-radius-sm": "sm",
@@ -943,6 +1007,22 @@ window.__ModuleLoader__.load({
       if (family !== void 0 && family !== null) {
         out["--dsh-font-family-text"] = both(family);
         out["--dsw-font-family"] = both(family);
+      }
+      const customFont = typeof settings?.fontFamilyCustom === "string" ? settings.fontFamilyCustom.trim() : "";
+      if (customFont !== "") {
+        out["--dsh-font-family-text"] = both(customFont);
+        out["--dsw-font-family"] = both(customFont);
+      }
+      const radiusValue = Number(settings?.radiusCustom);
+      if (Number.isFinite(radiusValue) && radiusValue > 0) {
+        const scale = customRadiusScale(radiusValue);
+        for (const [token, slot] of Object.entries(RADIUS_SLOTS)) {
+          out[token] = both(scale[slot] + "px");
+        }
+      }
+      const measure = MEASURES[settings?.measure];
+      if (measure !== void 0 && measure !== null) {
+        out["--dsh-chat-content-width"] = both(measure);
       }
       const shadow = SHADOWS[settings?.shadow];
       if (shadow !== void 0 && shadow !== null) {
@@ -1882,7 +1962,7 @@ window.__ModuleLoader__.load({
       background:var(--fto-hover) !important;
       color:var(--fto-fg1) !important;
     }
-    [class*="XdyUwa_trigger"] svg, [class*="_3j1mRa_trigger"] svg{ width:13px; height:13px; }
+    [class*="XdyUwa_trigger"] svg, [class*="_3j1mRa_trigger"] svg{ width:12px; height:12px; }
     [class*="XdyUwa_count"], [class*="_3j1mRa_count"]{
       font-size:11.5px !important;
       color:var(--fto-fg4) !important;
@@ -2164,6 +2244,32 @@ window.__ModuleLoader__.load({
     html.fto-dense-sidebar .fto-list-time{font-size:10px}
     html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
+    /* --- frosted glass: expensive, so it is opt-in and never full-strength --- */
+    html.fto-glass-all [data-slot="sidebar"]{
+      background:color-mix(in srgb,var(--dsw-alias-bg-base) 62%,transparent) !important;
+      -webkit-backdrop-filter:blur(16px) saturate(1.15);
+      backdrop-filter:blur(16px) saturate(1.15)}
+    html.fto-glass-all [data-composer-card],
+    html.fto-glass-cards [data-composer-card]{
+      background:color-mix(in srgb,var(--dsw-alias-bg-layer-1) 74%,transparent) !important;
+      -webkit-backdrop-filter:blur(12px) saturate(1.1);
+      backdrop-filter:blur(12px) saturate(1.1)}
+    html.fto-glass-all [role="dialog"],
+    html.fto-glass-cards [role="dialog"]{
+      background:color-mix(in srgb,var(--dsw-alias-bg-layer-1) 82%,transparent) !important;
+      -webkit-backdrop-filter:blur(20px) saturate(1.1);
+      backdrop-filter:blur(20px) saturate(1.1)}
+    html.fto-glass-all [data-slot="conversation.session.header"]{
+      background:color-mix(in srgb,var(--dsw-alias-bg-base) 72%,transparent) !important;
+      -webkit-backdrop-filter:blur(12px);
+      backdrop-filter:blur(12px)}
+
+    /* --- reading line height: the prose layer owns its own rhythm --- */
+    html.fto-lh-tight [class*="_markdown_"]{line-height:1.5}
+    html.fto-lh-tight [class*="_markdown_"] :is(p,li,td,blockquote,ul,ol){line-height:1.5}
+    html.fto-lh-loose [class*="_markdown_"]{line-height:1.85}
+    html.fto-lh-loose [class*="_markdown_"] :is(p,li,td,blockquote,ul,ol){line-height:1.85}
+
     /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
     html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
       background-image:var(--fto-wallpaper);background-size:cover;background-position:center;
@@ -2172,6 +2278,9 @@ window.__ModuleLoader__.load({
 
     /* --- sliders used by the background controls --- */
     .fto-slider{display:flex;align-items:center;gap:10px}
+    .fto-inline{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+    .fto-stack{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .fto-stack .fto-input{width:220px;height:28px;font-size:12px}
     .fto-slider input[type="range"]{-webkit-appearance:none;appearance:none;width:132px;height:4px;
       border-radius:2px;background:var(--dsw-alias-bg-layer-3);outline:none;cursor:pointer}
     .fto-slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
@@ -2672,7 +2781,7 @@ window.__ModuleLoader__.load({
       return best;
     }
     var ACCENT_IDS = ACCENTS.map((accent) => accent.id);
-    var OPTION_KEYS = ["surface", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"];
+    var OPTION_KEYS = ["surface", "glass", "measure", "lineHeight", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"];
     function readOptions(source) {
       const out = {};
       for (const key of OPTION_KEYS) {
@@ -2692,6 +2801,8 @@ window.__ModuleLoader__.load({
           layout: Array.isArray(json.layout?.disabled) ? json.layout.disabled.filter((id) => typeof id === "string") : [],
           options: readOptions(json),
           accentCustom: typeof json.accentCustom === "string" && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : "",
+          radiusCustom: Number.isFinite(Number(json.radiusCustom)) ? Math.min(24, Math.max(0, Math.round(Number(json.radiusCustom)))) : 0,
+          fontFamilyCustom: typeof json.fontFamilyCustom === "string" ? json.fontFamilyCustom.slice(0, 120) : "",
           source: "fitout"
         };
       }
@@ -2707,6 +2818,8 @@ window.__ModuleLoader__.load({
           layout: [],
           options: {},
           accentCustom: "",
+          radiusCustom: 0,
+          fontFamilyCustom: "",
           source: "pack"
         };
       }
@@ -2723,13 +2836,18 @@ window.__ModuleLoader__.load({
         effects: { underline: settings.effects.underline, chip: settings.effects.chip },
         layout: { disabled: [...settings.layout.disabled] },
         surface: settings.surface,
+        glass: settings.glass,
+        measure: settings.measure,
+        lineHeight: settings.lineHeight,
         fontSize: settings.fontSize,
         fontFamily: settings.fontFamily,
         shadow: settings.shadow,
         motion: settings.motion,
         corner: settings.corner,
         codeTone: settings.codeTone,
-        accentCustom: settings.accentCustom
+        accentCustom: settings.accentCustom,
+        radiusCustom: settings.radiusCustom,
+        fontFamilyCustom: settings.fontFamilyCustom
       };
     }
 
@@ -3130,6 +3248,8 @@ window.__ModuleLoader__.load({
           for (const id of spec.layout) setLayoutGroup(id, false);
           for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value);
           setAccentCustom(spec.accentCustom ?? "");
+          setRadiusCustom(spec.radiusCustom ?? 0);
+          setFontFamilyCustom(spec.fontFamilyCustom ?? "");
           saveTheme(spec.name);
           setNotice(translate("page.importDone").replace("{name}", spec.name));
         });
@@ -3234,11 +3354,25 @@ window.__ModuleLoader__.load({
             import_react3.default.createElement(
               Feature,
               { title: translate("page.radius") },
-              import_react3.default.createElement(Seg, {
-                value: settings.radius,
-                choices: Object.keys(RADIUS_SCALES).map((id) => ({ id, label: translate("page.radius_" + id) })),
-                onChange: setRadius
-              })
+              import_react3.default.createElement(
+                "div",
+                { className: "fto-inline" },
+                import_react3.default.createElement(Seg, {
+                  value: settings.radiusCustom > 0 ? "" : settings.radius,
+                  choices: Object.keys(RADIUS_SCALES).map((id) => ({ id, label: translate("page.radius_" + id) })),
+                  onChange: (id) => {
+                    setRadiusCustom(0);
+                    setRadius(id);
+                  }
+                }),
+                import_react3.default.createElement(Slider, {
+                  value: settings.radiusCustom,
+                  min: 0,
+                  max: 24,
+                  suffix: "",
+                  onChange: (value) => setRadiusCustom(value)
+                })
+              )
             ),
             import_react3.default.createElement(
               Feature,
@@ -3269,7 +3403,24 @@ window.__ModuleLoader__.load({
             import_react3.default.createElement(
               Feature,
               { title: translate("page.fontFamily") },
-              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "fontFamily" })
+              import_react3.default.createElement(
+                "div",
+                { className: "fto-stack" },
+                import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "fontFamily" }),
+                import_react3.default.createElement("input", {
+                  className: "fto-input",
+                  type: "text",
+                  maxLength: 120,
+                  value: settings.fontFamilyCustom,
+                  placeholder: translate("page.fontFamilyCustom"),
+                  onChange: (event) => setFontFamilyCustom(event.target.value)
+                })
+              )
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.lineHeight") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "lineHeight" })
             ),
             import_react3.default.createElement(
               Feature,
@@ -3332,6 +3483,20 @@ window.__ModuleLoader__.load({
                 }),
                 import_react3.default.createElement("span", null, section.title)
               ))
+            )
+          ),
+          import_react3.default.createElement(
+            Group,
+            { title: translate("page.layoutGroup2") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.measure") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "measure" })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.glass") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "glass" })
             )
           ),
           import_react3.default.createElement(
@@ -3900,6 +4065,20 @@ window.__ModuleLoader__.load({
       "page.surface_paper": "\u6696\u7EB8",
       "page.surface_night": "\u591C\u84DD",
       "page.surface_nord": "\u6781\u5730",
+      "page.lineHeight": "\u884C\u9AD8",
+      "page.lineHeight_tight": "\u7D27",
+      "page.lineHeight_normal": "\u6807\u51C6",
+      "page.lineHeight_loose": "\u677E",
+      "page.fontFamilyCustom": "\u6216\u76F4\u63A5\u586B\u5B57\u4F53\u540D",
+      "page.layoutGroup2": "\u5E03\u5C40",
+      "page.measure": "\u6D88\u606F\u5BBD\u5EA6",
+      "page.measure_auto": "\u8DDF\u968F",
+      "page.measure_narrow": "\u7A84",
+      "page.measure_wide": "\u5BBD",
+      "page.glass": "\u6BDB\u73BB\u7483",
+      "page.glass_off": "\u5173",
+      "page.glass_cards": "\u5361\u7247",
+      "page.glass_all": "\u5168\u90E8",
       "page.accentCustom": "\u81EA\u5B9A\u4E49\u989C\u8272",
       "page.bgGroup": "\u80CC\u666F",
       "page.bgImage": "\u56FE\u7247",
@@ -4008,6 +4187,20 @@ window.__ModuleLoader__.load({
       "page.surface_paper": "Paper",
       "page.surface_night": "Night",
       "page.surface_nord": "Arctic",
+      "page.lineHeight": "Line height",
+      "page.lineHeight_tight": "Tight",
+      "page.lineHeight_normal": "Normal",
+      "page.lineHeight_loose": "Loose",
+      "page.fontFamilyCustom": "Or type a font family",
+      "page.layoutGroup2": "Layout",
+      "page.measure": "Message width",
+      "page.measure_auto": "Follow",
+      "page.measure_narrow": "Narrow",
+      "page.measure_wide": "Wide",
+      "page.glass": "Frosted glass",
+      "page.glass_off": "Off",
+      "page.glass_cards": "Cards",
+      "page.glass_all": "Everything",
       "page.accentCustom": "Custom colour",
       "page.bgGroup": "Background",
       "page.bgImage": "Image",
@@ -4173,6 +4366,10 @@ window.__ModuleLoader__.load({
         const on = settings.enabled;
         root.classList.toggle("fto-underline-links", on && settings.effects.underline);
         root.classList.toggle("fto-dense-sidebar", on && settings.density === "compact");
+        root.classList.toggle("fto-glass-cards", on && settings.glass === "cards");
+        root.classList.toggle("fto-glass-all", on && settings.glass === "all");
+        root.classList.toggle("fto-lh-tight", on && settings.lineHeight === "tight");
+        root.classList.toggle("fto-lh-loose", on && settings.lineHeight === "loose");
       };
       const syncTokens = (settings) => {
         if (layer !== null) {
@@ -4263,7 +4460,15 @@ window.__ModuleLoader__.load({
           layoutTag = null;
         }
         if (typeof document !== "undefined") {
-          document.documentElement.classList.remove("fto-underline-links", "fto-dense-sidebar", "fto-has-wallpaper");
+          document.documentElement.classList.remove(
+            "fto-underline-links",
+            "fto-dense-sidebar",
+            "fto-has-wallpaper",
+            "fto-glass-cards",
+            "fto-glass-all",
+            "fto-lh-tight",
+            "fto-lh-loose"
+          );
         }
       }, "dsh-fitout: teardown");
       let translate = (key) => key;

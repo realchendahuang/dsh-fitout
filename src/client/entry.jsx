@@ -50,6 +50,20 @@ const ZH = {
   'page.surface_paper': '暖纸',
   'page.surface_night': '夜蓝',
   'page.surface_nord': '极地',
+  'page.lineHeight': '行高',
+  'page.lineHeight_tight': '紧',
+  'page.lineHeight_normal': '标准',
+  'page.lineHeight_loose': '松',
+  'page.fontFamilyCustom': '或直接填字体名',
+  'page.layoutGroup2': '布局',
+  'page.measure': '消息宽度',
+  'page.measure_auto': '跟随',
+  'page.measure_narrow': '窄',
+  'page.measure_wide': '宽',
+  'page.glass': '毛玻璃',
+  'page.glass_off': '关',
+  'page.glass_cards': '卡片',
+  'page.glass_all': '全部',
   'page.accentCustom': '自定义颜色',
   'page.bgGroup': '背景',
   'page.bgImage': '图片',
@@ -164,6 +178,20 @@ const EN = {
   'page.surface_paper': 'Paper',
   'page.surface_night': 'Night',
   'page.surface_nord': 'Arctic',
+  'page.lineHeight': 'Line height',
+  'page.lineHeight_tight': 'Tight',
+  'page.lineHeight_normal': 'Normal',
+  'page.lineHeight_loose': 'Loose',
+  'page.fontFamilyCustom': 'Or type a font family',
+  'page.layoutGroup2': 'Layout',
+  'page.measure': 'Message width',
+  'page.measure_auto': 'Follow',
+  'page.measure_narrow': 'Narrow',
+  'page.measure_wide': 'Wide',
+  'page.glass': 'Frosted glass',
+  'page.glass_off': 'Off',
+  'page.glass_cards': 'Cards',
+  'page.glass_all': 'Everything',
   'page.accentCustom': 'Custom colour',
   'page.bgGroup': 'Background',
   'page.bgImage': 'Image',
@@ -354,6 +382,10 @@ export function apply(ctx) {
     const on = settings.enabled
     root.classList.toggle('fto-underline-links', on && settings.effects.underline)
     root.classList.toggle('fto-dense-sidebar', on && settings.density === 'compact')
+    root.classList.toggle('fto-glass-cards', on && settings.glass === 'cards')
+    root.classList.toggle('fto-glass-all', on && settings.glass === 'all')
+    root.classList.toggle('fto-lh-tight', on && settings.lineHeight === 'tight')
+    root.classList.toggle('fto-lh-loose', on && settings.lineHeight === 'loose')
   }
 
   /** Rebuild the token layer for one settings record. */
@@ -454,7 +486,10 @@ export function apply(ctx) {
       layoutTag = null
     }
     if (typeof document !== 'undefined') {
-      document.documentElement.classList.remove('fto-underline-links', 'fto-dense-sidebar', 'fto-has-wallpaper')
+      document.documentElement.classList.remove(
+        'fto-underline-links', 'fto-dense-sidebar', 'fto-has-wallpaper',
+        'fto-glass-cards', 'fto-glass-all', 'fto-lh-tight', 'fto-lh-loose',
+      )
     }
   }, 'dsh-fitout: teardown')
 

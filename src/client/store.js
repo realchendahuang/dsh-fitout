@@ -52,6 +52,11 @@ const DEFAULTS = Object.freeze({
   effects: { underline: true, chip: true },
   layout: { disabled: [] },
   surface: 'neutral',
+  glass: 'off',
+  measure: 'auto',
+  lineHeight: 'normal',
+  radiusCustom: 0,
+  fontFamilyCustom: '',
   fontSize: 'auto',
   fontFamily: 'default',
   shadow: 'soft',
@@ -66,6 +71,9 @@ const DEFAULTS = Object.freeze({
 /** Every enumerated design option and its accepted values. */
 export const OPTIONS = Object.freeze({
   surface: Object.freeze(['neutral', 'paper', 'night', 'nord']),
+  glass: Object.freeze(['off', 'cards', 'all']),
+  measure: Object.freeze(['auto', 'narrow', 'wide']),
+  lineHeight: Object.freeze(['tight', 'normal', 'loose']),
   fontSize: Object.freeze(['auto', 'compact', 'standard', 'large']),
   fontFamily: Object.freeze(['default', 'serif', 'mono', 'rounded']),
   shadow: Object.freeze(['flat', 'soft', 'lifted']),
@@ -92,6 +100,11 @@ export function clone(state) {
     effects: { ...state.effects },
     layout: { disabled: [...state.layout.disabled] },
     surface: state.surface,
+    glass: state.glass,
+    measure: state.measure,
+    lineHeight: state.lineHeight,
+    radiusCustom: state.radiusCustom,
+    fontFamilyCustom: state.fontFamilyCustom,
     background: { ...state.background },
     accentCustom: state.accentCustom,
     fontSize: state.fontSize,
@@ -117,6 +130,9 @@ function copyTheme(theme) {
     effects: { ...theme.effects },
     layout: { disabled: [...theme.layout.disabled] },
     surface: theme.surface ?? DEFAULTS.surface,
+    glass: theme.glass ?? DEFAULTS.glass,
+    measure: theme.measure ?? DEFAULTS.measure,
+    lineHeight: theme.lineHeight ?? DEFAULTS.lineHeight,
     fontSize: theme.fontSize ?? DEFAULTS.fontSize,
     fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
     shadow: theme.shadow ?? DEFAULTS.shadow,
@@ -189,6 +205,11 @@ function readLegacy() {
       background: { ...DEFAULTS.background },
       accentCustom: DEFAULTS.accentCustom,
       surface: DEFAULTS.surface,
+      glass: DEFAULTS.glass,
+      measure: DEFAULTS.measure,
+      lineHeight: DEFAULTS.lineHeight,
+      radiusCustom: DEFAULTS.radiusCustom,
+      fontFamilyCustom: DEFAULTS.fontFamilyCustom,
       fontSize: DEFAULTS.fontSize,
       fontFamily: DEFAULTS.fontFamily,
       shadow: DEFAULTS.shadow,
@@ -214,6 +235,17 @@ function readBackground(raw) {
     opacity: clamp(raw.opacity, 0, 100, DEFAULTS.background.opacity),
     blur: clamp(raw.blur, 0, 40, DEFAULTS.background.blur),
   }
+}
+
+/** A continuous corner radius in px; 0 means "use the three-step scale". */
+function readRadiusCustom(raw) {
+  const n = Number(raw)
+  return Number.isFinite(n) ? Math.min(24, Math.max(0, Math.round(n))) : 0
+}
+
+/** An arbitrary font-family string, length-capped. */
+function readFontFamily(raw) {
+  return typeof raw === 'string' ? raw.replace(/[<>{}]/g, '').slice(0, 120) : ''
 }
 
 /** An arbitrary accent colour, or '' for the preset hues. */
@@ -247,6 +279,11 @@ function readStored() {
         background: readBackground(parsed?.background),
         accentCustom: readAccent(parsed?.accentCustom),
         surface: readOption('surface', parsed?.surface),
+        glass: readOption('glass', parsed?.glass),
+        measure: readOption('measure', parsed?.measure),
+        lineHeight: readOption('lineHeight', parsed?.lineHeight),
+        radiusCustom: readRadiusCustom(parsed?.radiusCustom),
+        fontFamilyCustom: readFontFamily(parsed?.fontFamilyCustom),
         fontSize: readOption('fontSize', parsed?.fontSize),
         fontFamily: readOption('fontFamily', parsed?.fontFamily),
         shadow: readOption('shadow', parsed?.shadow),
@@ -331,6 +368,11 @@ export function applyPreset(preset) {
     radius: preset.radius,
     density: preset.density,
     surface: preset.surface ?? DEFAULTS.surface,
+    glass: preset.glass ?? DEFAULTS.glass,
+    measure: preset.measure ?? DEFAULTS.measure,
+    lineHeight: preset.lineHeight ?? DEFAULTS.lineHeight,
+    radiusCustom: DEFAULTS.radiusCustom,
+    fontFamilyCustom: DEFAULTS.fontFamilyCustom,
     background: { ...DEFAULTS.background },
     accentCustom: '',
     fontSize: preset.fontSize ?? DEFAULTS.fontSize,
@@ -366,6 +408,11 @@ export function saveTheme(name) {
     effects: state.effects,
     layout: state.layout,
     surface: state.surface,
+    glass: state.glass,
+    measure: state.measure,
+    lineHeight: state.lineHeight,
+    radiusCustom: state.radiusCustom,
+    fontFamilyCustom: state.fontFamilyCustom,
     fontSize: state.fontSize,
     fontFamily: state.fontFamily,
     shadow: state.shadow,
@@ -447,6 +494,20 @@ export function setBackground(patch) {
     && next.opacity === state.background.opacity
     && next.blur === state.background.blur) return
   commit(custom({ ...state, background: next }))
+}
+
+/** Continuous corner radius, 0 = fall back to the three-step scale. */
+export function setRadiusCustom(value) {
+  const next = readRadiusCustom(value)
+  if (next === state.radiusCustom) return
+  commit(custom({ ...state, radiusCustom: next }))
+}
+
+/** Free-form font family; '' keeps the current option value. */
+export function setFontFamilyCustom(value) {
+  const next = readFontFamily(value)
+  if (next === state.fontFamilyCustom) return
+  commit(custom({ ...state, fontFamilyCustom: next }))
 }
 
 /** An arbitrary accent hex; '' restores the preset hues. */

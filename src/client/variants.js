@@ -48,6 +48,20 @@ const CODE_TONES = Object.freeze({
   dark: { light: '#1b1b1c', dark: '#0f0f10' },
 })
 
+const MEASURES = Object.freeze({ auto: null, narrow: '620px', wide: '960px' })
+
+/** Continuous radius: one px value drives the whole ladder. */
+function customRadiusScale(value) {
+  return {
+    xs: Math.round(value * 0.34),
+    sm: Math.round(value * 0.5),
+    md: Math.round(value * 0.67),
+    lg: Math.round(value),
+    xl: Math.round(value * 1.33),
+    panel: Math.round(value * 1.33),
+  }
+}
+
 const RADIUS_SLOTS = Object.freeze({
   '--dsw-radius-xs': 'xs',
   '--dsw-radius-sm': 'sm',
@@ -133,6 +147,26 @@ function applyOptions(out, settings) {
   if (family !== undefined && family !== null) {
     out['--dsh-font-family-text'] = both(family)
     out['--dsw-font-family'] = both(family)
+  }
+
+  const customFont = typeof settings?.fontFamilyCustom === 'string' ? settings.fontFamilyCustom.trim() : ''
+  if (customFont !== '') {
+    out['--dsh-font-family-text'] = both(customFont)
+    out['--dsw-font-family'] = both(customFont)
+  }
+
+  // A continuous radius overrides the three-step scale.
+  const radiusValue = Number(settings?.radiusCustom)
+  if (Number.isFinite(radiusValue) && radiusValue > 0) {
+    const scale = customRadiusScale(radiusValue)
+    for (const [token, slot] of Object.entries(RADIUS_SLOTS)) {
+      out[token] = both(scale[slot] + 'px')
+    }
+  }
+
+  const measure = MEASURES[settings?.measure]
+  if (measure !== undefined && measure !== null) {
+    out['--dsh-chat-content-width'] = both(measure)
   }
 
   const shadow = SHADOWS[settings?.shadow]

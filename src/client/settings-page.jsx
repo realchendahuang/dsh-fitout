@@ -10,7 +10,7 @@ import {
   ACCENTS, RADIUS_SCALES, applyPreset, getSettings, getThemePreference, resetAll,
   resetAppearance, setAccent, setAppearance, setAllLayoutGroups, setDensity, setEffect,
   setEnabled, setLayoutGroup, setList, setRadius, setOption, setThemePreference, subscribe,
-  saveTheme, deleteTheme, setAccentCustom, setBackground,
+  saveTheme, deleteTheme, setAccentCustom, setBackground, setRadiusCustom, setFontFamilyCustom,
 } from './store.js'
 import { OPTIONS } from './store.js'
 import { PRESETS, matchesPreset } from './presets.js'
@@ -343,6 +343,8 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
       for (const id of spec.layout) setLayoutGroup(id, false)
       for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value)
       setAccentCustom(spec.accentCustom ?? '')
+      setRadiusCustom(spec.radiusCustom ?? 0)
+      setFontFamilyCustom(spec.fontFamilyCustom ?? '')
       saveTheme(spec.name)
       setNotice(translate('page.importDone').replace('{name}', spec.name))
     })
@@ -414,11 +416,16 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
           onChange: (event) => setAccentCustom(event.target.value),
         }))),
         React.createElement(Feature, { title: translate('page.radius') },
-          React.createElement(Seg, {
-            value: settings.radius,
-            choices: Object.keys(RADIUS_SCALES).map((id) => ({ id, label: translate('page.radius_' + id) })),
-            onChange: setRadius,
-          })),
+          React.createElement('div', { className: 'fto-inline' },
+            React.createElement(Seg, {
+              value: settings.radiusCustom > 0 ? '' : settings.radius,
+              choices: Object.keys(RADIUS_SCALES).map((id) => ({ id, label: translate('page.radius_' + id) })),
+              onChange: (id) => { setRadiusCustom(0); setRadius(id) },
+            }),
+            React.createElement(Slider, {
+              value: settings.radiusCustom, min: 0, max: 24, suffix: '',
+              onChange: (value) => setRadiusCustom(value),
+            }))),
         React.createElement(Feature, { title: translate('page.density') },
           React.createElement(Seg, {
             value: settings.density,
@@ -435,7 +442,16 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
         React.createElement(Feature, { title: translate('page.fontSize') },
           React.createElement(OptionSeg, { t: translate, settings, name: 'fontSize' })),
         React.createElement(Feature, { title: translate('page.fontFamily') },
-          React.createElement(OptionSeg, { t: translate, settings, name: 'fontFamily' })),
+          React.createElement('div', { className: 'fto-stack' },
+            React.createElement(OptionSeg, { t: translate, settings, name: 'fontFamily' }),
+            React.createElement('input', {
+              className: 'fto-input', type: 'text', maxLength: 120,
+              value: settings.fontFamilyCustom,
+              placeholder: translate('page.fontFamilyCustom'),
+              onChange: (event) => setFontFamilyCustom(event.target.value),
+            }))),
+        React.createElement(Feature, { title: translate('page.lineHeight') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'lineHeight' })),
         React.createElement(Feature, { title: translate('page.shadow') },
           React.createElement(OptionSeg, { t: translate, settings, name: 'shadow' })),
         React.createElement(Feature, { title: translate('page.motion') },
@@ -470,6 +486,12 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
             onChange: (next) => setLayoutGroup(section.id, next),
           }),
           React.createElement('span', null, section.title))))),
+
+      React.createElement(Group, { title: translate('page.layoutGroup2') },
+        React.createElement(Feature, { title: translate('page.measure') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'measure' })),
+        React.createElement(Feature, { title: translate('page.glass') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'glass' }))),
 
       React.createElement(Group, { title: translate('page.listGroup') },
         React.createElement(Feature, { title: translate('page.list') },

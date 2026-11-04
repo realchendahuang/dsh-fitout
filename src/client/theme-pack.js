@@ -50,7 +50,7 @@ export function nearestAccent(value) {
 const ACCENT_IDS = ACCENTS.map((accent) => accent.id)
 
 /** Read any supported pack into { name, accent, radius, density, source }. */
-const OPTION_KEYS = ['surface', 'fontSize', 'fontFamily', 'shadow', 'motion', 'corner', 'codeTone']
+const OPTION_KEYS = ['surface', 'glass', 'measure', 'lineHeight', 'fontSize', 'fontFamily', 'shadow', 'motion', 'corner', 'codeTone']
 // Wallpapers are local assets, not theme data: they never travel in a pack.
 
 function readOptions(source) {
@@ -77,6 +77,8 @@ export function readPack(json) {
         : [],
       options: readOptions(json),
       accentCustom: typeof json.accentCustom === 'string' && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : '',
+      radiusCustom: Number.isFinite(Number(json.radiusCustom)) ? Math.min(24, Math.max(0, Math.round(Number(json.radiusCustom)))) : 0,
+      fontFamilyCustom: typeof json.fontFamilyCustom === 'string' ? json.fontFamilyCustom.slice(0, 120) : '',
       source: 'fitout',
     }
   }
@@ -98,6 +100,8 @@ export function readPack(json) {
       layout: [],
       options: {},
       accentCustom: '',
+      radiusCustom: 0,
+      fontFamilyCustom: '',
       source: 'pack',
     }
   }
@@ -117,6 +121,9 @@ export function writePack(settings, name) {
     effects: { underline: settings.effects.underline, chip: settings.effects.chip },
     layout: { disabled: [...settings.layout.disabled] },
     surface: settings.surface,
+    glass: settings.glass,
+    measure: settings.measure,
+    lineHeight: settings.lineHeight,
     fontSize: settings.fontSize,
     fontFamily: settings.fontFamily,
     shadow: settings.shadow,
@@ -124,5 +131,7 @@ export function writePack(settings, name) {
     corner: settings.corner,
     codeTone: settings.codeTone,
     accentCustom: settings.accentCustom,
+    radiusCustom: settings.radiusCustom,
+    fontFamilyCustom: settings.fontFamilyCustom,
   }
 }

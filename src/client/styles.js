@@ -169,6 +169,32 @@ html.fto-dense-sidebar .fto-list-title{font-size:12px}
 html.fto-dense-sidebar .fto-list-time{font-size:10px}
 html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
+/* --- frosted glass: expensive, so it is opt-in and never full-strength --- */
+html.fto-glass-all [data-slot="sidebar"]{
+  background:color-mix(in srgb,var(--dsw-alias-bg-base) 62%,transparent) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);
+  backdrop-filter:blur(16px) saturate(1.15)}
+html.fto-glass-all [data-composer-card],
+html.fto-glass-cards [data-composer-card]{
+  background:color-mix(in srgb,var(--dsw-alias-bg-layer-1) 74%,transparent) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(1.1);
+  backdrop-filter:blur(12px) saturate(1.1)}
+html.fto-glass-all [role="dialog"],
+html.fto-glass-cards [role="dialog"]{
+  background:color-mix(in srgb,var(--dsw-alias-bg-layer-1) 82%,transparent) !important;
+  -webkit-backdrop-filter:blur(20px) saturate(1.1);
+  backdrop-filter:blur(20px) saturate(1.1)}
+html.fto-glass-all [data-slot="conversation.session.header"]{
+  background:color-mix(in srgb,var(--dsw-alias-bg-base) 72%,transparent) !important;
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px)}
+
+/* --- reading line height: the prose layer owns its own rhythm --- */
+html.fto-lh-tight [class*="_markdown_"]{line-height:1.5}
+html.fto-lh-tight [class*="_markdown_"] :is(p,li,td,blockquote,ul,ol){line-height:1.5}
+html.fto-lh-loose [class*="_markdown_"]{line-height:1.85}
+html.fto-lh-loose [class*="_markdown_"] :is(p,li,td,blockquote,ul,ol){line-height:1.85}
+
 /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
 html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background-image:var(--fto-wallpaper);background-size:cover;background-position:center;
@@ -177,6 +203,9 @@ html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1
 
 /* --- sliders used by the background controls --- */
 .fto-slider{display:flex;align-items:center;gap:10px}
+.fto-inline{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+.fto-stack{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.fto-stack .fto-input{width:220px;height:28px;font-size:12px}
 .fto-slider input[type="range"]{-webkit-appearance:none;appearance:none;width:132px;height:4px;
   border-radius:2px;background:var(--dsw-alias-bg-layer-3);outline:none;cursor:pointer}
 .fto-slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;

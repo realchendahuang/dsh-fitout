@@ -905,7 +905,7 @@ button.fto-turn:focus-visible,
   background:var(--fto-hover) !important;
   color:var(--fto-fg1) !important;
 }
-[class*="XdyUwa_trigger"] svg, [class*="_3j1mRa_trigger"] svg{ width:13px; height:13px; }
+[class*="XdyUwa_trigger"] svg, [class*="_3j1mRa_trigger"] svg{ width:12px; height:12px; }
 [class*="XdyUwa_count"], [class*="_3j1mRa_count"]{
   font-size:11.5px !important;
   color:var(--fto-fg4) !important;
