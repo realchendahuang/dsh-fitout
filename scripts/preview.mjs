@@ -62,7 +62,6 @@ const markup = (await import('node:child_process')) // keep the import list tidy
 
 const { TOKENS } = await import('file://' + resolve(root, 'src/client/tokens.js'))
 const { CSS } = await import('file://' + resolve(root, 'src/client/styles.js'))
-const { BASE_CSS } = await import('file://' + resolve(root, 'src/client/sections.js'))
 
 const scheme = process.env.DARK === '1' ? 'dark' : 'light'
 const vars = Object.entries(TOKENS).map(([name, pair]) => `  ${name}: ${pair[scheme]};`)
@@ -89,7 +88,6 @@ html,body{margin:0;padding:0;background:${scheme === 'dark' ? '#0a0a0a' : '#f5f5
 body{padding:20px;zoom:${zoom}}
 .card{max-width:720px;background:var(--dsw-alias-bg-layer-1);border-radius:12px;padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 ${CSS}
-${BASE_CSS}
 </style></head>
 <body><div class="card">${markup}</div></body></html>`
 

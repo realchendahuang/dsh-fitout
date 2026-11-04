@@ -1,7 +1,7 @@
 /** The Fitout page — a theme shelf, not a settings form.
  *
  * The page leads with what a shop leads with: a row of finished looks. Every
- * card is a whole appearance (colour + corners + density + layout), so picking
+ * card is a whole appearance (colour + corners + fonts), so picking
  * one is a single decision. Everything that can be nudged by hand lives behind
  * 微调 (fine tuning), collapsed by default.
  */
@@ -9,20 +9,18 @@ import React from 'react'
 import {
   ACCENTS, FONT_ROLES, RADIUS_SCALES, TYPE_RANGES, applyPreset, getSettings, getThemePreference,
   normalizeFont, resetAll, resetAppearance, saveTheme, setAccent, setAccentCustom, setAppearance,
-  setAllLayoutGroups, setBackground, setDensity, setEffect, setEnabled, setFontFamily,
-  setLayoutGroup, setOption, setRadius, setRadiusCustom, setThemePreference,
+  setBackground, setEffect, setEnabled, setFontFamily,
+  setOption, setRadius, setRadiusCustom, setThemePreference,
   setTypeSize, subscribe, deleteTheme,
 } from './store.js'
 import { OPTIONS } from './store.js'
 import { SAMPLES, choicesFor, fontLabel, getLiveFonts, subscribeLiveFonts } from './fonts.js'
 import { PRESETS, matchesPreset } from './presets.js'
 import { MARK_PRESETS, renderMark } from './brand.jsx'
-import { SECTIONS } from './sections.js'
 import { readPack, writePack } from './theme-pack.js'
 import { SURFACES } from './surfaces.js'
 
 const MAX_ICON_BYTES = 256 * 1024
-const ALL_GROUPS = SECTIONS.map((section) => section.id)
 const RADIUS_PX = { compact: '7px', default: '10px', round: '14px' }
 
 function useSettings() {
@@ -402,7 +400,6 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
   const [saving, setSaving] = React.useState(false)
   const [draft, setDraft] = React.useState('')
   const live = React.useSyncExternalStore(subscribeLiveFonts, getLiveFonts, getLiveFonts)
-  const disabled = new Set(settings.layout.disabled)
   const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings, live))
 
   const commitSave = () => {
@@ -431,9 +428,6 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
       }
       setAccent(spec.accent)
       setRadius(spec.radius)
-      setDensity(spec.density)
-      setAllLayoutGroups(true, ALL_GROUPS)
-      for (const id of spec.layout) setLayoutGroup(id, false)
       for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value)
       setAccentCustom(spec.accentCustom ?? '')
       setRadiusCustom(spec.radiusCustom ?? 0)
@@ -519,15 +513,6 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
               value: settings.radiusCustom, min: 0, max: 24, suffix: '',
               onChange: (value) => setRadiusCustom(value),
             }))),
-        React.createElement(Feature, { title: translate('page.density') },
-          React.createElement(Seg, {
-            value: settings.density,
-            choices: [
-              { id: 'default', label: translate('page.density_default') },
-              { id: 'compact', label: translate('page.density_compact') },
-            ],
-            onChange: setDensity,
-          })),
         React.createElement(Feature, { title: translate('page.appearance') },
           React.createElement(AppearancePicker, { t: translate }))),
 
@@ -535,8 +520,6 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
         React.createElement(TypePicker, { t: translate, settings, live })),
 
       React.createElement(Group, { title: translate('page.textGroup') },
-        React.createElement(Feature, { title: translate('page.lineHeight') },
-          React.createElement(OptionSeg, { t: translate, settings, name: 'lineHeight' })),
         React.createElement(Feature, { title: translate('page.shadow') },
           React.createElement(OptionSeg, { t: translate, settings, name: 'shadow' })),
         React.createElement(Feature, { title: translate('page.motion') },
@@ -549,34 +532,9 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
       React.createElement(Group, { title: translate('page.bgGroup') },
         React.createElement(BackgroundPicker, { t: translate, settings })),
 
-      React.createElement(Group, {
-        title: translate('page.layoutGroup'),
-        tools: React.createElement(React.Fragment, null,
-          React.createElement('button', {
-            type: 'button', className: 'fto-linkBtn',
-            onClick: () => setAllLayoutGroups(true, ALL_GROUPS),
-            disabled: disabled.size === 0,
-          }, translate('page.layoutAllOn')),
-          React.createElement('button', {
-            type: 'button', className: 'fto-linkBtn',
-            onClick: () => setAllLayoutGroups(false, ALL_GROUPS),
-            disabled: disabled.size === ALL_GROUPS.length,
-          }, translate('page.layoutAllOff'))),
-      },
-      React.createElement('div', { className: 'fto-cells' },
-        SECTIONS.map((section) => React.createElement('div', { key: section.id, className: 'fto-cell' },
-          React.createElement(Switch, {
-            size: 'sm', label: section.title,
-            on: !disabled.has(section.id),
-            onChange: (next) => setLayoutGroup(section.id, next),
-          }),
-          React.createElement('span', null, section.title))))),
-
-      React.createElement(Group, { title: translate('page.layoutGroup2') },
+      React.createElement(Group, { title: translate('page.measureGroup') },
         React.createElement(Feature, { title: translate('page.measure') },
-          React.createElement(OptionSeg, { t: translate, settings, name: 'measure' })),
-        React.createElement(Feature, { title: translate('page.glass') },
-          React.createElement(OptionSeg, { t: translate, settings, name: 'glass' }))),
+          React.createElement(OptionSeg, { t: translate, settings, name: 'measure' }))),
 
       React.createElement(Group, { title: translate('page.detailGroup') },
         React.createElement(Feature, { title: translate('page.chip') },
@@ -585,12 +543,7 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
             on: settings.effects.chip,
             onChange: (next) => setEffect('chip', next),
           })),
-        React.createElement(Feature, { title: translate('page.underline') },
-          React.createElement(Switch, {
-            size: 'sm', label: translate('page.underline'),
-            on: settings.effects.underline,
-            onChange: (next) => setEffect('underline', next),
-          }))),
+),
 
       React.createElement(Group, { title: translate('page.brandGroup') },
         React.createElement(Feature, { title: translate('page.name') },

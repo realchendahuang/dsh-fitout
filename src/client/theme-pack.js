@@ -2,13 +2,12 @@
  *
  * Two shapes are readable:
  *
- *   dsh-fitout/theme       our own export — colour, corners, density, layout
+ *   dsh-fitout/theme       our own export — colour, corners, type, wallpaper-free
  *   dsh-dream-skin/pack    the format already circulating in the ecosystem —
  *                          a manifest with a token dictionary
  *
  * A foreign pack only carries colours, so it is reduced to the nearest built-in
  * accent and the standard shape. What we export is a superset: it also carries
- * the layout groups, which no other pack format has.
  */
 import { ACCENTS, OPTIONS, RADIUS_SCALES, migrateFontFields, migrateTypeField, sanitizeFont, sanitizeType } from './store.js'
 
@@ -49,8 +48,8 @@ export function nearestAccent(value) {
 
 const ACCENT_IDS = ACCENTS.map((accent) => accent.id)
 
-/** Read any supported pack into { name, accent, radius, density, source }. */
-const OPTION_KEYS = ['surface', 'glass', 'measure', 'lineHeight', 'shadow', 'motion', 'corner', 'codeTone']
+/** Read any supported pack into { name, accent, radius, source }. */
+const OPTION_KEYS = ['surface', 'measure', 'shadow', 'motion', 'corner', 'codeTone']
 // Wallpapers are local assets, not theme data: they never travel in a pack.
 
 function readOptions(source) {
@@ -71,10 +70,6 @@ export function readPack(json) {
       name: String(json.name ?? '导入的主题').slice(0, 20),
       accent: ACCENT_IDS.includes(json.accent) ? json.accent : 'sky',
       radius: RADIUS_SCALES[json.radius] === undefined ? 'default' : json.radius,
-      density: json.density === 'compact' ? 'compact' : 'default',
-      layout: Array.isArray(json.layout?.disabled)
-        ? json.layout.disabled.filter((id) => typeof id === 'string')
-        : [],
       options: readOptions(json),
       accentCustom: typeof json.accentCustom === 'string' && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : '',
       radiusCustom: Number.isFinite(Number(json.radiusCustom)) ? Math.min(24, Math.max(0, Math.round(Number(json.radiusCustom)))) : 0,
@@ -98,8 +93,6 @@ export function readPack(json) {
       name: String(manifest.nameZh ?? manifest.name ?? '导入的主题').slice(0, 20),
       accent: nearestAccent(probe) ?? 'sky',
       radius: 'default',
-      density: 'default',
-      layout: [],
       options: {},
       accentCustom: '',
       radiusCustom: 0,
@@ -120,13 +113,9 @@ export function writePack(settings, name) {
     name: String(name ?? '我的主题').slice(0, 20),
     accent: settings.accent,
     radius: settings.radius,
-    density: settings.density,
     effects: { underline: settings.effects.underline, chip: settings.effects.chip },
-    layout: { disabled: [...settings.layout.disabled] },
     surface: settings.surface,
-    glass: settings.glass,
     measure: settings.measure,
-    lineHeight: settings.lineHeight,
     font: { ...settings.font },
     type: { ...settings.type },
     shadow: settings.shadow,

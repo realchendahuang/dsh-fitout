@@ -12,9 +12,7 @@
  *   icon      { kind: 'official' | preset-id | 'custom', value }
  *   accent    accent hue id          (see ACCENTS)
  *   radius    corner scale id        (see RADIUS_SCALES)
- *   density   sidebar density id
- *   effects   { underline, chip }
- *   layout    { disabled: string[] } — layout groups turned off
+ *   effects   { chip }
  *
  * Persistence is localStorage: this is a client-only presentation plugin with no
  * Host service. Settings from the previous two-package generation are migrated
@@ -23,7 +21,6 @@
 
 const KEY = 'dsh-fitout:settings'
 const LEGACY_SKIN = 'dsh-zcode-skin:settings'
-const LEGACY_STEPS = 'dsh-zcode-steps:settings'
 
 export const ACCENTS = Object.freeze([
   { id: 'sky', label: '天蓝', light: '#0284c7', dark: '#38bdf8' },
@@ -63,13 +60,9 @@ const DEFAULTS = Object.freeze({
   icon: { kind: 'official', value: '' },
   accent: 'sky',
   radius: 'default',
-  density: 'default',
-  effects: { underline: true, chip: true },
-  layout: { disabled: [] },
+  effects: { chip: true },
   surface: 'neutral',
-  glass: 'off',
   measure: 'auto',
-  lineHeight: 'normal',
   radiusCustom: 0,
   font: Object.freeze({ text: '', code: '', terminal: '' }),
   type: Object.freeze({ ...TYPE_DEFAULTS }),
@@ -85,9 +78,7 @@ const DEFAULTS = Object.freeze({
 /** Every enumerated design option and its accepted values. */
 export const OPTIONS = Object.freeze({
   surface: Object.freeze(['neutral', 'paper', 'night', 'nord']),
-  glass: Object.freeze(['off', 'cards', 'all']),
   measure: Object.freeze(['auto', 'narrow', 'wide']),
-  lineHeight: Object.freeze(['tight', 'normal', 'loose']),
   shadow: Object.freeze(['flat', 'soft', 'lifted']),
   motion: Object.freeze(['off', 'normal', 'slow']),
   corner: Object.freeze(['round', 'squircle']),
@@ -107,13 +98,9 @@ export function clone(state) {
     icon: { ...state.icon },
     accent: state.accent,
     radius: state.radius,
-    density: state.density,
     effects: { ...state.effects },
-    layout: { disabled: [...state.layout.disabled] },
     surface: state.surface,
-    glass: state.glass,
     measure: state.measure,
-    lineHeight: state.lineHeight,
     radiusCustom: state.radiusCustom,
     font: { ...state.font },
     type: { ...state.type },
@@ -134,13 +121,9 @@ function copyTheme(theme) {
     name: theme.name,
     accent: theme.accent,
     radius: theme.radius,
-    density: theme.density,
     effects: { ...theme.effects },
-    layout: { disabled: [...theme.layout.disabled] },
     surface: theme.surface ?? DEFAULTS.surface,
-    glass: theme.glass ?? DEFAULTS.glass,
     measure: theme.measure ?? DEFAULTS.measure,
-    lineHeight: theme.lineHeight ?? DEFAULTS.lineHeight,
     font: readFont(theme.font),
     type: readType(theme.type),
     shadow: theme.shadow ?? DEFAULTS.shadow,
@@ -161,16 +144,7 @@ function readSavedTheme(raw) {
     name: raw.name.slice(0, 20),
     accent: typeof raw.accent === 'string' ? raw.accent : DEFAULTS.accent,
     radius: typeof raw.radius === 'string' ? raw.radius : DEFAULTS.radius,
-    density: raw.density === 'compact' ? 'compact' : 'default',
-    effects: {
-      underline: raw.effects?.underline !== false,
-      chip: raw.effects?.chip !== false,
-    },
-    layout: {
-      disabled: Array.isArray(raw.layout?.disabled)
-        ? raw.layout.disabled.filter((x) => typeof x === 'string')
-        : [],
-    },
+    effects: { chip: raw.effects?.chip !== false },
     surface: readOption('surface', raw.surface),
     font: readFont(raw.font ?? migrateFont(raw)),
     type: readType(raw.type ?? migrateType(raw)),
@@ -189,9 +163,7 @@ function readLegacy() {
   try {
     const rawSkin = globalThis.localStorage?.getItem(LEGACY_SKIN)
     const skin = rawSkin ? JSON.parse(rawSkin) : null
-    const rawSteps = globalThis.localStorage?.getItem(LEGACY_STEPS)
-    const steps = rawSteps ? JSON.parse(rawSteps) : null
-    if (skin === null && steps === null) return null
+    if (skin === null) return null
     return {
       enabled: skin?.enabled !== false,
       preset: 'custom',
@@ -201,20 +173,11 @@ function readLegacy() {
         : { ...DEFAULTS.icon },
       accent: oneOf(skin?.accent, ACCENTS.map((a) => a.id), DEFAULTS.accent),
       radius: oneOf(skin?.radius, Object.keys(RADIUS_SCALES), DEFAULTS.radius),
-      density: oneOf(skin?.density, ['default', 'compact'], DEFAULTS.density),
-      effects: {
-        underline: skin?.effects?.underline !== false,
-        chip: skin?.effects?.chip !== false,
-      },
-      layout: {
-        disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : [],
-      },
+      effects: { chip: skin?.effects?.chip !== false },
       background: { ...DEFAULTS.background },
       accentCustom: DEFAULTS.accentCustom,
       surface: DEFAULTS.surface,
-      glass: DEFAULTS.glass,
       measure: DEFAULTS.measure,
-      lineHeight: DEFAULTS.lineHeight,
       radiusCustom: DEFAULTS.radiusCustom,
       font: { ...DEFAULTS.font },
       type: { ...DEFAULTS.type },
@@ -345,20 +308,11 @@ function readStored() {
           : { ...DEFAULTS.icon },
         accent: oneOf(parsed?.accent, ACCENTS.map((a) => a.id), DEFAULTS.accent),
         radius: oneOf(parsed?.radius, Object.keys(RADIUS_SCALES), DEFAULTS.radius),
-        density: oneOf(parsed?.density, ['default', 'compact'], DEFAULTS.density),
-        effects: {
-          underline: parsed?.effects?.underline !== false,
-          chip: parsed?.effects?.chip !== false,
-        },
-        layout: {
-          disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === 'string') : [],
-        },
+        effects: { chip: parsed?.effects?.chip !== false },
         background: readBackground(parsed?.background),
         accentCustom: readAccent(parsed?.accentCustom),
         surface: readOption('surface', parsed?.surface),
-        glass: readOption('glass', parsed?.glass),
         measure: readOption('measure', parsed?.measure),
-        lineHeight: readOption('lineHeight', parsed?.lineHeight),
         radiusCustom: readRadiusCustom(parsed?.radiusCustom),
         font: readFont(parsed?.font ?? migrateFont(parsed)),
         type: readType(parsed?.type ?? migrateType(parsed)),
@@ -386,7 +340,6 @@ function persist() {
     globalThis.localStorage?.setItem(KEY, JSON.stringify(state))
     // Once migrated, the old keys would only fight the new record.
     globalThis.localStorage?.removeItem(LEGACY_SKIN)
-    globalThis.localStorage?.removeItem(LEGACY_STEPS)
   } catch {
     /* storage unavailable: the choice stays session-only */
   }
@@ -503,11 +456,8 @@ export function applyPreset(preset) {
     preset: preset.id,
     accent: preset.accent,
     radius: preset.radius,
-    density: preset.density,
     surface: preset.surface ?? DEFAULTS.surface,
-    glass: preset.glass ?? DEFAULTS.glass,
     measure: preset.measure ?? DEFAULTS.measure,
-    lineHeight: preset.lineHeight ?? DEFAULTS.lineHeight,
     radiusCustom: DEFAULTS.radiusCustom,
     background: { ...DEFAULTS.background },
     accentCustom: '',
@@ -518,7 +468,6 @@ export function applyPreset(preset) {
     corner: preset.corner ?? DEFAULTS.corner,
     codeTone: preset.codeTone ?? DEFAULTS.codeTone,
     effects: { ...state.effects, ...preset.effects },
-    layout: { disabled: [...preset.layout.disabled] },
   }
   commit(next)
   pushFonts(next)
@@ -542,13 +491,9 @@ export function saveTheme(name) {
     name: label,
     accent: state.accent,
     radius: state.radius,
-    density: state.density,
     effects: state.effects,
-    layout: state.layout,
     surface: state.surface,
-    glass: state.glass,
     measure: state.measure,
-    lineHeight: state.lineHeight,
     radiusCustom: state.radiusCustom,
     font: state.font,
     type: state.type,
@@ -607,12 +552,6 @@ export function setRadius(id) {
   commit(custom({ ...state, radius: id }))
 }
 
-export function setDensity(id) {
-  const next = id === 'compact' ? 'compact' : 'default'
-  if (state.density === next) return
-  commit(custom({ ...state, density: next }))
-}
-
 export function setEffect(key, on) {
   if (!(key in state.effects) || state.effects[key] === Boolean(on)) return
   commit(custom({ ...state, effects: { ...state.effects, [key]: Boolean(on) } }))
@@ -661,24 +600,6 @@ export function setAccentCustom(hex) {
   const next = readAccent(hex)
   if (next === state.accentCustom) return
   commit(custom({ ...state, accentCustom: next }))
-}
-
-/* --- 版式 groups ---------------------------------------------------------- */
-
-export function setLayoutGroup(id, on) {
-  const off = !on
-  const has = state.layout.disabled.includes(id)
-  if (off === has) return
-  const disabled = off
-    ? [...state.layout.disabled, id]
-    : state.layout.disabled.filter((x) => x !== id)
-  commit(custom({ ...state, layout: { disabled } }))
-}
-
-export function setAllLayoutGroups(all, ids) {
-  const next = all ? [] : [...ids]
-  if (next.length === state.layout.disabled.length) return
-  commit(custom({ ...state, layout: { disabled: next } }))
 }
 
 /* --- resets --------------------------------------------------------------- */

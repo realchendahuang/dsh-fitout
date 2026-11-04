@@ -14,17 +14,16 @@
  */
 import { TOKENS } from './tokens.js'
 import { buildTokens } from './variants.js'
-import { buildCss, SECTIONS } from './sections.js'
 import { CSS, adoptStyles } from './styles.js'
 import { FitoutMark, FitoutBrandName } from './brand.jsx'
 import { FitoutSettingsRow } from './settings-row.jsx'
 import { FitoutSettingsPage } from './settings-page.jsx'
 import { WorkspaceChip } from './header-chip.jsx'
-import { ALL_GROUPS, PRESETS, findPreset } from './presets.js'
+import { PRESETS, findPreset } from './presets.js'
 import { pushLiveFonts } from './fonts.js'
 import {
   FONT_ROLES, bindApplier, bindFontRestore, bindFontSync, bindThemeBridge, getSettings, resetAll, setAccent,
-  setAllLayoutGroups, setAppearance, setDensity, setEffect, setEnabled, setLayoutGroup,
+  setAppearance, setEffect, setEnabled,
   setRadius, subscribe,
 } from './store.js'
 
@@ -34,7 +33,7 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.9.1'
+const VERSION = '0.10.0'
 
 export const ZH = {
   title: '装修',
@@ -49,22 +48,14 @@ export const ZH = {
   'page.surface_paper': '暖纸',
   'page.surface_night': '夜蓝',
   'page.surface_nord': '极地',
-  'page.lineHeight': '行高',
-  'page.lineHeight_tight': '紧',
-  'page.lineHeight_normal': '标准',
-  'page.lineHeight_loose': '松',
   'page.fontCustom': '例如 PingFang SC, sans-serif',
   'page.fontCustomTitle': '正文自定义栈',
-  'page.layoutGroup2': '布局',
+  'page.accentCustom': '自定义颜色',
+  'page.measureGroup': '布局',
   'page.measure': '消息宽度',
   'page.measure_auto': '跟随',
   'page.measure_narrow': '窄',
   'page.measure_wide': '宽',
-  'page.glass': '毛玻璃',
-  'page.glass_off': '关',
-  'page.glass_cards': '卡片',
-  'page.glass_all': '全部',
-  'page.accentCustom': '自定义颜色',
   'page.bgGroup': '背景',
   'page.bgImage': '图片',
   'page.bgUpload': '上传图片…',
@@ -107,19 +98,12 @@ export const ZH = {
   'page.radius_compact': '紧凑',
   'page.radius_default': '标准',
   'page.radius_round': '圆润',
-  'page.density': '侧栏密度',
-  'page.density_default': '标准',
-  'page.density_compact': '紧凑',
   'page.appearance': '明暗',
   'page.themeSystem': '跟随系统',
   'page.themeLight': '浅色',
   'page.themeDark': '深色',
-  'page.layoutGroup': '版式',
-  'page.layoutAllOn': '全开',
-  'page.layoutAllOff': '全关',
   'page.detailGroup': '细节',
   'page.chip': '项目标签',
-  'page.underline': '链接下划线',
   'page.brandGroup': '品牌',
   'page.name': '名称',
   'page.namePlaceholder': '官方品牌',
@@ -156,22 +140,14 @@ const EN = {
   'page.surface_paper': 'Paper',
   'page.surface_night': 'Night',
   'page.surface_nord': 'Arctic',
-  'page.lineHeight': 'Line height',
-  'page.lineHeight_tight': 'Tight',
-  'page.lineHeight_normal': 'Normal',
-  'page.lineHeight_loose': 'Loose',
   'page.fontCustom': 'For example, PingFang SC, sans-serif',
   'page.fontCustomTitle': 'Custom body stack',
-  'page.layoutGroup2': 'Layout',
+  'page.accentCustom': 'Custom colour',
+  'page.measureGroup': 'Layout',
   'page.measure': 'Message width',
   'page.measure_auto': 'Follow',
   'page.measure_narrow': 'Narrow',
   'page.measure_wide': 'Wide',
-  'page.glass': 'Frosted glass',
-  'page.glass_off': 'Off',
-  'page.glass_cards': 'Cards',
-  'page.glass_all': 'Everything',
-  'page.accentCustom': 'Custom colour',
   'page.bgGroup': 'Background',
   'page.bgImage': 'Image',
   'page.bgUpload': 'Upload image…',
@@ -214,19 +190,12 @@ const EN = {
   'page.radius_compact': 'Tight',
   'page.radius_default': 'Standard',
   'page.radius_round': 'Round',
-  'page.density': 'Sidebar density',
-  'page.density_default': 'Standard',
-  'page.density_compact': 'Compact',
   'page.appearance': 'Light / dark',
   'page.themeSystem': 'System',
   'page.themeLight': 'Light',
   'page.themeDark': 'Dark',
-  'page.layoutGroup': 'Layout',
-  'page.layoutAllOn': 'All on',
-  'page.layoutAllOff': 'All off',
   'page.detailGroup': 'Details',
   'page.chip': 'Project tag',
-  'page.underline': 'Underlined links',
   'page.brandGroup': 'Brand',
   'page.name': 'Name',
   'page.namePlaceholder': 'Official brand',
@@ -249,7 +218,6 @@ const EN = {
 export function apply(ctx) {
   const theme = ctx.get('theme') ?? ctx.theme
   let layer = null
-  let layoutTag = null
 
   /** Wallpaper layer: one fixed ::before element painted from body variables. */
   const syncWallpaper = (settings) => {
@@ -269,19 +237,6 @@ export function apply(ctx) {
     root.style.setProperty('--fto-wallpaper-blur', (bg.blur ?? 0) + 'px')
   }
 
-  /** html classes for the polish rules the token layer cannot express. */
-  const syncRoot = (settings) => {
-    if (typeof document === 'undefined') return
-    const root = document.documentElement
-    const on = settings.enabled
-    root.classList.toggle('fto-underline-links', on && settings.effects.underline)
-    root.classList.toggle('fto-dense-sidebar', on && settings.density === 'compact')
-    root.classList.toggle('fto-glass-cards', on && settings.glass === 'cards')
-    root.classList.toggle('fto-glass-all', on && settings.glass === 'all')
-    root.classList.toggle('fto-lh-tight', on && settings.lineHeight === 'tight')
-    root.classList.toggle('fto-lh-loose', on && settings.lineHeight === 'loose')
-  }
-
   /** Rebuild the token layer for one settings record. */
   const syncTokens = (settings) => {
     if (layer !== null) {
@@ -291,26 +246,9 @@ export function apply(ctx) {
     if (settings.enabled) layer = theme.overrideTokens('dsh-fitout', buildTokens(settings))
   }
 
-  /** Rewrite the layout stylesheet; disabled groups simply are not emitted. */
-  const syncLayout = (settings) => {
-    if (typeof document === 'undefined') return
-    const wanted = settings.enabled
-    if (layoutTag === null) {
-      const existing = document.getElementById('dsh-fitout-layout')
-      layoutTag = existing ?? document.createElement('style')
-      if (existing === null) {
-        layoutTag.id = 'dsh-fitout-layout'
-        document.head.appendChild(layoutTag)
-      }
-    }
-    layoutTag.textContent = wanted ? buildCss(settings.layout.disabled) : ''
-  }
-
   const applyAppearance = (settings) => {
     syncTokens(settings)
-    syncRoot(settings)
     syncWallpaper(settings)
-    syncLayout(settings)
   }
 
   bindApplier(applyAppearance)
@@ -399,13 +337,9 @@ export function apply(ctx) {
     setEnabled,
     setAccent,
     setRadius,
-    setDensity,
     setEffect,
-    setLayoutGroup,
-    setAllLayoutGroups,
     resetAll,
     presets: PRESETS,
-    groups: SECTIONS.map((section) => ({ id: section.id, title: section.title, desc: section.desc })),
     tokenCount: Object.keys(TOKENS).length,
   })
   const service = Object.freeze({
@@ -433,15 +367,9 @@ export function apply(ctx) {
       layer()
       layer = null
     }
-    if (layoutTag !== null) {
-      layoutTag.textContent = ''
-      layoutTag.remove()
-      layoutTag = null
-    }
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove(
-        'fto-underline-links', 'fto-dense-sidebar', 'fto-has-wallpaper',
-        'fto-glass-cards', 'fto-glass-all', 'fto-lh-tight', 'fto-lh-loose',
+        'fto-has-wallpaper',
       )
     }
   }, 'dsh-fitout: teardown')
