@@ -68,7 +68,14 @@ function ThemeCard({ preset, active, onDelete }) {
     React.createElement('span', {
       className: 'fto-themeArt',
       style: { borderRadius: RADIUS_PX[preset.radius] ?? '10px' },
-    }, React.createElement('span', { className: 'fto-themeDot', style: { background: accent } })),
+    },
+    React.createElement('span', { className: 'fto-themeSide' }),
+    React.createElement('span', { className: 'fto-themeSideDash', style: { top: '12px' } }),
+    React.createElement('span', { className: 'fto-themeSideDash', style: { top: '22px' } }),
+    React.createElement('span', { className: 'fto-themeSideDash', style: { top: '32px' } }),
+    React.createElement('span', { className: 'fto-themeLine', style: { top: '16px', width: '42%' } }),
+    React.createElement('span', { className: 'fto-themeLine', style: { top: '27px', width: '30%' } }),
+    React.createElement('span', { className: 'fto-themeDot', style: { background: accent } })),
     React.createElement('span', { className: 'fto-themeName' }, preset.name)),
     onDelete === undefined ? null : React.createElement('button', {
       type: 'button', className: 'fto-themeDel', 'aria-label': '删除主题',
@@ -103,6 +110,12 @@ function CustomCard({ active }) {
     className: 'fto-theme', 'data-on': active ? 'true' : 'false', 'data-static': 'true',
   },
   React.createElement('span', { className: 'fto-themeArt', style: { borderRadius: '10px' } },
+    React.createElement('span', { className: 'fto-themeSide' }),
+    React.createElement('span', { className: 'fto-themeSideDash', style: { top: '12px' } }),
+    React.createElement('span', { className: 'fto-themeSideDash', style: { top: '22px' } }),
+    React.createElement('span', { className: 'fto-themeSideDash', style: { top: '32px' } }),
+    React.createElement('span', { className: 'fto-themeLine', style: { top: '16px', width: '42%' } }),
+    React.createElement('span', { className: 'fto-themeLine', style: { top: '27px', width: '30%' } }),
     React.createElement('span', { className: 'fto-themeDot', style: { background: 'var(--dsw-alias-label-tertiary)' } })),
   React.createElement('span', { className: 'fto-themeName' }, '自定义'))
 }
