@@ -10,7 +10,7 @@ import {
   ACCENTS, FONT_ROLES, RADIUS_SCALES, TYPE_RANGES, applyPreset, getSettings, getThemePreference,
   normalizeFont, resetAll, resetAppearance, saveTheme, setAccent, setAccentCustom, setAppearance,
   setBackground, setEffect, setEnabled, setFontFamily,
-  setOption, setRadius, setRadiusCustom, setThemePreference,
+  setOption, setRadius, setRadiusCustom, setThemePreference, setWeight,
   setTypeSize, subscribe, deleteTheme,
 } from './store.js'
 import { OPTIONS } from './store.js'
@@ -517,6 +517,8 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
           React.createElement(AppearancePicker, { t: translate }))),
 
       React.createElement(Group, { title: translate('page.fontGroup') },
+        React.createElement(Feature, { title: translate('page.weight') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'weight' })),
         React.createElement(TypePicker, { t: translate, settings, live })),
 
       React.createElement(Group, { title: translate('page.textGroup') },

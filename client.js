@@ -219,6 +219,7 @@ window.__ModuleLoader__.load({
       radiusCustom: 0,
       font: Object.freeze({ text: "", code: "", terminal: "" }),
       type: Object.freeze({ ...TYPE_DEFAULTS }),
+      weight: "medium",
       shadow: "soft",
       motion: "normal",
       corner: "round",
@@ -230,6 +231,7 @@ window.__ModuleLoader__.load({
     var OPTIONS = Object.freeze({
       surface: Object.freeze(["neutral", "paper", "night", "nord"]),
       measure: Object.freeze(["auto", "narrow", "wide"]),
+      weight: Object.freeze(["normal", "medium", "heavy"]),
       shadow: Object.freeze(["flat", "soft", "lifted"]),
       motion: Object.freeze(["off", "normal", "slow"]),
       corner: Object.freeze(["round", "squircle"]),
@@ -253,6 +255,7 @@ window.__ModuleLoader__.load({
         radiusCustom: state2.radiusCustom,
         font: { ...state2.font },
         type: { ...state2.type },
+        weight: state2.weight,
         background: { ...state2.background },
         accentCustom: state2.accentCustom,
         shadow: state2.shadow,
@@ -273,6 +276,7 @@ window.__ModuleLoader__.load({
         measure: theme.measure ?? DEFAULTS.measure,
         font: readFont(theme.font),
         type: readType(theme.type),
+        weight: readOption("weight", theme.weight),
         shadow: theme.shadow ?? DEFAULTS.shadow,
         motion: theme.motion ?? DEFAULTS.motion,
         corner: theme.corner ?? DEFAULTS.corner,
@@ -293,6 +297,7 @@ window.__ModuleLoader__.load({
         surface: readOption("surface", raw.surface),
         font: readFont(raw.font ?? migrateFont(raw)),
         type: readType(raw.type ?? migrateType(raw)),
+        weight: readOption("weight", raw.weight),
         shadow: readOption("shadow", raw.shadow),
         motion: readOption("motion", raw.motion),
         corner: readOption("corner", raw.corner),
@@ -322,6 +327,7 @@ window.__ModuleLoader__.load({
           radiusCustom: DEFAULTS.radiusCustom,
           font: { ...DEFAULTS.font },
           type: { ...DEFAULTS.type },
+          weight: DEFAULTS.weight,
           shadow: DEFAULTS.shadow,
           motion: DEFAULTS.motion,
           corner: DEFAULTS.corner,
@@ -434,6 +440,7 @@ window.__ModuleLoader__.load({
             radiusCustom: readRadiusCustom(parsed?.radiusCustom),
             font: readFont(parsed?.font ?? migrateFont(parsed)),
             type: readType(parsed?.type ?? migrateType(parsed)),
+            weight: readOption("weight", parsed?.weight),
             shadow: readOption("shadow", parsed?.shadow),
             motion: readOption("motion", parsed?.motion),
             corner: readOption("corner", parsed?.corner),
@@ -536,6 +543,7 @@ window.__ModuleLoader__.load({
         accentCustom: "",
         font: readFont(preset.font),
         type: readType(preset.type),
+        weight: readOption("weight", preset.weight),
         shadow: preset.shadow ?? DEFAULTS.shadow,
         motion: preset.motion ?? DEFAULTS.motion,
         corner: preset.corner ?? DEFAULTS.corner,
@@ -564,6 +572,7 @@ window.__ModuleLoader__.load({
         radiusCustom: state.radiusCustom,
         font: state.font,
         type: state.type,
+        weight: state.weight,
         shadow: state.shadow,
         motion: state.motion,
         corner: state.corner,
@@ -952,6 +961,7 @@ window.__ModuleLoader__.load({
       dark: { light: "#1b1b1c", dark: "#0f0f10" }
     });
     var MEASURES = Object.freeze({ auto: null, narrow: "620px", wide: "960px" });
+    var WEIGHTS = Object.freeze({ normal: "400", medium: "500", heavy: "600" });
     function customRadiusScale(value) {
       return {
         xs: Math.round(value * 0.34),
@@ -1026,6 +1036,8 @@ window.__ModuleLoader__.load({
           out[token] = both(scale[slot] + "px");
         }
       }
+      const weight = WEIGHTS[settings?.weight];
+      if (weight !== void 0) out["--fto-body-weight"] = both(weight);
       const measure = MEASURES[settings?.measure];
       if (measure !== void 0 && measure !== null) {
         out["--dsh-chat-content-width"] = both(measure);
@@ -1208,9 +1220,11 @@ window.__ModuleLoader__.load({
     .fto-tuneBtn[data-open="true"] .fto-tuneChevron{transform:rotate(-90deg)}
 
 
-    body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    /* --- reading weight: the only rule we point at official DOM, and it only sets
+       font-weight. Conversation text inherits it; headings and <strong> keep their
+       own heavier weights. --- */
+    [data-chat-node-key]{font-weight:var(--fto-body-weight,400)}
     ::selection{background:color-mix(in srgb, var(--dsw-alias-link,#0284c7) 28%, transparent)}
-    body,textarea,pre,code{-webkit-font-smoothing:antialiased}
 
     /* --- settings page: grouped sections --- */
     .fto-group{margin-top:26px}
@@ -1529,6 +1543,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font("", "", ""),
         type: type(14, 11, 13),
+        weight: "medium",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1543,6 +1558,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"PT Sans", "PingFang SC", "Helvetica Neue", sans-serif', '"Menlo", "Monaco", monospace', '"Menlo", "Monaco", monospace'),
         type: type(13, 10, 12),
+        weight: "normal",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1557,6 +1573,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Seravek", "PingFang SC", sans-serif', NF_MONO, MONO),
         type: type(16, 12, 14),
+        weight: "medium",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -1571,6 +1588,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Helvetica Neue", "PingFang SC", "Arial", sans-serif', MONO, MONO),
         type: type(14, 11, 13),
+        weight: "medium",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1585,6 +1603,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Iowan Old Style", "Songti SC", "Georgia", serif', '"Courier New", "Courier", monospace', MONO),
         type: type(15, 12, 13),
+        weight: "medium",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1599,6 +1618,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Avenir Next", "Yuanti SC", sans-serif', '"Andale Mono", "Menlo", monospace', MONO),
         type: type(15, 12, 13),
+        weight: "medium",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1613,6 +1633,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Charter", "Songti SC", "Georgia", serif', MONO, MONO),
         type: type(16, 12, 13),
+        weight: "medium",
         shadow: "lifted",
         motion: "slow",
         corner: "squircle",
@@ -1627,6 +1648,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Menlo", "PingFang SC", monospace', NF_MONO, MONO),
         type: type(13, 11, 13),
+        weight: "normal",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1641,6 +1663,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Hiragino Sans GB", "PingFang SC", sans-serif', '"PT Mono", "Menlo", monospace', MONO),
         type: type(14, 11, 13),
+        weight: "medium",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1655,6 +1678,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Hoefler Text", "Kaiti SC", "Georgia", serif', '"Monaco", "Menlo", monospace', '"Monaco", "Menlo", monospace'),
         type: type(15, 11, 14),
+        weight: "medium",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -1667,7 +1691,7 @@ window.__ModuleLoader__.load({
     function matchesPreset(preset, settings, live2) {
       if (preset === null || settings === null) return false;
       const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key]);
-      const sameOption = ["surface", "accent", "radius", "measure", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
+      const sameOption = ["surface", "accent", "radius", "measure", "weight", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
       const families = live2?.ready === true ? live2.families : settings.font;
       const sizes = live2?.ready === true ? live2.sizes : settings.type;
       const sameType = ["text", "code", "terminal"].every((role) => normalizeFont(preset.font?.[role] ?? "") === normalizeFont(families?.[role] ?? "") && (preset.type?.[role] ?? TYPE_DEFAULTS[role]) === (sizes?.[role] ?? TYPE_DEFAULTS[role]));
@@ -2394,6 +2418,11 @@ window.__ModuleLoader__.load({
           import_react3.default.createElement(
             Group,
             { title: translate("page.fontGroup") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.weight") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "weight" })
+            ),
             import_react3.default.createElement(TypePicker, { t: translate, settings, live: live2 })
           ),
           import_react3.default.createElement(
@@ -2564,7 +2593,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.10.0";
+    var VERSION = "0.11.0";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
@@ -2599,6 +2628,10 @@ window.__ModuleLoader__.load({
       "page.bgTooLarge": "\u8BF7\u9009\u62E9\u56FE\u7247\u6587\u4EF6\uFF0C\u4E14\u4E0D\u8D85\u8FC7 700 KB",
       "page.textGroup": "\u8D28\u611F",
       "page.fontGroup": "\u5B57\u4F53",
+      "page.weight": "\u5B57\u91CD",
+      "page.weight_normal": "\u5E38\u89C4",
+      "page.weight_medium": "\u4E2D\u7B49",
+      "page.weight_heavy": "\u504F\u7C97",
       "page.fontRole_text": "\u6B63\u6587",
       "page.fontRole_code": "\u4EE3\u7801",
       "page.fontRole_terminal": "\u7EC8\u7AEF",
@@ -2685,6 +2718,10 @@ window.__ModuleLoader__.load({
       "page.bgTooLarge": "Choose an image file of 700 KB or less",
       "page.textGroup": "Texture",
       "page.fontGroup": "Type",
+      "page.weight": "Weight",
+      "page.weight_normal": "Regular",
+      "page.weight_medium": "Medium",
+      "page.weight_heavy": "Heavy",
       "page.fontRole_text": "Body",
       "page.fontRole_code": "Code",
       "page.fontRole_terminal": "Terminal",

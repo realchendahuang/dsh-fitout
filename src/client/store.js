@@ -66,6 +66,7 @@ const DEFAULTS = Object.freeze({
   radiusCustom: 0,
   font: Object.freeze({ text: '', code: '', terminal: '' }),
   type: Object.freeze({ ...TYPE_DEFAULTS }),
+  weight: 'medium',
   shadow: 'soft',
   motion: 'normal',
   corner: 'round',
@@ -79,6 +80,7 @@ const DEFAULTS = Object.freeze({
 export const OPTIONS = Object.freeze({
   surface: Object.freeze(['neutral', 'paper', 'night', 'nord']),
   measure: Object.freeze(['auto', 'narrow', 'wide']),
+  weight: Object.freeze(['normal', 'medium', 'heavy']),
   shadow: Object.freeze(['flat', 'soft', 'lifted']),
   motion: Object.freeze(['off', 'normal', 'slow']),
   corner: Object.freeze(['round', 'squircle']),
@@ -104,6 +106,7 @@ export function clone(state) {
     radiusCustom: state.radiusCustom,
     font: { ...state.font },
     type: { ...state.type },
+    weight: state.weight,
     background: { ...state.background },
     accentCustom: state.accentCustom,
     shadow: state.shadow,
@@ -126,6 +129,7 @@ function copyTheme(theme) {
     measure: theme.measure ?? DEFAULTS.measure,
     font: readFont(theme.font),
     type: readType(theme.type),
+    weight: readOption('weight', theme.weight),
     shadow: theme.shadow ?? DEFAULTS.shadow,
     motion: theme.motion ?? DEFAULTS.motion,
     corner: theme.corner ?? DEFAULTS.corner,
@@ -148,6 +152,7 @@ function readSavedTheme(raw) {
     surface: readOption('surface', raw.surface),
     font: readFont(raw.font ?? migrateFont(raw)),
     type: readType(raw.type ?? migrateType(raw)),
+    weight: readOption('weight', raw.weight),
     shadow: readOption('shadow', raw.shadow),
     motion: readOption('motion', raw.motion),
     corner: readOption('corner', raw.corner),
@@ -181,6 +186,7 @@ function readLegacy() {
       radiusCustom: DEFAULTS.radiusCustom,
       font: { ...DEFAULTS.font },
       type: { ...DEFAULTS.type },
+      weight: DEFAULTS.weight,
       shadow: DEFAULTS.shadow,
       motion: DEFAULTS.motion,
       corner: DEFAULTS.corner,
@@ -316,6 +322,7 @@ function readStored() {
         radiusCustom: readRadiusCustom(parsed?.radiusCustom),
         font: readFont(parsed?.font ?? migrateFont(parsed)),
         type: readType(parsed?.type ?? migrateType(parsed)),
+        weight: readOption('weight', parsed?.weight),
         shadow: readOption('shadow', parsed?.shadow),
         motion: readOption('motion', parsed?.motion),
         corner: readOption('corner', parsed?.corner),
@@ -463,6 +470,7 @@ export function applyPreset(preset) {
     accentCustom: '',
     font: readFont(preset.font),
     type: readType(preset.type),
+    weight: readOption('weight', preset.weight),
     shadow: preset.shadow ?? DEFAULTS.shadow,
     motion: preset.motion ?? DEFAULTS.motion,
     corner: preset.corner ?? DEFAULTS.corner,
@@ -497,6 +505,7 @@ export function saveTheme(name) {
     radiusCustom: state.radiusCustom,
     font: state.font,
     type: state.type,
+    weight: state.weight,
     shadow: state.shadow,
     motion: state.motion,
     corner: state.corner,
@@ -593,6 +602,13 @@ export function setTypeSize(role, value) {
   const record = custom({ ...state, type })
   commit(record)
   pushFonts(record)
+}
+
+/** Body text weight: how heavy the conversation reads. */
+export function setWeight(id) {
+  const allowed = OPTIONS.weight
+  if (!allowed.includes(id) || state.weight === id) return
+  commit(custom({ ...state, weight: id }))
 }
 
 /** An arbitrary accent hex; '' restores the preset hues. */

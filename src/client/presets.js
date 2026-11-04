@@ -39,6 +39,7 @@ export const PRESETS = Object.freeze([
     radius: 'default',
     font: font('', '', ''),
     type: type(14, 11, 13),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'normal',
     corner: 'round',
@@ -53,6 +54,7 @@ export const PRESETS = Object.freeze([
     radius: 'compact',
     font: font('"PT Sans", "PingFang SC", "Helvetica Neue", sans-serif', '"Menlo", "Monaco", monospace', '"Menlo", "Monaco", monospace'),
     type: type(13, 10, 12),
+    weight: 'normal',
     shadow: 'flat',
     motion: 'off',
     corner: 'round',
@@ -67,6 +69,7 @@ export const PRESETS = Object.freeze([
     radius: 'round',
     font: font('"Seravek", "PingFang SC", sans-serif', NF_MONO, MONO),
     type: type(16, 12, 14),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'slow',
     corner: 'round',
@@ -81,6 +84,7 @@ export const PRESETS = Object.freeze([
     radius: 'default',
     font: font('"Helvetica Neue", "PingFang SC", "Arial", sans-serif', MONO, MONO),
     type: type(14, 11, 13),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'normal',
     corner: 'round',
@@ -95,6 +99,7 @@ export const PRESETS = Object.freeze([
     radius: 'compact',
     font: font('"Iowan Old Style", "Songti SC", "Georgia", serif', '"Courier New", "Courier", monospace', MONO),
     type: type(15, 12, 13),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'normal',
     corner: 'round',
@@ -109,6 +114,7 @@ export const PRESETS = Object.freeze([
     radius: 'round',
     font: font('"Avenir Next", "Yuanti SC", sans-serif', '"Andale Mono", "Menlo", monospace', MONO),
     type: type(15, 12, 13),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'normal',
     corner: 'round',
@@ -123,6 +129,7 @@ export const PRESETS = Object.freeze([
     radius: 'default',
     font: font('"Charter", "Songti SC", "Georgia", serif', MONO, MONO),
     type: type(16, 12, 13),
+    weight: 'medium',
     shadow: 'lifted',
     motion: 'slow',
     corner: 'squircle',
@@ -137,6 +144,7 @@ export const PRESETS = Object.freeze([
     radius: 'compact',
     font: font('"Menlo", "PingFang SC", monospace', NF_MONO, MONO),
     type: type(13, 11, 13),
+    weight: 'normal',
     shadow: 'flat',
     motion: 'off',
     corner: 'round',
@@ -151,6 +159,7 @@ export const PRESETS = Object.freeze([
     radius: 'default',
     font: font('"Hiragino Sans GB", "PingFang SC", sans-serif', '"PT Mono", "Menlo", monospace', MONO),
     type: type(14, 11, 13),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'normal',
     corner: 'round',
@@ -165,6 +174,7 @@ export const PRESETS = Object.freeze([
     radius: 'round',
     font: font('"Hoefler Text", "Kaiti SC", "Georgia", serif', '"Monaco", "Menlo", monospace', '"Monaco", "Menlo", monospace'),
     type: type(15, 11, 14),
+    weight: 'medium',
     shadow: 'soft',
     motion: 'slow',
     corner: 'round',
@@ -192,7 +202,7 @@ export function findPreset(id) {
 export function matchesPreset(preset, settings, live) {
   if (preset === null || settings === null) return false
   const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key])
-  const sameOption = ['surface', 'accent', 'radius', 'measure', 'shadow', 'motion', 'corner', 'codeTone']
+  const sameOption = ['surface', 'accent', 'radius', 'measure', 'weight', 'shadow', 'motion', 'corner', 'codeTone']
     .every((key) => (preset[key] ?? null) === (settings[key] ?? null))
   const families = live?.ready === true ? live.families : settings.font
   const sizes = live?.ready === true ? live.sizes : settings.type

@@ -36,6 +36,9 @@ const CODE_TONES = Object.freeze({
 
 const MEASURES = Object.freeze({ auto: null, narrow: '620px', wide: '960px' })
 
+/** Reading weight for conversation text. 400 is the shipped value. */
+const WEIGHTS = Object.freeze({ normal: '400', medium: '500', heavy: '600' })
+
 /** Continuous radius: one px value drives the whole ladder. */
 function customRadiusScale(value) {
   return {
@@ -135,6 +138,9 @@ function applyOptions(out, settings) {
       out[token] = both(scale[slot] + 'px')
     }
   }
+
+  const weight = WEIGHTS[settings?.weight]
+  if (weight !== undefined) out['--fto-body-weight'] = both(weight)
 
   const measure = MEASURES[settings?.measure]
   if (measure !== undefined && measure !== null) {

@@ -33,7 +33,7 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.10.0'
+const VERSION = '0.11.0'
 
 export const ZH = {
   title: '装修',
@@ -69,6 +69,10 @@ export const ZH = {
   'page.bgTooLarge': '请选择图片文件，且不超过 700 KB',
   'page.textGroup': '质感',
   'page.fontGroup': '字体',
+  'page.weight': '字重',
+  'page.weight_normal': '常规',
+  'page.weight_medium': '中等',
+  'page.weight_heavy': '偏粗',
   'page.fontRole_text': '正文',
   'page.fontRole_code': '代码',
   'page.fontRole_terminal': '终端',
@@ -161,6 +165,10 @@ const EN = {
   'page.bgTooLarge': 'Choose an image file of 700 KB or less',
   'page.textGroup': 'Texture',
   'page.fontGroup': 'Type',
+  'page.weight': 'Weight',
+  'page.weight_normal': 'Regular',
+  'page.weight_medium': 'Medium',
+  'page.weight_heavy': 'Heavy',
   'page.fontRole_text': 'Body',
   'page.fontRole_code': 'Code',
   'page.fontRole_terminal': 'Terminal',
