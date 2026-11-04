@@ -1063,7 +1063,7 @@ window.__ModuleLoader__.load({
       border-color:color-mix(in srgb,var(--fto-brand) 45%,var(--fto-line2)) !important;
       box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 28px -14px rgba(0,0,0,.12) !important;
     }
-    [data-composer-placeholder]{ font-size:14.5px !important; color:var(--fto-fg3) !important; }
+    [data-composer-placeholder]{ font-size:14px !important; color:var(--fto-fg3) !important; }
     [data-composer-input]{ font-size:var(--fto-fs) !important; line-height:1.7 !important; }`
       },
       {
@@ -1605,7 +1605,7 @@ window.__ModuleLoader__.load({
     .fto-list-chevron{display:inline-flex;color:var(--dsw-alias-label-tertiary);opacity:0}
     .fto-list-groupRow:hover .fto-list-chevron{opacity:1}
     .fto-list-rows{display:flex;flex-direction:column;gap:1px;padding-left:8px}
-    .fto-list-row{display:flex;align-items:center;gap:6px;height:28px;padding:0 6px;border-radius:6px;cursor:default;color:var(--dsw-alias-label-secondary)}
+    .fto-list-row{position:relative;display:flex;align-items:center;gap:6px;height:28px;padding:0 6px;border-radius:6px;cursor:default;color:var(--dsw-alias-label-secondary)}
     .fto-list-row:hover{background:var(--dsw-alias-interactive-bg-hover)}
     .fto-list-row[data-active="true"]{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--dsw-alias-label-primary)}
     .fto-list-state{width:6px;height:6px;border-radius:50%;background:transparent;flex:0 0 auto}
@@ -1613,7 +1613,9 @@ window.__ModuleLoader__.load({
     .fto-list-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
     .fto-list-row[data-active="true"] .fto-list-title{font-weight:500}
     .fto-list-time{flex:0 0 auto;color:var(--dsw-alias-label-tertiary);font-size:11px}
-    .fto-list-more{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:20px;height:20px;border:0;background:transparent;color:var(--dsw-alias-label-tertiary);border-radius:5px;cursor:pointer;opacity:0;transition:opacity .12s ease}
+    .fto-list-time{transition:opacity .12s ease}
+    .fto-list-row:hover .fto-list-time,.fto-list-row:focus-within .fto-list-time{opacity:0}
+    .fto-list-more{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:0;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-tertiary);border-radius:5px;cursor:pointer;opacity:0;transition:opacity .12s ease}
     .fto-list-row:hover .fto-list-more,.fto-list-row:focus-within .fto-list-more{opacity:1}
     .fto-list-more:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}
     .fto-list-empty{color:var(--dsw-alias-label-tertiary);font-size:11px;padding:6px 8px}
@@ -1644,6 +1646,10 @@ window.__ModuleLoader__.load({
     .fto-presetBadge{margin-left:auto;font-size:11px;color:var(--dsw-alias-label-tertiary);white-space:nowrap}
     .fto-preset[data-on="true"] .fto-presetBadge{color:var(--dsw-alias-link,#0284c7)}
     .fto-presetDesc{font-size:11.5px;line-height:17px;color:var(--dsw-alias-label-tertiary)}
+
+    /* Inline code: the shipped rule uses 0.875em, which resolves to 13.125px on a
+       15px body \u2014 a fractional size that renders soft. Pin it to a whole pixel. */
+    [data-chat-node-key] :not(pre) > code{font-size:13px}
 
     body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     ::selection{background:color-mix(in srgb, var(--dsw-alias-link,#0284c7) 28%, transparent)}

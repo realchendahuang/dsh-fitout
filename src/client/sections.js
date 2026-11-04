@@ -617,7 +617,7 @@ button.fto-turn:focus-visible,
   border-color:color-mix(in srgb,var(--fto-brand) 45%,var(--fto-line2)) !important;
   box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 28px -14px rgba(0,0,0,.12) !important;
 }
-[data-composer-placeholder]{ font-size:14.5px !important; color:var(--fto-fg3) !important; }
+[data-composer-placeholder]{ font-size:14px !important; color:var(--fto-fg3) !important; }
 [data-composer-input]{ font-size:var(--fto-fs) !important; line-height:1.7 !important; }`,
   },
   {
