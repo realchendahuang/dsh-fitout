@@ -13,9 +13,9 @@ const ALL_GROUPS = SECTIONS.map((section) => section.id)
 export const PRESETS = Object.freeze([
   Object.freeze({
     id: 'neutral',
-    name: '素净',
-    en: 'Bare',
-    desc: '灰阶打底，只留一束清亮的蓝。',
+    name: '标准',
+    en: 'Standard',
+    desc: '中性配色，圆角和疏密取标准档，版式全开。',
     accent: 'sky',
     radius: 'default',
     density: 'default',
@@ -24,9 +24,9 @@ export const PRESETS = Object.freeze([
   }),
   Object.freeze({
     id: 'compact',
-    name: '密致',
-    en: 'Dense',
-    desc: '窗与窗挤在一处时，把边角收一收。',
+    name: '紧凑',
+    en: 'Compact',
+    desc: '圆角更小、侧栏更紧，适合小屏或多窗口并排。',
     accent: 'sky',
     radius: 'compact',
     density: 'compact',
@@ -35,9 +35,9 @@ export const PRESETS = Object.freeze([
   }),
   Object.freeze({
     id: 'relaxed',
-    name: '疏朗',
-    en: 'Airy',
-    desc: '读长文时，让字里行间透些气来。',
+    name: '宽松',
+    en: 'Relaxed',
+    desc: '圆角更大、留白更多，适合长时间阅读。',
     accent: 'sky',
     radius: 'round',
     density: 'default',
