@@ -2262,6 +2262,15 @@ window.__ModuleLoader__.load({
       return best;
     }
     var ACCENT_IDS = ACCENTS.map((accent) => accent.id);
+    var OPTION_KEYS = ["fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"];
+    function readOptions(source) {
+      const out = {};
+      for (const key of OPTION_KEYS) {
+        const value = source?.[key];
+        if (typeof value === "string" && OPTIONS[key].includes(value)) out[key] = value;
+      }
+      return out;
+    }
     function readPack(json) {
       if (json === null || typeof json !== "object") return null;
       if (json.format === OUR_FORMAT || typeof json.accent === "string" && typeof json.radius === "string" && json.manifest === void 0) {
@@ -2271,6 +2280,7 @@ window.__ModuleLoader__.load({
           radius: RADIUS_SCALES[json.radius] === void 0 ? "default" : json.radius,
           density: json.density === "compact" ? "compact" : "default",
           layout: Array.isArray(json.layout?.disabled) ? json.layout.disabled.filter((id) => typeof id === "string") : [],
+          options: readOptions(json),
           source: "fitout"
         };
       }
@@ -2284,6 +2294,7 @@ window.__ModuleLoader__.load({
           radius: "default",
           density: "default",
           layout: [],
+          options: {},
           source: "pack"
         };
       }
@@ -2298,7 +2309,13 @@ window.__ModuleLoader__.load({
         radius: settings.radius,
         density: settings.density,
         effects: { underline: settings.effects.underline, chip: settings.effects.chip },
-        layout: { disabled: [...settings.layout.disabled] }
+        layout: { disabled: [...settings.layout.disabled] },
+        fontSize: settings.fontSize,
+        fontFamily: settings.fontFamily,
+        shadow: settings.shadow,
+        motion: settings.motion,
+        corner: settings.corner,
+        codeTone: settings.codeTone
       };
     }
 
@@ -2578,6 +2595,7 @@ window.__ModuleLoader__.load({
           setDensity(spec.density);
           setAllLayoutGroups(true, ALL_GROUPS2);
           for (const id of spec.layout) setLayoutGroup(id, false);
+          for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value);
           saveTheme(spec.name);
           setNotice(translate("page.importDone").replace("{name}", spec.name));
         });

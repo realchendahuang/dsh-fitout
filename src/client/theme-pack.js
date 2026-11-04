@@ -10,7 +10,7 @@
  * accent and the standard shape. What we export is a superset: it also carries
  * the layout groups, which no other pack format has.
  */
-import { ACCENTS, RADIUS_SCALES } from './store.js'
+import { ACCENTS, OPTIONS, RADIUS_SCALES } from './store.js'
 
 export const OUR_FORMAT = 'dsh-fitout/theme'
 
@@ -50,6 +50,17 @@ export function nearestAccent(value) {
 const ACCENT_IDS = ACCENTS.map((accent) => accent.id)
 
 /** Read any supported pack into { name, accent, radius, density, source }. */
+const OPTION_KEYS = ['fontSize', 'fontFamily', 'shadow', 'motion', 'corner', 'codeTone']
+
+function readOptions(source) {
+  const out = {}
+  for (const key of OPTION_KEYS) {
+    const value = source?.[key]
+    if (typeof value === 'string' && OPTIONS[key].includes(value)) out[key] = value
+  }
+  return out
+}
+
 export function readPack(json) {
   if (json === null || typeof json !== 'object') return null
 
@@ -63,6 +74,7 @@ export function readPack(json) {
       layout: Array.isArray(json.layout?.disabled)
         ? json.layout.disabled.filter((id) => typeof id === 'string')
         : [],
+      options: readOptions(json),
       source: 'fitout',
     }
   }
@@ -82,6 +94,7 @@ export function readPack(json) {
       radius: 'default',
       density: 'default',
       layout: [],
+      options: {},
       source: 'pack',
     }
   }
@@ -100,5 +113,11 @@ export function writePack(settings, name) {
     density: settings.density,
     effects: { underline: settings.effects.underline, chip: settings.effects.chip },
     layout: { disabled: [...settings.layout.disabled] },
+    fontSize: settings.fontSize,
+    fontFamily: settings.fontFamily,
+    shadow: settings.shadow,
+    motion: settings.motion,
+    corner: settings.corner,
+    codeTone: settings.codeTone,
   }
 }

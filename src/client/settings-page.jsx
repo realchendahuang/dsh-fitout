@@ -252,6 +252,7 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
       setDensity(spec.density)
       setAllLayoutGroups(true, ALL_GROUPS)
       for (const id of spec.layout) setLayoutGroup(id, false)
+      for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value)
       saveTheme(spec.name)
       setNotice(translate('page.importDone').replace('{name}', spec.name))
     })
