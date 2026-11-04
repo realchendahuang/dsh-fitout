@@ -25,9 +25,12 @@ body{
   --fto-r-sm:var(--dsw-radius-sm,6px);
   --fto-r-md:var(--dsw-radius-md,8px);
   --fto-r-lg:var(--dsw-radius-lg,12px);
-  --fto-mono:var(--dsw-font-mono,ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace);
-  --fto-fs:var(--dsh-content-font-size,15px);
-  --fto-fs2:var(--dsh-content-font-size-secondary,13px);
+  /* Mono and the secondary step follow the app's own type settings: the code
+     family means what the Appearance page says it means, and secondary text
+     stays one pixel under whatever the body size is. */
+  --fto-mono:var(--ds-font-family-code,ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace);
+  --fto-fs:var(--dsh-content-font-size,14px);
+  --fto-fs2:calc(var(--dsh-content-font-size,14px) - 1px);
   --fto-h:calc(32px + var(--dsh-content-font-delta,0px));
   --fto-ease:cubic-bezier(.16,1,.3,1);
   --fto-sparkle:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M8 1.2c.32 3.1 1.98 4.76 5.08 5.08v.04c-3.1.32-4.76 1.98-4.76 5.08h-.04c-.32-3.1-1.98-4.76-5.08-4.76V6.6C6.3 6.28 7.96 4.62 8 1.2z' fill='black'/></svg>");

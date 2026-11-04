@@ -40,6 +40,23 @@ export const RADIUS_SCALES = Object.freeze({
   round: { xs: '6px', sm: '8px', md: '12px', lg: '16px', xl: '20px', panel: '20px' },
 })
 
+/** The three roles the shipped theme exposes, and each one's px range.
+ *
+ * These are not our invention: `FONT_SIZE_SPECS` in the shipped theme is what
+ * `ctx.theme.setFontSize()` validates against, and a value outside the range
+ * throws. Keeping our own copy means the panel can clamp before it asks.
+ */
+export const FONT_ROLES = Object.freeze(['text', 'code', 'terminal'])
+
+export const TYPE_RANGES = Object.freeze({
+  text: Object.freeze({ min: 10, max: 22 }),
+  code: Object.freeze({ min: 10, max: 16 }),
+  terminal: Object.freeze({ min: 10, max: 20 }),
+})
+
+/** The shipped theme's own defaults, so "跟随" has a number to fall back to. */
+export const TYPE_DEFAULTS = Object.freeze({ text: 14, code: 11, terminal: 13 })
+
 const DEFAULTS = Object.freeze({
   enabled: true,
   preset: 'standard',
@@ -56,9 +73,8 @@ const DEFAULTS = Object.freeze({
   measure: 'auto',
   lineHeight: 'normal',
   radiusCustom: 0,
-  fontFamilyCustom: '',
-  fontSize: 'auto',
-  fontFamily: 'default',
+  font: Object.freeze({ text: '', code: '', terminal: '' }),
+  type: Object.freeze({ ...TYPE_DEFAULTS }),
   shadow: 'soft',
   motion: 'normal',
   corner: 'round',
@@ -74,8 +90,6 @@ export const OPTIONS = Object.freeze({
   glass: Object.freeze(['off', 'cards', 'all']),
   measure: Object.freeze(['auto', 'narrow', 'wide']),
   lineHeight: Object.freeze(['tight', 'normal', 'loose']),
-  fontSize: Object.freeze(['auto', 'compact', 'standard', 'large']),
-  fontFamily: Object.freeze(['default', 'serif', 'mono', 'rounded']),
   shadow: Object.freeze(['flat', 'soft', 'lifted']),
   motion: Object.freeze(['off', 'normal', 'slow']),
   corner: Object.freeze(['round', 'squircle']),
@@ -104,17 +118,14 @@ export function clone(state) {
     measure: state.measure,
     lineHeight: state.lineHeight,
     radiusCustom: state.radiusCustom,
-    fontFamilyCustom: state.fontFamilyCustom,
+    font: { ...state.font },
+    type: { ...state.type },
     background: { ...state.background },
     accentCustom: state.accentCustom,
-    fontSize: state.fontSize,
-    fontFamily: state.fontFamily,
     shadow: state.shadow,
     motion: state.motion,
     corner: state.corner,
     codeTone: state.codeTone,
-    background: { ...state.background },
-    accentCustom: state.accentCustom,
     themes: state.themes.map(copyTheme),
   }
 }
@@ -133,8 +144,8 @@ function copyTheme(theme) {
     glass: theme.glass ?? DEFAULTS.glass,
     measure: theme.measure ?? DEFAULTS.measure,
     lineHeight: theme.lineHeight ?? DEFAULTS.lineHeight,
-    fontSize: theme.fontSize ?? DEFAULTS.fontSize,
-    fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
+    font: readFont(theme.font),
+    type: readType(theme.type),
     shadow: theme.shadow ?? DEFAULTS.shadow,
     motion: theme.motion ?? DEFAULTS.motion,
     corner: theme.corner ?? DEFAULTS.corner,
@@ -164,8 +175,8 @@ function readSavedTheme(raw) {
         : [],
     },
     surface: readOption('surface', raw.surface),
-    fontSize: readOption('fontSize', raw.fontSize),
-    fontFamily: readOption('fontFamily', raw.fontFamily),
+    font: readFont(raw.font ?? migrateFont(raw)),
+    type: readType(raw.type ?? migrateType(raw)),
     shadow: readOption('shadow', raw.shadow),
     motion: readOption('motion', raw.motion),
     corner: readOption('corner', raw.corner),
@@ -209,9 +220,8 @@ function readLegacy() {
       measure: DEFAULTS.measure,
       lineHeight: DEFAULTS.lineHeight,
       radiusCustom: DEFAULTS.radiusCustom,
-      fontFamilyCustom: DEFAULTS.fontFamilyCustom,
-      fontSize: DEFAULTS.fontSize,
-      fontFamily: DEFAULTS.fontFamily,
+      font: { ...DEFAULTS.font },
+      type: { ...DEFAULTS.type },
       shadow: DEFAULTS.shadow,
       motion: DEFAULTS.motion,
       corner: DEFAULTS.corner,
@@ -243,9 +253,81 @@ function readRadiusCustom(raw) {
   return Number.isFinite(n) ? Math.min(24, Math.max(0, Math.round(n))) : 0
 }
 
-/** An arbitrary font-family string, length-capped. */
-function readFontFamily(raw) {
-  return typeof raw === 'string' ? raw.replace(/[<>{}]/g, '').slice(0, 120) : ''
+/** Family keywords CSS must keep unquoted; mirrors the shipped normalizer. */
+const GENERIC_FAMILIES = new Set([
+  'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui',
+  'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded', 'emoji', 'math',
+  'fangsong', '-apple-system', 'blinkmacsystemfont',
+])
+
+/** Turn free text into the same font-family list the shipped theme would store.
+ *
+ * Matching a preset compares our record against the live theme snapshot, and
+ * that snapshot holds normalized lists, so we normalize on the way in.
+ */
+export function normalizeFont(raw) {
+  if (typeof raw !== 'string') return ''
+  return raw
+    .split(',')
+    .map((name) => name.replace(/["'\\<>\u0000-\u001f\u007f]/gu, '').replace(/\s+/gu, ' ').trim())
+    .filter((name) => name !== '')
+    .map((name) => (GENERIC_FAMILIES.has(name.toLowerCase()) ? name : '"' + name + '"'))
+    .join(', ')
+}
+
+function readTypeSize(role, raw) {
+  const range = TYPE_RANGES[role]
+  const n = Number(raw)
+  return Number.isFinite(n)
+    ? Math.min(range.max, Math.max(range.min, Math.round(n)))
+    : TYPE_DEFAULTS[role]
+}
+
+function readType(raw) {
+  return {
+    text: readTypeSize('text', raw?.text ?? TYPE_DEFAULTS.text),
+    code: readTypeSize('code', raw?.code ?? TYPE_DEFAULTS.code),
+    terminal: readTypeSize('terminal', raw?.terminal ?? TYPE_DEFAULTS.terminal),
+  }
+}
+
+function readFont(raw) {
+  return {
+    text: normalizeFont(raw?.text ?? ''),
+    code: normalizeFont(raw?.code ?? ''),
+    terminal: normalizeFont(raw?.terminal ?? ''),
+  }
+}
+
+/* --- migration from the 0.7 two-enum model -------------------------------- */
+
+const LEGACY_TYPE = Object.freeze({
+  auto: null,
+  compact: Object.freeze({ text: 13, code: 11, terminal: 12 }),
+  standard: Object.freeze({ text: 15, code: 12, terminal: 13 }),
+  large: Object.freeze({ text: 17, code: 13, terminal: 14 }),
+})
+
+const SERIF_STACK = '"Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", Georgia, "Times New Roman", serif'
+const MONO_STACK = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace'
+const ROUNDED_STACK = '"SF Pro Rounded", "Hiragino Maru Gothic ProN", "PingFang SC", system-ui, sans-serif'
+
+const LEGACY_FONT = Object.freeze({
+  default: null,
+  serif: Object.freeze({ text: SERIF_STACK }),
+  rounded: Object.freeze({ text: ROUNDED_STACK }),
+  mono: Object.freeze({ text: MONO_STACK, code: MONO_STACK, terminal: MONO_STACK }),
+})
+
+/** Old records kept one font-size enum and one typeface enum; split them. */
+function migrateFont(parsed) {
+  const legacyFont = LEGACY_FONT[parsed?.fontFamily] ?? null
+  const custom = typeof parsed?.fontFamilyCustom === 'string' ? parsed.fontFamilyCustom.trim() : ''
+  return { ...(legacyFont ?? {}), ...(custom !== '' ? { text: custom } : {}) }
+}
+
+function migrateType(parsed) {
+  return LEGACY_TYPE[parsed?.fontSize] ?? null
 }
 
 /** An arbitrary accent colour, or '' for the preset hues. */
@@ -283,9 +365,8 @@ function readStored() {
         measure: readOption('measure', parsed?.measure),
         lineHeight: readOption('lineHeight', parsed?.lineHeight),
         radiusCustom: readRadiusCustom(parsed?.radiusCustom),
-        fontFamilyCustom: readFontFamily(parsed?.fontFamilyCustom),
-        fontSize: readOption('fontSize', parsed?.fontSize),
-        fontFamily: readOption('fontFamily', parsed?.fontFamily),
+        font: readFont(parsed?.font ?? migrateFont(parsed)),
+        type: readType(parsed?.type ?? migrateType(parsed)),
         shadow: readOption('shadow', parsed?.shadow),
         motion: readOption('motion', parsed?.motion),
         corner: readOption('corner', parsed?.corner),
@@ -340,6 +421,57 @@ export function bindApplier(fn) {
   fn(clone(state))
 }
 
+/* --- type: written into the shipped settings, never overridden ------------ */
+
+/** Clean a font recipe that crossed a file boundary (theme pack import). */
+export function sanitizeFont(raw) {
+  return readFont(raw)
+}
+
+/** Clean a size recipe that crossed a file boundary (theme pack import). */
+export function sanitizeType(raw) {
+  return readType(raw)
+}
+
+/** Read the font recipe out of a 0.7-era pack that only had the two enums. */
+export function migrateFontFields(raw) {
+  return readFont(migrateFont(raw))
+}
+
+/** Read the size recipe out of a 0.7-era pack that only had the size enum. */
+export function migrateTypeField(raw) {
+  return readType(migrateType(raw))
+}
+
+let fontSync = null
+let fontRestore = null
+
+/** Bind the entry-owned writer that puts a type recipe into the app settings. */
+export function bindFontSync(fn) {
+  fontSync = fn
+}
+
+/** Bind the writer that puts the pre-fitout fonts back when the layer is off. */
+export function bindFontRestore(fn) {
+  fontRestore = fn
+}
+
+/** Fonts are the app's own setting, so a recipe is *written*, not layered.
+ *
+ * It is pushed when a theme is chosen and when a control moves — not on boot.
+ * Writing on every launch would quietly win a tug of war against the app's own
+ * Appearance page, because both would be editing the same six fields.
+ */
+function pushFonts(next) {
+  if (fontSync === null || next.enabled !== true) return
+  try {
+    fontSync({ font: { ...next.font }, type: { ...next.type } })
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[dsh-fitout] could not apply the type recipe', error)
+  }
+}
+
 export function getSettings() {
   return state
 }
@@ -357,11 +489,21 @@ export function setEnabled(enabled) {
   const next = Boolean(enabled)
   if (next === state.enabled) return
   commit({ ...state, enabled: next })
+  // Switching the layer off is a promise to stop changing things: the type
+  // recipe we wrote goes back to what the app had before it arrived.
+  if (!next && fontRestore !== null) {
+    try {
+      fontRestore()
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[dsh-fitout] could not restore the previous fonts', error)
+    }
+  }
 }
 
 /** Apply one preset wholesale. `preset` stays selectable only while untouched. */
 export function applyPreset(preset) {
-  commit({
+  const next = {
     ...state,
     preset: preset.id,
     accent: preset.accent,
@@ -372,18 +514,19 @@ export function applyPreset(preset) {
     measure: preset.measure ?? DEFAULTS.measure,
     lineHeight: preset.lineHeight ?? DEFAULTS.lineHeight,
     radiusCustom: DEFAULTS.radiusCustom,
-    fontFamilyCustom: DEFAULTS.fontFamilyCustom,
     background: { ...DEFAULTS.background },
     accentCustom: '',
-    fontSize: preset.fontSize ?? DEFAULTS.fontSize,
-    fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
+    font: readFont(preset.font),
+    type: readType(preset.type),
     shadow: preset.shadow ?? DEFAULTS.shadow,
     motion: preset.motion ?? DEFAULTS.motion,
     corner: preset.corner ?? DEFAULTS.corner,
     codeTone: preset.codeTone ?? DEFAULTS.codeTone,
     effects: { ...state.effects, ...preset.effects },
     layout: { disabled: [...preset.layout.disabled] },
-  })
+  }
+  commit(next)
+  pushFonts(next)
 }
 
 /** One enumerated option (see OPTIONS); marks the record custom. */
@@ -412,9 +555,8 @@ export function saveTheme(name) {
     measure: state.measure,
     lineHeight: state.lineHeight,
     radiusCustom: state.radiusCustom,
-    fontFamilyCustom: state.fontFamilyCustom,
-    fontSize: state.fontSize,
-    fontFamily: state.fontFamily,
+    font: state.font,
+    type: state.type,
     shadow: state.shadow,
     motion: state.motion,
     corner: state.corner,
@@ -503,11 +645,26 @@ export function setRadiusCustom(value) {
   commit(custom({ ...state, radiusCustom: next }))
 }
 
-/** Free-form font family; '' keeps the current option value. */
-export function setFontFamilyCustom(value) {
-  const next = readFontFamily(value)
-  if (next === state.fontFamilyCustom) return
-  commit(custom({ ...state, fontFamilyCustom: next }))
+/** One role's font-family list; '' hands that role back to the app default. */
+export function setFontFamily(role, value) {
+  if (!FONT_ROLES.includes(role)) return
+  const next = normalizeFont(value)
+  if (next === state.font[role]) return
+  const font = { ...state.font, [role]: next }
+  const record = custom({ ...state, font })
+  commit(record)
+  pushFonts(record)
+}
+
+/** One role's font size in px; clamped into the range the app accepts. */
+export function setTypeSize(role, value) {
+  if (!FONT_ROLES.includes(role)) return
+  const next = readTypeSize(role, value)
+  if (next === state.type[role]) return
+  const type = { ...state.type, [role]: next }
+  const record = custom({ ...state, type })
+  commit(record)
+  pushFonts(record)
 }
 
 /** An arbitrary accent hex; '' restores the preset hues. */
@@ -539,16 +696,20 @@ export function setAllLayoutGroups(all, ids) {
 
 /** Restore the shipped brand and every visual field; keep the master switch. */
 export function resetAppearance() {
-  commit({
+  const next = {
     ...clone(DEFAULTS),
     enabled: state.enabled,
     list: state.list,
-  })
+  }
+  commit(next)
+  pushFonts(next)
 }
 
 /** Reset everything, including the list mode and the master switch. */
 export function resetAll() {
-  commit(clone(DEFAULTS))
+  const next = clone(DEFAULTS)
+  commit(next)
+  pushFonts(next)
 }
 
 /* --- theme bridge: the light/dark preference belongs to the host theme ----- */

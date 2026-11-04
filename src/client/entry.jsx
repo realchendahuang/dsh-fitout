@@ -23,10 +23,11 @@ import { FitoutTaskList } from './task-list.jsx'
 import { WorkspaceChip } from './header-chip.jsx'
 import { TurnProcessHeader } from './turn-process.jsx'
 import { ALL_GROUPS, PRESETS, findPreset } from './presets.js'
+import { pushLiveFonts } from './fonts.js'
 import {
-  bindApplier, bindThemeBridge, getSettings, resetAll, setAccent, setAllLayoutGroups,
-  setAppearance, setDensity, setEffect, setEnabled, setLayoutGroup, setList, setRadius,
-  subscribe,
+  FONT_ROLES, bindApplier, bindFontRestore, bindFontSync, bindThemeBridge, getSettings, resetAll, setAccent,
+  setAllLayoutGroups, setAppearance, setDensity, setEffect, setEnabled, setLayoutGroup, setList,
+  setRadius, subscribe,
 } from './store.js'
 
 export const name = 'dsh-fitout'
@@ -35,9 +36,9 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.1.0'
+const VERSION = '0.8.0'
 
-const ZH = {
+export const ZH = {
   title: '装修',
   description: '主题商店：挑一套，或者自己调。',
   section: '装修',
@@ -54,7 +55,8 @@ const ZH = {
   'page.lineHeight_tight': '紧',
   'page.lineHeight_normal': '标准',
   'page.lineHeight_loose': '松',
-  'page.fontFamilyCustom': '或直接填字体名',
+  'page.fontCustom': '例如 PingFang SC, sans-serif',
+  'page.fontCustomTitle': '正文自定义栈',
   'page.layoutGroup2': '布局',
   'page.measure': '消息宽度',
   'page.measure_auto': '跟随',
@@ -77,16 +79,15 @@ const ZH = {
   'page.bgBlur': '模糊',
   'page.bgTooLarge': '请选择图片文件，且不超过 700 KB',
   'page.textGroup': '质感',
-  'page.fontSize': '字号',
-  'page.fontSize_auto': '跟随',
-  'page.fontSize_compact': '小',
-  'page.fontSize_standard': '标准',
-  'page.fontSize_large': '大',
-  'page.fontFamily': '字体',
-  'page.fontFamily_default': '默认',
-  'page.fontFamily_serif': '衬线',
-  'page.fontFamily_mono': '等宽',
-  'page.fontFamily_rounded': '圆体',
+  'page.fontGroup': '字体',
+  'page.fontRole_text': '正文',
+  'page.fontRole_code': '代码',
+  'page.fontRole_terminal': '终端',
+  'page.fontApp': '跟随 App',
+  'page.typeSize': '字号',
+  'page.typeReset': '恢复默认',
+  'page.fontPreview': '预览',
+  'page.fontLive': '当前生效',
   'page.shadow': '阴影',
   'page.shadow_flat': '无',
   'page.shadow_soft': '柔和',
@@ -182,7 +183,8 @@ const EN = {
   'page.lineHeight_tight': 'Tight',
   'page.lineHeight_normal': 'Normal',
   'page.lineHeight_loose': 'Loose',
-  'page.fontFamilyCustom': 'Or type a font family',
+  'page.fontCustom': 'For example, PingFang SC, sans-serif',
+  'page.fontCustomTitle': 'Custom body stack',
   'page.layoutGroup2': 'Layout',
   'page.measure': 'Message width',
   'page.measure_auto': 'Follow',
@@ -205,16 +207,15 @@ const EN = {
   'page.bgBlur': 'Blur',
   'page.bgTooLarge': 'Choose an image file of 700 KB or less',
   'page.textGroup': 'Texture',
-  'page.fontSize': 'Text size',
-  'page.fontSize_auto': 'Follow',
-  'page.fontSize_compact': 'Small',
-  'page.fontSize_standard': 'Standard',
-  'page.fontSize_large': 'Large',
-  'page.fontFamily': 'Typeface',
-  'page.fontFamily_default': 'Default',
-  'page.fontFamily_serif': 'Serif',
-  'page.fontFamily_mono': 'Mono',
-  'page.fontFamily_rounded': 'Rounded',
+  'page.fontGroup': 'Type',
+  'page.fontRole_text': 'Body',
+  'page.fontRole_code': 'Code',
+  'page.fontRole_terminal': 'Terminal',
+  'page.fontApp': 'App default',
+  'page.typeSize': 'Size',
+  'page.typeReset': 'Reset',
+  'page.fontPreview': 'Preview',
+  'page.fontLive': 'In effect',
   'page.shadow': 'Shadows',
   'page.shadow_flat': 'None',
   'page.shadow_soft': 'Soft',
@@ -436,6 +437,78 @@ export function apply(ctx) {
     () => theme.getTheme().preference,
     (id) => theme.setTheme(id),
   )
+
+  /** Put a type recipe into the app's own settings, one role at a time.
+   *
+   * Families and sizes are the app's settings, not our token layer: writing
+   * `--dsh-font-family-text` ourselves would fight the Appearance page and the
+   * boot script, and the panel would show a value that does nothing.
+   */
+  const writeFonts = (recipe) => {
+    for (const role of FONT_ROLES) {
+      const family = recipe?.font?.[role] ?? ''
+      if (typeof theme.setFontFamily === 'function') {
+        try {
+          theme.setFontFamily(role, family)
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('[dsh-fitout] could not set the ' + role + ' font', error)
+        }
+      }
+      const px = Number(recipe?.type?.[role])
+      if (Number.isFinite(px) && typeof theme.setFontSize === 'function') {
+        try {
+          theme.setFontSize(role, Math.round(px))
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('[dsh-fitout] could not set the ' + role + ' size', error)
+        }
+      }
+    }
+  }
+  let fontBaseline = null
+
+  const syncFonts = (recipe) => {
+    // Remember what the app had before the first recipe landed, so turning the
+    // layer off can put it back instead of leaving our fonts behind.
+    if (fontBaseline === null) {
+      try {
+        const snapshot = theme.getTheme()
+        if (snapshot !== undefined && snapshot !== null) {
+          fontBaseline = { font: { ...snapshot.fontFamilies }, type: { ...snapshot.fontSizes } }
+        }
+      } catch {
+        /* no snapshot: nothing worth restoring */
+      }
+    }
+    writeFonts(recipe)
+  }
+  bindFontSync(syncFonts)
+  bindFontRestore(() => {
+    if (fontBaseline === null) return
+    const baseline = fontBaseline
+    fontBaseline = null
+    writeFonts(baseline)
+  })
+
+  // The panel needs the fonts that are actually in effect, not the ones this
+  // record wishes for: the Appearance page can change them behind our back.
+  ctx.effect(() => {
+    const read = () => {
+      try {
+        const snapshot = theme.getTheme()
+        if (snapshot !== undefined && snapshot !== null) {
+          pushLiveFonts(snapshot.fontFamilies, snapshot.fontSizes)
+        }
+      } catch {
+        /* a host without font settings keeps the shipped defaults */
+      }
+    }
+    read()
+    if (typeof ctx.on !== 'function') return () => {}
+    const off = ctx.on('theme/change', read)
+    return typeof off === 'function' ? off : () => {}
+  }, 'dsh-fitout: live fonts')
 
   // A small face for other plugins, for the settings page and for inspection.
   const api = Object.freeze({

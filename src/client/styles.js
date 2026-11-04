@@ -206,6 +206,24 @@ html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1
 .fto-inline{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
 .fto-stack{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .fto-stack .fto-input{width:220px;height:28px;font-size:12px}
+
+/* --- type: three roles, one row each, plus a sample you can look at --- */
+.fto-type{padding:2px 0 0}
+.fto-type .fto-inline{flex:0 0 auto}
+.fto-type .fto-input{width:300px;height:30px;font-size:12.5px}
+.fto-select{height:30px;padding:0 8px;border:1px solid var(--dsw-alias-border-l2);
+  border-radius:8px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
+  font-size:12.5px;outline:none;cursor:pointer}
+.fto-select:focus{border-color:var(--dsw-alias-link,#0284c7)}
+.fto-typeSelect{width:206px;flex:0 0 auto}
+.fto-fontPreview{margin-top:6px;padding:11px 13px 12px;border:1px solid var(--dsw-alias-border-l2);
+  border-radius:10px;background:var(--dsw-alias-bg-layer-2);display:flex;flex-direction:column;gap:7px}
+.fto-fontPreviewTag{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--dsw-alias-label-tertiary)}
+.fto-fontLine{color:var(--dsw-alias-label-primary);line-height:1.5;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.fto-live{font-size:11px;line-height:16px;color:var(--dsw-alias-label-tertiary);
+  font-variant-numeric:tabular-nums}
 .fto-slider input[type="range"]{-webkit-appearance:none;appearance:none;width:132px;height:4px;
   border-radius:2px;background:var(--dsw-alias-bg-layer-3);outline:none;cursor:pointer}
 .fto-slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;

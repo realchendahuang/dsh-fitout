@@ -10,7 +10,7 @@
  * accent and the standard shape. What we export is a superset: it also carries
  * the layout groups, which no other pack format has.
  */
-import { ACCENTS, OPTIONS, RADIUS_SCALES } from './store.js'
+import { ACCENTS, OPTIONS, RADIUS_SCALES, migrateFontFields, migrateTypeField, sanitizeFont, sanitizeType } from './store.js'
 
 export const OUR_FORMAT = 'dsh-fitout/theme'
 
@@ -50,7 +50,7 @@ export function nearestAccent(value) {
 const ACCENT_IDS = ACCENTS.map((accent) => accent.id)
 
 /** Read any supported pack into { name, accent, radius, density, source }. */
-const OPTION_KEYS = ['surface', 'glass', 'measure', 'lineHeight', 'fontSize', 'fontFamily', 'shadow', 'motion', 'corner', 'codeTone']
+const OPTION_KEYS = ['surface', 'glass', 'measure', 'lineHeight', 'shadow', 'motion', 'corner', 'codeTone']
 // Wallpapers are local assets, not theme data: they never travel in a pack.
 
 function readOptions(source) {
@@ -78,7 +78,9 @@ export function readPack(json) {
       options: readOptions(json),
       accentCustom: typeof json.accentCustom === 'string' && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : '',
       radiusCustom: Number.isFinite(Number(json.radiusCustom)) ? Math.min(24, Math.max(0, Math.round(Number(json.radiusCustom)))) : 0,
-      fontFamilyCustom: typeof json.fontFamilyCustom === 'string' ? json.fontFamilyCustom.slice(0, 120) : '',
+      // A 0.7 pack carried `fontSize` / `fontFamily` instead of a recipe.
+      font: json.font === undefined ? migrateFontFields(json) : sanitizeFont(json.font),
+      type: json.type === undefined ? migrateTypeField(json) : sanitizeType(json.type),
       source: 'fitout',
     }
   }
@@ -101,7 +103,8 @@ export function readPack(json) {
       options: {},
       accentCustom: '',
       radiusCustom: 0,
-      fontFamilyCustom: '',
+      font: sanitizeFont(null),
+      type: sanitizeType(null),
       source: 'pack',
     }
   }
@@ -113,7 +116,7 @@ export function readPack(json) {
 export function writePack(settings, name) {
   return {
     format: OUR_FORMAT,
-    version: 1,
+    version: 2,
     name: String(name ?? '我的主题').slice(0, 20),
     accent: settings.accent,
     radius: settings.radius,
@@ -124,14 +127,13 @@ export function writePack(settings, name) {
     glass: settings.glass,
     measure: settings.measure,
     lineHeight: settings.lineHeight,
-    fontSize: settings.fontSize,
-    fontFamily: settings.fontFamily,
+    font: { ...settings.font },
+    type: { ...settings.type },
     shadow: settings.shadow,
     motion: settings.motion,
     corner: settings.corner,
     codeTone: settings.codeTone,
     accentCustom: settings.accentCustom,
     radiusCustom: settings.radiusCustom,
-    fontFamilyCustom: settings.fontFamilyCustom,
   }
 }

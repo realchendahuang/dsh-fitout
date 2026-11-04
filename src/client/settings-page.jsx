@@ -7,12 +7,14 @@
  */
 import React from 'react'
 import {
-  ACCENTS, RADIUS_SCALES, applyPreset, getSettings, getThemePreference, resetAll,
-  resetAppearance, setAccent, setAppearance, setAllLayoutGroups, setDensity, setEffect,
-  setEnabled, setLayoutGroup, setList, setRadius, setOption, setThemePreference, subscribe,
-  saveTheme, deleteTheme, setAccentCustom, setBackground, setRadiusCustom, setFontFamilyCustom,
+  ACCENTS, FONT_ROLES, RADIUS_SCALES, TYPE_RANGES, applyPreset, getSettings, getThemePreference,
+  normalizeFont, resetAll, resetAppearance, saveTheme, setAccent, setAccentCustom, setAppearance,
+  setAllLayoutGroups, setBackground, setDensity, setEffect, setEnabled, setFontFamily,
+  setLayoutGroup, setList, setOption, setRadius, setRadiusCustom, setThemePreference,
+  setTypeSize, subscribe, deleteTheme,
 } from './store.js'
 import { OPTIONS } from './store.js'
+import { SAMPLES, choicesFor, fontLabel, getLiveFonts, subscribeLiveFonts } from './fonts.js'
 import { PRESETS, matchesPreset } from './presets.js'
 import { MARK_PRESETS, renderMark } from './brand.jsx'
 import { SECTIONS } from './sections.js'
@@ -88,7 +90,10 @@ function cardVars(preset) {
   }
 }
 
-function ThemeCard({ preset, active, onDelete }) {
+function ThemeCard({ preset, onDelete }) {
+  const settings = useSettings()
+  const live = React.useSyncExternalStore(subscribeLiveFonts, getLiveFonts, getLiveFonts)
+  const active = matchesPreset(preset, settings, live)
   return React.createElement('div', { className: 'fto-theme', 'data-on': active ? 'true' : 'false' },
     React.createElement('button', {
       type: 'button', className: 'fto-themePick',
@@ -156,6 +161,93 @@ function Slider({ value, min, max, suffix, onChange }) {
       onChange: (event) => onChange(Number(event.target.value)),
     }),
     React.createElement('span', { className: 'fto-sliderValue' }, String(value) + (suffix ?? '')))
+}
+
+/** A font stack typed by hand: commits on blur or Enter, not per keystroke.
+ *
+ * Each commit is a real settings write in the app, so typing "Helvetica" must
+ * not queue eleven of them.
+ */
+function CustomStack({ t, value, onCommit }) {
+  const [draft, setDraft] = React.useState(value)
+  React.useEffect(() => { setDraft(value) }, [value])
+  const commit = () => {
+    if (normalizeFont(draft) !== value) onCommit(draft)
+  }
+  return React.createElement('input', {
+    className: 'fto-input', type: 'text', maxLength: 160, value: draft,
+    placeholder: t('page.fontCustom'),
+    'aria-label': t('page.fontCustom'),
+    onChange: (event) => setDraft(event.target.value),
+    onBlur: commit,
+    onKeyDown: (event) => {
+      if (event.key !== 'Enter') return
+      commit()
+      event.currentTarget.blur()
+    },
+  })
+}
+
+/** Type: three roles, each one face and one size, with a live sample.
+ *
+ * The app already has these six fields; the point of doing it here is that a
+ * theme can arrive with a whole type recipe, and that the sample shows the
+ * result instead of describing it.
+ */
+function TypePicker({ t, settings, live }) {
+  const roleRow = (role) => {
+    const stack = settings.font[role] ?? ''
+    const choices = choicesFor(role)
+    const known = stack === '' || choices.some((choice) => choice.stack === stack)
+    return React.createElement(Feature, { key: role, title: t('page.fontRole_' + role) },
+      React.createElement('div', { className: 'fto-inline' },
+        React.createElement('select', {
+          className: 'fto-select fto-typeSelect',
+          value: stack,
+          'aria-label': t('page.fontRole_' + role),
+          onChange: (event) => setFontFamily(role, event.target.value),
+        },
+        known ? null : React.createElement('option', { value: stack }, fontLabel(stack)),
+        choices.map((choice) => React.createElement('option', {
+          key: choice.id, value: choice.stack,
+        }, choice.stack === '' ? t('page.fontApp') : choice.label))),
+        React.createElement(Slider, {
+          value: settings.type[role],
+          min: TYPE_RANGES[role].min,
+          max: TYPE_RANGES[role].max,
+          suffix: 'px',
+          onChange: (value) => setTypeSize(role, value),
+        })))
+  }
+
+  const sample = (role) => React.createElement('div', {
+    key: role, className: 'fto-fontLine',
+    style: {
+      fontFamily: (settings.font[role] ?? '') === '' ? undefined : settings.font[role],
+      fontSize: settings.type[role] + 'px',
+    },
+  }, SAMPLES[role])
+
+  // Only shown once the app has reported: a line saying "unknown" would be
+  // noise in a panel that is otherwise always concrete.
+  const liveLine = live.ready === true
+    ? React.createElement('div', { className: 'fto-live' },
+      t('page.fontLive') + '：' + FONT_ROLES
+        .map((role) => fontLabel(live.families[role]) + ' ' + live.sizes[role] + 'px')
+        .join(' · '))
+    : null
+
+  return React.createElement('div', { className: 'fto-type' },
+    FONT_ROLES.map(roleRow),
+    React.createElement(Feature, { title: t('page.fontCustomTitle') },
+      React.createElement(CustomStack, {
+        t, value: settings.font.text,
+        onCommit: (value) => setFontFamily('text', value),
+      })),
+    React.createElement('div', { className: 'fto-fontPreview' },
+      React.createElement('div', { className: 'fto-fontPreviewTag' }, t('page.fontPreview')),
+      FONT_ROLES.map(sample)),
+    liveLine)
 }
 
 const MAX_WALLPAPER_BYTES = 700 * 1024
@@ -309,8 +401,9 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
   const cards = [...PRESETS, ...saved]
   const [saving, setSaving] = React.useState(false)
   const [draft, setDraft] = React.useState('')
+  const live = React.useSyncExternalStore(subscribeLiveFonts, getLiveFonts, getLiveFonts)
   const disabled = new Set(settings.layout.disabled)
-  const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings))
+  const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings, live))
 
   const commitSave = () => {
     saveTheme(draft)
@@ -344,7 +437,8 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
       for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value)
       setAccentCustom(spec.accentCustom ?? '')
       setRadiusCustom(spec.radiusCustom ?? 0)
-      setFontFamilyCustom(spec.fontFamilyCustom ?? '')
+      for (const role of FONT_ROLES) setFontFamily(role, spec.font?.[role] ?? '')
+      for (const role of FONT_ROLES) setTypeSize(role, spec.type?.[role])
       saveTheme(spec.name)
       setNotice(translate('page.importDone').replace('{name}', spec.name))
     })
@@ -372,7 +466,6 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
     React.createElement('div', { className: 'fto-themes' },
       cards.map((theme) => React.createElement(ThemeCard, {
         key: theme.id, preset: theme,
-        active: settings.preset === theme.id && matchesPreset(theme, settings),
         onDelete: PRESETS.some((preset) => preset.id === theme.id)
           ? undefined
           : () => deleteTheme(theme.id),
@@ -438,18 +531,10 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
         React.createElement(Feature, { title: translate('page.appearance') },
           React.createElement(AppearancePicker, { t: translate }))),
 
+      React.createElement(Group, { title: translate('page.fontGroup') },
+        React.createElement(TypePicker, { t: translate, settings, live })),
+
       React.createElement(Group, { title: translate('page.textGroup') },
-        React.createElement(Feature, { title: translate('page.fontSize') },
-          React.createElement(OptionSeg, { t: translate, settings, name: 'fontSize' })),
-        React.createElement(Feature, { title: translate('page.fontFamily') },
-          React.createElement('div', { className: 'fto-stack' },
-            React.createElement(OptionSeg, { t: translate, settings, name: 'fontFamily' }),
-            React.createElement('input', {
-              className: 'fto-input', type: 'text', maxLength: 120,
-              value: settings.fontFamilyCustom,
-              placeholder: translate('page.fontFamilyCustom'),
-              onChange: (event) => setFontFamilyCustom(event.target.value),
-            }))),
         React.createElement(Feature, { title: translate('page.lineHeight') },
           React.createElement(OptionSeg, { t: translate, settings, name: 'lineHeight' })),
         React.createElement(Feature, { title: translate('page.shadow') },

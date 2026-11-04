@@ -1,5 +1,37 @@
 # 变更记录
 
+## 0.8.0 — 字体这一块补上了
+
+上一版的「字体」只有正文一处：选了等宽，代码块不跟着变；选了字号，终端不跟着变；
+而且写的是 `--dsh-*` 自己的 token，跟 App 的引导脚本、「外观」页抢同一批变量。
+这一版把字体当成正式功能重做，六个字段全部走 App 自己的接口。
+
+- **写进 App 设置，不再覆盖 token**：改用 `ctx.theme.setFontFamily(role, list)` 与
+  `ctx.theme.setFontSize(role, px)`，删掉 `--dsh-content/code/terminal-font-size`、
+  `--dsh-font-family-text`、`--dsw-font-family` 的覆盖。以前那种写法会让「外观」页的滑块
+  变成摆设——两处改同一个变量，谁后画谁赢
+- **三个角色，各自两行**：正文 / 代码 / 终端各一个字体下拉 + 一根 px 滑杆。
+  取值域照抄 App 的 `FONT_SIZE_SPECS`（正文 10–22、代码 10–16、终端 10–20），
+  越界先夹住再提交，不会被 `setFontSize` 抛错
+- **候选字体按本机实测过**：`SF Mono`、`SF Pro Text/Display`、`JetBrains Mono` 在这台机器上
+  都不是可命中的名字（系统 UI 字体被 CoreText 保护，JetBrains 装的是 Nerd Font 补丁名），
+  所以系统等宽改用 `ui-monospace` 打头，JetBrains 用 `"JetBrainsMono Nerd Font"` 打头。
+  装不上的候选在名字后面标「需安装」，不给假选项
+- **实时预览**：三行样例分别用正文字号、代码字号、终端字号渲染，字体也用当前选择；
+  下面一行「当前生效」读的是 App 真正的快照，在这一页和在「外观」页改都算数
+- **十套主题各带一份字体配方**，西文在前中文在后：
+  墨 = Charter + 宋体，青瓷 = Iowan + 宋体，琥珀 = Avenir + 圆体，夜航 = Hoefler + 楷体，
+  终端 = Menlo 打底配 JetBrains 代码，北境 = 冬青 + PT Mono，靛青 = Helvetica，
+  紧凑 = PT Sans（本来就是为小字号设计的），宽松 = Seravek
+- **关掉装修会把字体还回去**：第一次写入前记下 App 原有的六项，关开关时还原，
+  不留「关了还在用宋体」这种尾巴
+- **主题卡现在会比字体**：在「外观」页手动改过字体，主题卡如实变成「自定义」
+- 顺带修两处链路：插件自己的等宽文字改吃 `--ds-font-family-code`（以前指向一个从不存在的
+  `--dsw-font-mono`，永远落在硬编码兜底上）；次要文字字号改成 `正文 - 1px`，
+  不再固定 13px
+- 主题包格式升到 v2，带 `font` / `type`；导入 0.7 的旧包、读 0.7 的旧记录，
+  都会把 `fontSize` / `fontFamily` / `fontFamilyCustom` 拆成新结构
+
 ## 0.7.0 — 撤掉智能体团队的定制
 
 - 整节删除版式层里对智能体团队与子智能体的样式改写（原 22 节，4.7 KB）

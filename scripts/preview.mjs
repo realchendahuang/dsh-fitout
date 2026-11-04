@@ -8,6 +8,7 @@
  *   node scripts/preview.mjs            # collapsed
  *   node scripts/preview.mjs --tuned    # with the fine-tune section open
  *   ZOOM=0.44 node scripts/preview.mjs  # whole page on one screen
+ *   PRESET=ink node scripts/preview.mjs # render one theme's own appearance
  *
  * Requires react + react-dom as dev dependencies; output lands in dist/preview.html.
  */
@@ -24,53 +25,20 @@ const tuned = process.argv.includes('--tuned')
 
 await mkdir(dist, { recursive: true })
 
-const TRANSLATIONS = {
-  'page.title': '装修', 'page.enable': '启用装修', 'page.tune': '微调',
-  'page.shapeGroup': '形状', 'page.surface': '底色',
-  'page.surface_neutral': '中性', 'page.surface_paper': '暖纸', 'page.surface_night': '夜蓝', 'page.surface_nord': '极地',
-  'page.accent': '强调色', 'page.radius': '圆角',
-  'page.radius_compact': '紧凑', 'page.radius_default': '标准', 'page.radius_round': '圆润',
-  'page.density': '侧栏密度', 'page.density_default': '标准', 'page.density_compact': '紧凑',
-  'page.appearance': '明暗', 'page.themeSystem': '跟随系统', 'page.themeLight': '浅色', 'page.themeDark': '深色',
-  'page.layoutGroup': '版式', 'page.layoutAllOn': '全开', 'page.layoutAllOff': '全关',
-  'page.listGroup': '列表与细节', 'page.list': '任务列表', 'page.listZcode': '分组', 'page.listNative': '官方',
-  'page.chip': '项目标签', 'page.underline': '链接下划线',
-  'page.brandGroup': '品牌', 'page.name': '名称', 'page.namePlaceholder': '官方品牌', 'page.icon': '图标',
-  'page.iconOfficial': '官方', 'page.iconCustom': '自定义', 'page.upload': '上传图片…',
-  'page.iconType': '请选择图片文件（PNG / JPEG / SVG / WebP）', 'page.iconTooLarge': '图片不能超过 256 KB',
-  'page.lineHeight': '行高', 'page.lineHeight_tight': '紧', 'page.lineHeight_normal': '标准', 'page.lineHeight_loose': '松',
-  'page.fontFamilyCustom': '或直接填字体名', 'page.layoutGroup2': '布局',
-  'page.measure': '消息宽度', 'page.measure_auto': '跟随', 'page.measure_narrow': '窄', 'page.measure_wide': '宽',
-  'page.glass': '毛玻璃', 'page.glass_off': '关', 'page.glass_cards': '卡片', 'page.glass_all': '全部',
-  'page.accentCustom': '自定义颜色', 'page.bgGroup': '背景', 'page.bgImage': '图片',
-  'page.bgUpload': '上传图片…', 'page.bgReplace': '换一张', 'page.bgClear': '清除',
-  'page.bgLink': '链接', 'page.bgLinkPlaceholder': '粘贴图片地址', 'page.bgLocal': '已使用本地图片',
-  'page.bgOpacity': '可见度', 'page.bgBlur': '模糊', 'page.bgTooLarge': '请选择图片文件，且不超过 700 KB',
-  'page.textGroup': '质感', 'page.fontSize': '字号',
-  'page.fontSize_auto': '跟随', 'page.fontSize_compact': '小', 'page.fontSize_standard': '标准', 'page.fontSize_large': '大',
-  'page.fontFamily': '字体', 'page.fontFamily_default': '默认', 'page.fontFamily_serif': '衬线',
-  'page.fontFamily_mono': '等宽', 'page.fontFamily_rounded': '圆体',
-  'page.shadow': '阴影', 'page.shadow_flat': '无', 'page.shadow_soft': '柔和', 'page.shadow_lifted': '明显',
-  'page.motion': '动效', 'page.motion_off': '关', 'page.motion_normal': '标准', 'page.motion_slow': '慢',
-  'page.corner': '转角', 'page.corner_round': '圆角', 'page.corner_squircle': '超椭圆',
-  'page.codeTone': '代码块', 'page.codeTone_auto': '跟随', 'page.codeTone_light': '浅', 'page.codeTone_dark': '深',
-  'page.maintainGroup': '维护', 'page.reset': '恢复默认', 'page.resetAll': '全部重置',
-  'page.import': '导入主题', 'page.export': '导出当前',
-  'page.importBad': '无法识别这个文件。', 'page.importDone': '已导入「{name}」',
-}
 
 await writeFile(entryPath, `import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FitoutSettingsPage } from ${JSON.stringify(resolve(root, 'src/client/settings-page.jsx'))}
+import { ZH as TRANSLATIONS } from ${JSON.stringify(resolve(root, 'src/client/entry.jsx'))}
 import { applyPreset, saveTheme, setAccent } from ${JSON.stringify(resolve(root, 'src/client/store.js'))}
 import { PRESETS } from ${JSON.stringify(resolve(root, 'src/client/presets.js'))}
 
-const dictionary = ${JSON.stringify(TRANSLATIONS)}
-const t = (key) => dictionary[key] ?? key
+const t = (key) => TRANSLATIONS[key] ?? key
 
-applyPreset(PRESETS[0])
-setAccent('violet')
-saveTheme('我的紫调')
+const wanted = ${JSON.stringify(process.env.PRESET ?? '')}
+const preset = PRESETS.find((p) => p.id === wanted) ?? PRESETS[0]
+applyPreset(preset)
+${process.env.PRESET === undefined ? "setAccent('violet')\nsaveTheme('我的紫调')" : ''}
 
 process.stdout.write(renderToStaticMarkup(
   React.createElement(FitoutSettingsPage, { t, initialTuning: ${tuned ? 'true' : 'false'} }),

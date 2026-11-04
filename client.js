@@ -35,6 +35,7 @@ window.__ModuleLoader__.load({
     // src/client/entry.jsx
     var entry_exports = {};
     __export(entry_exports, {
+      ZH: () => ZH,
       apply: () => apply,
       inject: () => inject,
       name: () => name
@@ -199,6 +200,13 @@ window.__ModuleLoader__.load({
       default: { xs: "4px", sm: "6px", md: "8px", lg: "12px", xl: "16px", panel: "16px" },
       round: { xs: "6px", sm: "8px", md: "12px", lg: "16px", xl: "20px", panel: "20px" }
     });
+    var FONT_ROLES = Object.freeze(["text", "code", "terminal"]);
+    var TYPE_RANGES = Object.freeze({
+      text: Object.freeze({ min: 10, max: 22 }),
+      code: Object.freeze({ min: 10, max: 16 }),
+      terminal: Object.freeze({ min: 10, max: 20 })
+    });
+    var TYPE_DEFAULTS = Object.freeze({ text: 14, code: 11, terminal: 13 });
     var DEFAULTS = Object.freeze({
       enabled: true,
       preset: "standard",
@@ -215,9 +223,8 @@ window.__ModuleLoader__.load({
       measure: "auto",
       lineHeight: "normal",
       radiusCustom: 0,
-      fontFamilyCustom: "",
-      fontSize: "auto",
-      fontFamily: "default",
+      font: Object.freeze({ text: "", code: "", terminal: "" }),
+      type: Object.freeze({ ...TYPE_DEFAULTS }),
       shadow: "soft",
       motion: "normal",
       corner: "round",
@@ -231,8 +238,6 @@ window.__ModuleLoader__.load({
       glass: Object.freeze(["off", "cards", "all"]),
       measure: Object.freeze(["auto", "narrow", "wide"]),
       lineHeight: Object.freeze(["tight", "normal", "loose"]),
-      fontSize: Object.freeze(["auto", "compact", "standard", "large"]),
-      fontFamily: Object.freeze(["default", "serif", "mono", "rounded"]),
       shadow: Object.freeze(["flat", "soft", "lifted"]),
       motion: Object.freeze(["off", "normal", "slow"]),
       corner: Object.freeze(["round", "squircle"]),
@@ -259,17 +264,14 @@ window.__ModuleLoader__.load({
         measure: state2.measure,
         lineHeight: state2.lineHeight,
         radiusCustom: state2.radiusCustom,
-        fontFamilyCustom: state2.fontFamilyCustom,
+        font: { ...state2.font },
+        type: { ...state2.type },
         background: { ...state2.background },
         accentCustom: state2.accentCustom,
-        fontSize: state2.fontSize,
-        fontFamily: state2.fontFamily,
         shadow: state2.shadow,
         motion: state2.motion,
         corner: state2.corner,
         codeTone: state2.codeTone,
-        background: { ...state2.background },
-        accentCustom: state2.accentCustom,
         themes: state2.themes.map(copyTheme)
       };
     }
@@ -286,8 +288,8 @@ window.__ModuleLoader__.load({
         glass: theme.glass ?? DEFAULTS.glass,
         measure: theme.measure ?? DEFAULTS.measure,
         lineHeight: theme.lineHeight ?? DEFAULTS.lineHeight,
-        fontSize: theme.fontSize ?? DEFAULTS.fontSize,
-        fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
+        font: readFont(theme.font),
+        type: readType(theme.type),
         shadow: theme.shadow ?? DEFAULTS.shadow,
         motion: theme.motion ?? DEFAULTS.motion,
         corner: theme.corner ?? DEFAULTS.corner,
@@ -313,8 +315,8 @@ window.__ModuleLoader__.load({
           disabled: Array.isArray(raw.layout?.disabled) ? raw.layout.disabled.filter((x) => typeof x === "string") : []
         },
         surface: readOption("surface", raw.surface),
-        fontSize: readOption("fontSize", raw.fontSize),
-        fontFamily: readOption("fontFamily", raw.fontFamily),
+        font: readFont(raw.font ?? migrateFont(raw)),
+        type: readType(raw.type ?? migrateType(raw)),
         shadow: readOption("shadow", raw.shadow),
         motion: readOption("motion", raw.motion),
         corner: readOption("corner", raw.corner),
@@ -354,9 +356,8 @@ window.__ModuleLoader__.load({
           measure: DEFAULTS.measure,
           lineHeight: DEFAULTS.lineHeight,
           radiusCustom: DEFAULTS.radiusCustom,
-          fontFamilyCustom: DEFAULTS.fontFamilyCustom,
-          fontSize: DEFAULTS.fontSize,
-          fontFamily: DEFAULTS.fontFamily,
+          font: { ...DEFAULTS.font },
+          type: { ...DEFAULTS.type },
           shadow: DEFAULTS.shadow,
           motion: DEFAULTS.motion,
           corner: DEFAULTS.corner,
@@ -383,8 +384,68 @@ window.__ModuleLoader__.load({
       const n = Number(raw);
       return Number.isFinite(n) ? Math.min(24, Math.max(0, Math.round(n))) : 0;
     }
-    function readFontFamily(raw) {
-      return typeof raw === "string" ? raw.replace(/[<>{}]/g, "").slice(0, 120) : "";
+    var GENERIC_FAMILIES = /* @__PURE__ */ new Set([
+      "serif",
+      "sans-serif",
+      "monospace",
+      "cursive",
+      "fantasy",
+      "system-ui",
+      "ui-serif",
+      "ui-sans-serif",
+      "ui-monospace",
+      "ui-rounded",
+      "emoji",
+      "math",
+      "fangsong",
+      "-apple-system",
+      "blinkmacsystemfont"
+    ]);
+    function normalizeFont(raw) {
+      if (typeof raw !== "string") return "";
+      return raw.split(",").map((name2) => name2.replace(/["'\\<>\u0000-\u001f\u007f]/gu, "").replace(/\s+/gu, " ").trim()).filter((name2) => name2 !== "").map((name2) => GENERIC_FAMILIES.has(name2.toLowerCase()) ? name2 : '"' + name2 + '"').join(", ");
+    }
+    function readTypeSize(role, raw) {
+      const range = TYPE_RANGES[role];
+      const n = Number(raw);
+      return Number.isFinite(n) ? Math.min(range.max, Math.max(range.min, Math.round(n))) : TYPE_DEFAULTS[role];
+    }
+    function readType(raw) {
+      return {
+        text: readTypeSize("text", raw?.text ?? TYPE_DEFAULTS.text),
+        code: readTypeSize("code", raw?.code ?? TYPE_DEFAULTS.code),
+        terminal: readTypeSize("terminal", raw?.terminal ?? TYPE_DEFAULTS.terminal)
+      };
+    }
+    function readFont(raw) {
+      return {
+        text: normalizeFont(raw?.text ?? ""),
+        code: normalizeFont(raw?.code ?? ""),
+        terminal: normalizeFont(raw?.terminal ?? "")
+      };
+    }
+    var LEGACY_TYPE = Object.freeze({
+      auto: null,
+      compact: Object.freeze({ text: 13, code: 11, terminal: 12 }),
+      standard: Object.freeze({ text: 15, code: 12, terminal: 13 }),
+      large: Object.freeze({ text: 17, code: 13, terminal: 14 })
+    });
+    var SERIF_STACK = '"Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", Georgia, "Times New Roman", serif';
+    var MONO_STACK = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+    var ROUNDED_STACK = '"SF Pro Rounded", "Hiragino Maru Gothic ProN", "PingFang SC", system-ui, sans-serif';
+    var LEGACY_FONT = Object.freeze({
+      default: null,
+      serif: Object.freeze({ text: SERIF_STACK }),
+      rounded: Object.freeze({ text: ROUNDED_STACK }),
+      mono: Object.freeze({ text: MONO_STACK, code: MONO_STACK, terminal: MONO_STACK })
+    });
+    function migrateFont(parsed) {
+      const legacyFont = LEGACY_FONT[parsed?.fontFamily] ?? null;
+      const custom2 = typeof parsed?.fontFamilyCustom === "string" ? parsed.fontFamilyCustom.trim() : "";
+      return { ...legacyFont ?? {}, ...custom2 !== "" ? { text: custom2 } : {} };
+    }
+    function migrateType(parsed) {
+      return LEGACY_TYPE[parsed?.fontSize] ?? null;
     }
     function readAccent(raw) {
       return typeof raw === "string" && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : "";
@@ -417,9 +478,8 @@ window.__ModuleLoader__.load({
             measure: readOption("measure", parsed?.measure),
             lineHeight: readOption("lineHeight", parsed?.lineHeight),
             radiusCustom: readRadiusCustom(parsed?.radiusCustom),
-            fontFamilyCustom: readFontFamily(parsed?.fontFamilyCustom),
-            fontSize: readOption("fontSize", parsed?.fontSize),
-            fontFamily: readOption("fontFamily", parsed?.fontFamily),
+            font: readFont(parsed?.font ?? migrateFont(parsed)),
+            type: readType(parsed?.type ?? migrateType(parsed)),
             shadow: readOption("shadow", parsed?.shadow),
             motion: readOption("motion", parsed?.motion),
             corner: readOption("corner", parsed?.corner),
@@ -461,6 +521,34 @@ window.__ModuleLoader__.load({
       applier = fn;
       fn(clone(state));
     }
+    function sanitizeFont(raw) {
+      return readFont(raw);
+    }
+    function sanitizeType(raw) {
+      return readType(raw);
+    }
+    function migrateFontFields(raw) {
+      return readFont(migrateFont(raw));
+    }
+    function migrateTypeField(raw) {
+      return readType(migrateType(raw));
+    }
+    var fontSync = null;
+    var fontRestore = null;
+    function bindFontSync(fn) {
+      fontSync = fn;
+    }
+    function bindFontRestore(fn) {
+      fontRestore = fn;
+    }
+    function pushFonts(next) {
+      if (fontSync === null || next.enabled !== true) return;
+      try {
+        fontSync({ font: { ...next.font }, type: { ...next.type } });
+      } catch (error) {
+        console.error("[dsh-fitout] could not apply the type recipe", error);
+      }
+    }
     function getSettings() {
       return state;
     }
@@ -474,9 +562,16 @@ window.__ModuleLoader__.load({
       const next = Boolean(enabled);
       if (next === state.enabled) return;
       commit({ ...state, enabled: next });
+      if (!next && fontRestore !== null) {
+        try {
+          fontRestore();
+        } catch (error) {
+          console.error("[dsh-fitout] could not restore the previous fonts", error);
+        }
+      }
     }
     function applyPreset(preset) {
-      commit({
+      const next = {
         ...state,
         preset: preset.id,
         accent: preset.accent,
@@ -487,18 +582,19 @@ window.__ModuleLoader__.load({
         measure: preset.measure ?? DEFAULTS.measure,
         lineHeight: preset.lineHeight ?? DEFAULTS.lineHeight,
         radiusCustom: DEFAULTS.radiusCustom,
-        fontFamilyCustom: DEFAULTS.fontFamilyCustom,
         background: { ...DEFAULTS.background },
         accentCustom: "",
-        fontSize: preset.fontSize ?? DEFAULTS.fontSize,
-        fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
+        font: readFont(preset.font),
+        type: readType(preset.type),
         shadow: preset.shadow ?? DEFAULTS.shadow,
         motion: preset.motion ?? DEFAULTS.motion,
         corner: preset.corner ?? DEFAULTS.corner,
         codeTone: preset.codeTone ?? DEFAULTS.codeTone,
         effects: { ...state.effects, ...preset.effects },
         layout: { disabled: [...preset.layout.disabled] }
-      });
+      };
+      commit(next);
+      pushFonts(next);
     }
     function setOption(key, value) {
       const allowed = OPTIONS[key];
@@ -521,9 +617,8 @@ window.__ModuleLoader__.load({
         measure: state.measure,
         lineHeight: state.lineHeight,
         radiusCustom: state.radiusCustom,
-        fontFamilyCustom: state.fontFamilyCustom,
-        fontSize: state.fontSize,
-        fontFamily: state.fontFamily,
+        font: state.font,
+        type: state.type,
         shadow: state.shadow,
         motion: state.motion,
         corner: state.corner,
@@ -586,10 +681,23 @@ window.__ModuleLoader__.load({
       if (next === state.radiusCustom) return;
       commit(custom({ ...state, radiusCustom: next }));
     }
-    function setFontFamilyCustom(value) {
-      const next = readFontFamily(value);
-      if (next === state.fontFamilyCustom) return;
-      commit(custom({ ...state, fontFamilyCustom: next }));
+    function setFontFamily(role, value) {
+      if (!FONT_ROLES.includes(role)) return;
+      const next = normalizeFont(value);
+      if (next === state.font[role]) return;
+      const font2 = { ...state.font, [role]: next };
+      const record = custom({ ...state, font: font2 });
+      commit(record);
+      pushFonts(record);
+    }
+    function setTypeSize(role, value) {
+      if (!FONT_ROLES.includes(role)) return;
+      const next = readTypeSize(role, value);
+      if (next === state.type[role]) return;
+      const type2 = { ...state.type, [role]: next };
+      const record = custom({ ...state, type: type2 });
+      commit(record);
+      pushFonts(record);
     }
     function setAccentCustom(hex) {
       const next = readAccent(hex);
@@ -609,14 +717,18 @@ window.__ModuleLoader__.load({
       commit(custom({ ...state, layout: { disabled: next } }));
     }
     function resetAppearance() {
-      commit({
+      const next = {
         ...clone(DEFAULTS),
         enabled: state.enabled,
         list: state.list
-      });
+      };
+      commit(next);
+      pushFonts(next);
     }
     function resetAll() {
-      commit(clone(DEFAULTS));
+      const next = clone(DEFAULTS);
+      commit(next);
+      pushFonts(next);
     }
     var readTheme = () => "system";
     var writeTheme = () => {
@@ -897,18 +1009,6 @@ window.__ModuleLoader__.load({
 
     // src/client/variants.js
     var BASE_ACCENT = ACCENTS[0];
-    var FONT_SIZES = Object.freeze({
-      auto: null,
-      compact: { content: "13px", code: "11px", terminal: "12px" },
-      standard: { content: "15px", code: "12px", terminal: "13px" },
-      large: { content: "17px", code: "13px", terminal: "14px" }
-    });
-    var FONT_FAMILIES = Object.freeze({
-      default: null,
-      serif: '"Songti SC","Source Han Serif SC","Noto Serif CJK SC",Georgia,"Times New Roman",serif',
-      mono: 'ui-monospace,"SF Mono",Menlo,Consolas,monospace',
-      rounded: '"SF Pro Rounded","Hiragino Maru Gothic ProN","PingFang SC",system-ui,sans-serif'
-    });
     var SHADOWS = Object.freeze({
       flat: { mode: "none" },
       soft: null,
@@ -997,22 +1097,6 @@ window.__ModuleLoader__.load({
           out[token] = { ...out[token] ?? both(value), dark: value };
         }
       }
-      const size = FONT_SIZES[settings?.fontSize];
-      if (size !== void 0 && size !== null) {
-        out["--dsh-content-font-size"] = both(size.content);
-        out["--dsh-code-font-size"] = both(size.code);
-        out["--dsh-terminal-font-size"] = both(size.terminal);
-      }
-      const family = FONT_FAMILIES[settings?.fontFamily];
-      if (family !== void 0 && family !== null) {
-        out["--dsh-font-family-text"] = both(family);
-        out["--dsw-font-family"] = both(family);
-      }
-      const customFont = typeof settings?.fontFamilyCustom === "string" ? settings.fontFamilyCustom.trim() : "";
-      if (customFont !== "") {
-        out["--dsh-font-family-text"] = both(customFont);
-        out["--dsw-font-family"] = both(customFont);
-      }
       const radiusValue = Number(settings?.radiusCustom);
       if (Number.isFinite(radiusValue) && radiusValue > 0) {
         const scale = customRadiusScale(radiusValue);
@@ -1084,9 +1168,12 @@ window.__ModuleLoader__.load({
       --fto-r-sm:var(--dsw-radius-sm,6px);
       --fto-r-md:var(--dsw-radius-md,8px);
       --fto-r-lg:var(--dsw-radius-lg,12px);
-      --fto-mono:var(--dsw-font-mono,ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace);
-      --fto-fs:var(--dsh-content-font-size,15px);
-      --fto-fs2:var(--dsh-content-font-size-secondary,13px);
+      /* Mono and the secondary step follow the app's own type settings: the code
+         family means what the Appearance page says it means, and secondary text
+         stays one pixel under whatever the body size is. */
+      --fto-mono:var(--ds-font-family-code,ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace);
+      --fto-fs:var(--dsh-content-font-size,14px);
+      --fto-fs2:calc(var(--dsh-content-font-size,14px) - 1px);
       --fto-h:calc(32px + var(--dsh-content-font-delta,0px));
       --fto-ease:cubic-bezier(.16,1,.3,1);
       --fto-sparkle:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M8 1.2c.32 3.1 1.98 4.76 5.08 5.08v.04c-3.1.32-4.76 1.98-4.76 5.08h-.04c-.32-3.1-1.98-4.76-5.08-4.76V6.6C6.3 6.28 7.96 4.62 8 1.2z' fill='black'/></svg>");
@@ -2155,6 +2242,24 @@ window.__ModuleLoader__.load({
     .fto-inline{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
     .fto-stack{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
     .fto-stack .fto-input{width:220px;height:28px;font-size:12px}
+
+    /* --- type: three roles, one row each, plus a sample you can look at --- */
+    .fto-type{padding:2px 0 0}
+    .fto-type .fto-inline{flex:0 0 auto}
+    .fto-type .fto-input{width:300px;height:30px;font-size:12.5px}
+    .fto-select{height:30px;padding:0 8px;border:1px solid var(--dsw-alias-border-l2);
+      border-radius:8px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
+      font-size:12.5px;outline:none;cursor:pointer}
+    .fto-select:focus{border-color:var(--dsw-alias-link,#0284c7)}
+    .fto-typeSelect{width:206px;flex:0 0 auto}
+    .fto-fontPreview{margin-top:6px;padding:11px 13px 12px;border:1px solid var(--dsw-alias-border-l2);
+      border-radius:10px;background:var(--dsw-alias-bg-layer-2);display:flex;flex-direction:column;gap:7px}
+    .fto-fontPreviewTag{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--dsw-alias-label-tertiary)}
+    .fto-fontLine{color:var(--dsw-alias-label-primary);line-height:1.5;overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap}
+    .fto-live{font-size:11px;line-height:16px;color:var(--dsw-alias-label-tertiary);
+      font-variant-numeric:tabular-nums}
     .fto-slider input[type="range"]{-webkit-appearance:none;appearance:none;width:132px;height:4px;
       border-radius:2px;background:var(--dsw-alias-bg-layer-3);outline:none;cursor:pointer}
     .fto-slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
@@ -2450,8 +2555,107 @@ window.__ModuleLoader__.load({
     // src/client/settings-page.jsx
     var import_react3 = __toESM(require("react"), 1);
 
+    // src/client/fonts.js
+    var RAW_CHOICES = [
+      // --- text faces -----------------------------------------------------------
+      // Shipping macOS families first; the ones a user has to install are marked so
+      // the list never pretends to offer something the machine cannot render.
+      { id: "app", kind: "text", label: "\u7CFB\u7EDF\u9ED8\u8BA4", stack: "" },
+      { id: "pingfang", kind: "text", label: "\u82F9\u65B9", stack: '"PingFang SC", "Helvetica Neue", sans-serif' },
+      { id: "hiragino", kind: "text", label: "\u51AC\u9752\u9ED1\u4F53", stack: '"Hiragino Sans GB", "PingFang SC", sans-serif' },
+      { id: "songti", kind: "text", label: "\u5B8B\u4F53", stack: '"Songti SC", "Source Han Serif SC", "Georgia", serif' },
+      { id: "kaiti", kind: "text", label: "\u6977\u4F53", stack: '"Kaiti SC", "STKaiti", serif' },
+      { id: "yuanti", kind: "text", label: "\u5706\u4F53", stack: '"Yuanti SC", "Hiragino Maru Gothic ProN", sans-serif' },
+      { id: "helvetica", kind: "text", label: "Helvetica Neue", stack: '"Helvetica Neue", "Helvetica", "Arial", sans-serif' },
+      { id: "avenir", kind: "text", label: "Avenir Next", stack: '"Avenir Next", "Helvetica Neue", sans-serif' },
+      { id: "seravek", kind: "text", label: "Seravek", stack: '"Seravek", "Helvetica Neue", sans-serif' },
+      { id: "ptsans", kind: "text", label: "PT Sans", stack: '"PT Sans", "Helvetica Neue", sans-serif' },
+      { id: "charter", kind: "text", label: "Charter", stack: '"Charter", "Georgia", serif' },
+      { id: "iowan", kind: "text", label: "Iowan Old Style", stack: '"Iowan Old Style", "Georgia", serif' },
+      { id: "hoefler", kind: "text", label: "Hoefler Text", stack: '"Hoefler Text", "Georgia", serif' },
+      { id: "georgia", kind: "text", label: "Georgia", stack: '"Georgia", "Times New Roman", serif' },
+      { id: "sourcehan", kind: "text", label: "\u601D\u6E90\u9ED1\u4F53\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"Source Han Sans SC", "Noto Sans CJK SC", "PingFang SC", sans-serif' },
+      { id: "notoserif", kind: "text", label: "\u601D\u6E90\u5B8B\u4F53\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"Noto Serif CJK SC", "Songti SC", "Georgia", serif' },
+      { id: "lxgw", kind: "text", label: "\u971E\u9E5C\u6587\u6977\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"LXGW WenKai", "Kaiti SC", "STKaiti", serif' },
+      // --- monospace faces ------------------------------------------------------
+      { id: "app-mono", kind: "mono", label: "\u7CFB\u7EDF\u7B49\u5BBD", stack: "" },
+      { id: "systemmono", kind: "mono", label: "\u7CFB\u7EDF UI \u7B49\u5BBD", stack: 'ui-monospace, "Menlo", monospace' },
+      { id: "menlo", kind: "mono", label: "Menlo", stack: '"Menlo", "Monaco", monospace' },
+      { id: "monaco", kind: "mono", label: "Monaco", stack: '"Monaco", "Menlo", monospace' },
+      { id: "courier", kind: "mono", label: "Courier New", stack: '"Courier New", "Courier", monospace' },
+      { id: "ptmono", kind: "mono", label: "PT Mono", stack: '"PT Mono", "Menlo", monospace' },
+      { id: "andale", kind: "mono", label: "Andale Mono", stack: '"Andale Mono", "Menlo", monospace' },
+      // Installed as the Nerd Font patch on this machine; the stock name stays as a
+      // fallback for anyone who has the plain release.
+      { id: "jetbrains", kind: "mono", label: "JetBrains Mono", stack: '"JetBrainsMono Nerd Font", "JetBrains Mono", "Menlo", monospace' },
+      { id: "firacode", kind: "mono", label: "Fira Code\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"Fira Code", "Menlo", monospace' },
+      { id: "maple", kind: "mono", label: "Maple Mono\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"Maple Mono", "Menlo", monospace' },
+      { id: "cascadia", kind: "mono", label: "Cascadia Code\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"Cascadia Code", "Consolas", monospace' },
+      { id: "consolas", kind: "mono", label: "Consolas\uFF08\u9700\u5B89\u88C5\uFF09", stack: '"Consolas", "Menlo", monospace' }
+    ];
+    var FONT_CHOICES = Object.freeze(RAW_CHOICES.map((choice) => Object.freeze({
+      ...choice,
+      stack: normalizeFont(choice.stack)
+    })));
+    function choicesFor(role) {
+      return FONT_CHOICES.filter((choice) => role === "text" ? choice.kind === "text" : choice.kind === "mono");
+    }
+    function fontLabel(stack) {
+      const list = normalizeFont(stack);
+      if (list === "") return "\u8DDF\u968F App";
+      const known = FONT_CHOICES.find((choice) => choice.stack !== "" && choice.stack === list);
+      if (known !== void 0) return known.label;
+      const first = list.split(",")[0]?.trim().replace(/^["']|["']$/gu, "") ?? "";
+      return first === "" ? "\u81EA\u5B9A\u4E49" : first;
+    }
+    var SAMPLES = Object.freeze({
+      text: "\u88C5\u4FEE\u4E00\u6B21\u88C5\u5230\u4F4D\uFF1A\u5E95\u8272\u3001\u5F3A\u8C03\u8272\u3001\u5706\u89D2\u3001\u758F\u5BC6\u3001\u5B57\u4F53\uFF0C\u53EA\u9700\u9009\u5B9A\u4E00\u6B21\u3002Aa 0123",
+      code: "theme.setFontFamily('text', stack)",
+      terminal: "$ npm run preview -- --tuned"
+    });
+    var EMPTY = Object.freeze({
+      families: Object.freeze({ text: "", code: "", terminal: "" }),
+      sizes: Object.freeze({ ...TYPE_DEFAULTS }),
+      ready: false
+    });
+    var live = EMPTY;
+    var listeners2 = /* @__PURE__ */ new Set();
+    function pushLiveFonts(families, sizes) {
+      if (families === void 0 || families === null || sizes === void 0 || sizes === null) return;
+      const next = {
+        families: {
+          text: String(families.text ?? ""),
+          code: String(families.code ?? ""),
+          terminal: String(families.terminal ?? "")
+        },
+        sizes: {
+          text: Number(sizes.text) || TYPE_DEFAULTS.text,
+          code: Number(sizes.code) || TYPE_DEFAULTS.code,
+          terminal: Number(sizes.terminal) || TYPE_DEFAULTS.terminal
+        },
+        ready: true
+      };
+      const same = live.ready === next.ready && Object.keys(next.families).every((role) => live.families[role] === next.families[role]) && Object.keys(next.sizes).every((role) => live.sizes[role] === next.sizes[role]);
+      if (same) return;
+      live = Object.freeze(next);
+      for (const listener of [...listeners2]) listener();
+    }
+    function getLiveFonts() {
+      return live;
+    }
+    function subscribeLiveFonts(listener) {
+      listeners2.add(listener);
+      return () => {
+        listeners2.delete(listener);
+      };
+    }
+
     // src/client/presets.js
     var ALL_GROUPS = SECTIONS.map((section) => section.id);
+    var type = (text, code, terminal) => Object.freeze({ text, code, terminal });
+    var font = (text, code, terminal) => Object.freeze({ text, code, terminal });
+    var MONO = '"Menlo", "Monaco", monospace';
+    var NF_MONO = '"JetBrainsMono Nerd Font", "JetBrains Mono", "Menlo", monospace';
     var PRESETS = Object.freeze([
       Object.freeze({
         id: "standard",
@@ -2460,8 +2664,8 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "default",
         density: "default",
-        fontSize: "auto",
-        fontFamily: "default",
+        font: font("", "", ""),
+        type: type(14, 11, 13),
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -2476,8 +2680,8 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "compact",
         density: "compact",
-        fontSize: "compact",
-        fontFamily: "default",
+        font: font('"PT Sans", "PingFang SC", "Helvetica Neue", sans-serif', '"Menlo", "Monaco", monospace', '"Menlo", "Monaco", monospace'),
+        type: type(13, 10, 12),
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -2492,8 +2696,8 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "round",
         density: "default",
-        fontSize: "large",
-        fontFamily: "default",
+        font: font('"Seravek", "PingFang SC", sans-serif', NF_MONO, MONO),
+        type: type(16, 12, 14),
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -2508,8 +2712,8 @@ window.__ModuleLoader__.load({
         accent: "violet",
         radius: "default",
         density: "default",
-        fontSize: "auto",
-        fontFamily: "default",
+        font: font('"Helvetica Neue", "PingFang SC", "Arial", sans-serif', MONO, MONO),
+        type: type(14, 11, 13),
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -2524,8 +2728,8 @@ window.__ModuleLoader__.load({
         accent: "emerald",
         radius: "compact",
         density: "default",
-        fontSize: "auto",
-        fontFamily: "default",
+        font: font('"Iowan Old Style", "Songti SC", "Georgia", serif', '"Courier New", "Courier", monospace', MONO),
+        type: type(15, 12, 13),
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -2540,8 +2744,8 @@ window.__ModuleLoader__.load({
         accent: "amber",
         radius: "round",
         density: "default",
-        fontSize: "large",
-        fontFamily: "default",
+        font: font('"Avenir Next", "Yuanti SC", sans-serif', '"Andale Mono", "Menlo", monospace', MONO),
+        type: type(15, 12, 13),
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -2556,8 +2760,8 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "default",
         density: "default",
-        fontSize: "large",
-        fontFamily: "serif",
+        font: font('"Charter", "Songti SC", "Georgia", serif', MONO, MONO),
+        type: type(16, 12, 13),
         shadow: "lifted",
         motion: "slow",
         corner: "squircle",
@@ -2572,8 +2776,8 @@ window.__ModuleLoader__.load({
         accent: "emerald",
         radius: "compact",
         density: "compact",
-        fontSize: "compact",
-        fontFamily: "mono",
+        font: font('"Menlo", "PingFang SC", monospace', NF_MONO, MONO),
+        type: type(13, 11, 13),
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -2588,8 +2792,8 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "default",
         density: "default",
-        fontSize: "auto",
-        fontFamily: "default",
+        font: font('"Hiragino Sans GB", "PingFang SC", sans-serif', '"PT Mono", "Menlo", monospace', MONO),
+        type: type(14, 11, 13),
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -2604,8 +2808,8 @@ window.__ModuleLoader__.load({
         accent: "violet",
         radius: "round",
         density: "default",
-        fontSize: "auto",
-        fontFamily: "default",
+        font: font('"Hoefler Text", "Kaiti SC", "Georgia", serif', '"Monaco", "Menlo", monospace', '"Monaco", "Menlo", monospace'),
+        type: type(15, 11, 14),
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -2616,12 +2820,15 @@ window.__ModuleLoader__.load({
     ]);
     var PRESET_IDS = Object.freeze(PRESETS.map((preset) => preset.id));
     var RENAMED = Object.freeze({ neutral: "standard", "zcode-neutral": "standard" });
-    function matchesPreset(preset, settings) {
+    function matchesPreset(preset, settings, live2) {
       if (preset === null || settings === null) return false;
       const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key]);
       const sameLayout = preset.layout.disabled.length === settings.layout.disabled.length && preset.layout.disabled.every((id) => settings.layout.disabled.includes(id));
-      const sameOption = ["surface", "accent", "radius", "density", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
-      return sameOption && sameEffects && sameLayout;
+      const sameOption = ["surface", "accent", "radius", "density", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
+      const families = live2?.ready === true ? live2.families : settings.font;
+      const sizes = live2?.ready === true ? live2.sizes : settings.type;
+      const sameType = ["text", "code", "terminal"].every((role) => normalizeFont(preset.font?.[role] ?? "") === normalizeFont(families?.[role] ?? "") && (preset.type?.[role] ?? TYPE_DEFAULTS[role]) === (sizes?.[role] ?? TYPE_DEFAULTS[role]));
+      return sameOption && sameEffects && sameLayout && sameType;
     }
 
     // src/client/theme-pack.js
@@ -2655,7 +2862,7 @@ window.__ModuleLoader__.load({
       return best;
     }
     var ACCENT_IDS = ACCENTS.map((accent) => accent.id);
-    var OPTION_KEYS = ["surface", "glass", "measure", "lineHeight", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"];
+    var OPTION_KEYS = ["surface", "glass", "measure", "lineHeight", "shadow", "motion", "corner", "codeTone"];
     function readOptions(source) {
       const out = {};
       for (const key of OPTION_KEYS) {
@@ -2676,7 +2883,9 @@ window.__ModuleLoader__.load({
           options: readOptions(json),
           accentCustom: typeof json.accentCustom === "string" && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : "",
           radiusCustom: Number.isFinite(Number(json.radiusCustom)) ? Math.min(24, Math.max(0, Math.round(Number(json.radiusCustom)))) : 0,
-          fontFamilyCustom: typeof json.fontFamilyCustom === "string" ? json.fontFamilyCustom.slice(0, 120) : "",
+          // A 0.7 pack carried `fontSize` / `fontFamily` instead of a recipe.
+          font: json.font === void 0 ? migrateFontFields(json) : sanitizeFont(json.font),
+          type: json.type === void 0 ? migrateTypeField(json) : sanitizeType(json.type),
           source: "fitout"
         };
       }
@@ -2693,7 +2902,8 @@ window.__ModuleLoader__.load({
           options: {},
           accentCustom: "",
           radiusCustom: 0,
-          fontFamilyCustom: "",
+          font: sanitizeFont(null),
+          type: sanitizeType(null),
           source: "pack"
         };
       }
@@ -2702,7 +2912,7 @@ window.__ModuleLoader__.load({
     function writePack(settings, name2) {
       return {
         format: OUR_FORMAT,
-        version: 1,
+        version: 2,
         name: String(name2 ?? "\u6211\u7684\u4E3B\u9898").slice(0, 20),
         accent: settings.accent,
         radius: settings.radius,
@@ -2713,15 +2923,14 @@ window.__ModuleLoader__.load({
         glass: settings.glass,
         measure: settings.measure,
         lineHeight: settings.lineHeight,
-        fontSize: settings.fontSize,
-        fontFamily: settings.fontFamily,
+        font: { ...settings.font },
+        type: { ...settings.type },
         shadow: settings.shadow,
         motion: settings.motion,
         corner: settings.corner,
         codeTone: settings.codeTone,
         accentCustom: settings.accentCustom,
-        radiusCustom: settings.radiusCustom,
-        fontFamilyCustom: settings.fontFamilyCustom
+        radiusCustom: settings.radiusCustom
       };
     }
 
@@ -2805,7 +3014,10 @@ window.__ModuleLoader__.load({
         "--fto-card-accent-dark": accent.dark
       };
     }
-    function ThemeCard({ preset, active, onDelete }) {
+    function ThemeCard({ preset, onDelete }) {
+      const settings = useSettings();
+      const live2 = import_react3.default.useSyncExternalStore(subscribeLiveFonts, getLiveFonts, getLiveFonts);
+      const active = matchesPreset(preset, settings, live2);
       return import_react3.default.createElement(
         "div",
         { className: "fto-theme", "data-on": active ? "true" : "false" },
@@ -2906,6 +3118,100 @@ window.__ModuleLoader__.load({
           onChange: (event) => onChange(Number(event.target.value))
         }),
         import_react3.default.createElement("span", { className: "fto-sliderValue" }, String(value) + (suffix ?? ""))
+      );
+    }
+    function CustomStack({ t, value, onCommit }) {
+      const [draft, setDraft] = import_react3.default.useState(value);
+      import_react3.default.useEffect(() => {
+        setDraft(value);
+      }, [value]);
+      const commit2 = () => {
+        if (normalizeFont(draft) !== value) onCommit(draft);
+      };
+      return import_react3.default.createElement("input", {
+        className: "fto-input",
+        type: "text",
+        maxLength: 160,
+        value: draft,
+        placeholder: t("page.fontCustom"),
+        "aria-label": t("page.fontCustom"),
+        onChange: (event) => setDraft(event.target.value),
+        onBlur: commit2,
+        onKeyDown: (event) => {
+          if (event.key !== "Enter") return;
+          commit2();
+          event.currentTarget.blur();
+        }
+      });
+    }
+    function TypePicker({ t, settings, live: live2 }) {
+      const roleRow = (role) => {
+        const stack = settings.font[role] ?? "";
+        const choices = choicesFor(role);
+        const known = stack === "" || choices.some((choice) => choice.stack === stack);
+        return import_react3.default.createElement(
+          Feature,
+          { key: role, title: t("page.fontRole_" + role) },
+          import_react3.default.createElement(
+            "div",
+            { className: "fto-inline" },
+            import_react3.default.createElement(
+              "select",
+              {
+                className: "fto-select fto-typeSelect",
+                value: stack,
+                "aria-label": t("page.fontRole_" + role),
+                onChange: (event) => setFontFamily(role, event.target.value)
+              },
+              known ? null : import_react3.default.createElement("option", { value: stack }, fontLabel(stack)),
+              choices.map((choice) => import_react3.default.createElement("option", {
+                key: choice.id,
+                value: choice.stack
+              }, choice.stack === "" ? t("page.fontApp") : choice.label))
+            ),
+            import_react3.default.createElement(Slider, {
+              value: settings.type[role],
+              min: TYPE_RANGES[role].min,
+              max: TYPE_RANGES[role].max,
+              suffix: "px",
+              onChange: (value) => setTypeSize(role, value)
+            })
+          )
+        );
+      };
+      const sample = (role) => import_react3.default.createElement("div", {
+        key: role,
+        className: "fto-fontLine",
+        style: {
+          fontFamily: (settings.font[role] ?? "") === "" ? void 0 : settings.font[role],
+          fontSize: settings.type[role] + "px"
+        }
+      }, SAMPLES[role]);
+      const liveLine = live2.ready === true ? import_react3.default.createElement(
+        "div",
+        { className: "fto-live" },
+        t("page.fontLive") + "\uFF1A" + FONT_ROLES.map((role) => fontLabel(live2.families[role]) + " " + live2.sizes[role] + "px").join(" \xB7 ")
+      ) : null;
+      return import_react3.default.createElement(
+        "div",
+        { className: "fto-type" },
+        FONT_ROLES.map(roleRow),
+        import_react3.default.createElement(
+          Feature,
+          { title: t("page.fontCustomTitle") },
+          import_react3.default.createElement(CustomStack, {
+            t,
+            value: settings.font.text,
+            onCommit: (value) => setFontFamily("text", value)
+          })
+        ),
+        import_react3.default.createElement(
+          "div",
+          { className: "fto-fontPreview" },
+          import_react3.default.createElement("div", { className: "fto-fontPreviewTag" }, t("page.fontPreview")),
+          FONT_ROLES.map(sample)
+        ),
+        liveLine
       );
     }
     var MAX_WALLPAPER_BYTES = 700 * 1024;
@@ -3091,8 +3397,9 @@ window.__ModuleLoader__.load({
       const cards = [...PRESETS, ...saved];
       const [saving, setSaving] = import_react3.default.useState(false);
       const [draft, setDraft] = import_react3.default.useState("");
+      const live2 = import_react3.default.useSyncExternalStore(subscribeLiveFonts, getLiveFonts, getLiveFonts);
       const disabled = new Set(settings.layout.disabled);
-      const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings));
+      const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings, live2));
       const commitSave = () => {
         saveTheme(draft);
         setSaving(false);
@@ -3123,7 +3430,8 @@ window.__ModuleLoader__.load({
           for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value);
           setAccentCustom(spec.accentCustom ?? "");
           setRadiusCustom(spec.radiusCustom ?? 0);
-          setFontFamilyCustom(spec.fontFamilyCustom ?? "");
+          for (const role of FONT_ROLES) setFontFamily(role, spec.font?.[role] ?? "");
+          for (const role of FONT_ROLES) setTypeSize(role, spec.type?.[role]);
           saveTheme(spec.name);
           setNotice(translate("page.importDone").replace("{name}", spec.name));
         });
@@ -3158,7 +3466,6 @@ window.__ModuleLoader__.load({
           cards.map((theme) => import_react3.default.createElement(ThemeCard, {
             key: theme.id,
             preset: theme,
-            active: settings.preset === theme.id && matchesPreset(theme, settings),
             onDelete: PRESETS.some((preset) => preset.id === theme.id) ? void 0 : () => deleteTheme(theme.id)
           })),
           import_react3.default.createElement(CustomCard, { active: isCustom }),
@@ -3268,29 +3575,12 @@ window.__ModuleLoader__.load({
           ),
           import_react3.default.createElement(
             Group,
+            { title: translate("page.fontGroup") },
+            import_react3.default.createElement(TypePicker, { t: translate, settings, live: live2 })
+          ),
+          import_react3.default.createElement(
+            Group,
             { title: translate("page.textGroup") },
-            import_react3.default.createElement(
-              Feature,
-              { title: translate("page.fontSize") },
-              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "fontSize" })
-            ),
-            import_react3.default.createElement(
-              Feature,
-              { title: translate("page.fontFamily") },
-              import_react3.default.createElement(
-                "div",
-                { className: "fto-stack" },
-                import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "fontFamily" }),
-                import_react3.default.createElement("input", {
-                  className: "fto-input",
-                  type: "text",
-                  maxLength: 120,
-                  value: settings.fontFamilyCustom,
-                  placeholder: translate("page.fontFamilyCustom"),
-                  onChange: (event) => setFontFamilyCustom(event.target.value)
-                })
-              )
-            ),
             import_react3.default.createElement(
               Feature,
               { title: translate("page.lineHeight") },
@@ -3922,7 +4212,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.1.0";
+    var VERSION = "0.8.0";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
@@ -3940,7 +4230,8 @@ window.__ModuleLoader__.load({
       "page.lineHeight_tight": "\u7D27",
       "page.lineHeight_normal": "\u6807\u51C6",
       "page.lineHeight_loose": "\u677E",
-      "page.fontFamilyCustom": "\u6216\u76F4\u63A5\u586B\u5B57\u4F53\u540D",
+      "page.fontCustom": "\u4F8B\u5982 PingFang SC, sans-serif",
+      "page.fontCustomTitle": "\u6B63\u6587\u81EA\u5B9A\u4E49\u6808",
       "page.layoutGroup2": "\u5E03\u5C40",
       "page.measure": "\u6D88\u606F\u5BBD\u5EA6",
       "page.measure_auto": "\u8DDF\u968F",
@@ -3963,16 +4254,15 @@ window.__ModuleLoader__.load({
       "page.bgBlur": "\u6A21\u7CCA",
       "page.bgTooLarge": "\u8BF7\u9009\u62E9\u56FE\u7247\u6587\u4EF6\uFF0C\u4E14\u4E0D\u8D85\u8FC7 700 KB",
       "page.textGroup": "\u8D28\u611F",
-      "page.fontSize": "\u5B57\u53F7",
-      "page.fontSize_auto": "\u8DDF\u968F",
-      "page.fontSize_compact": "\u5C0F",
-      "page.fontSize_standard": "\u6807\u51C6",
-      "page.fontSize_large": "\u5927",
-      "page.fontFamily": "\u5B57\u4F53",
-      "page.fontFamily_default": "\u9ED8\u8BA4",
-      "page.fontFamily_serif": "\u886C\u7EBF",
-      "page.fontFamily_mono": "\u7B49\u5BBD",
-      "page.fontFamily_rounded": "\u5706\u4F53",
+      "page.fontGroup": "\u5B57\u4F53",
+      "page.fontRole_text": "\u6B63\u6587",
+      "page.fontRole_code": "\u4EE3\u7801",
+      "page.fontRole_terminal": "\u7EC8\u7AEF",
+      "page.fontApp": "\u8DDF\u968F App",
+      "page.typeSize": "\u5B57\u53F7",
+      "page.typeReset": "\u6062\u590D\u9ED8\u8BA4",
+      "page.fontPreview": "\u9884\u89C8",
+      "page.fontLive": "\u5F53\u524D\u751F\u6548",
       "page.shadow": "\u9634\u5F71",
       "page.shadow_flat": "\u65E0",
       "page.shadow_soft": "\u67D4\u548C",
@@ -4062,7 +4352,8 @@ window.__ModuleLoader__.load({
       "page.lineHeight_tight": "Tight",
       "page.lineHeight_normal": "Normal",
       "page.lineHeight_loose": "Loose",
-      "page.fontFamilyCustom": "Or type a font family",
+      "page.fontCustom": "For example, PingFang SC, sans-serif",
+      "page.fontCustomTitle": "Custom body stack",
       "page.layoutGroup2": "Layout",
       "page.measure": "Message width",
       "page.measure_auto": "Follow",
@@ -4085,16 +4376,15 @@ window.__ModuleLoader__.load({
       "page.bgBlur": "Blur",
       "page.bgTooLarge": "Choose an image file of 700 KB or less",
       "page.textGroup": "Texture",
-      "page.fontSize": "Text size",
-      "page.fontSize_auto": "Follow",
-      "page.fontSize_compact": "Small",
-      "page.fontSize_standard": "Standard",
-      "page.fontSize_large": "Large",
-      "page.fontFamily": "Typeface",
-      "page.fontFamily_default": "Default",
-      "page.fontFamily_serif": "Serif",
-      "page.fontFamily_mono": "Mono",
-      "page.fontFamily_rounded": "Rounded",
+      "page.fontGroup": "Type",
+      "page.fontRole_text": "Body",
+      "page.fontRole_code": "Code",
+      "page.fontRole_terminal": "Terminal",
+      "page.fontApp": "App default",
+      "page.typeSize": "Size",
+      "page.typeReset": "Reset",
+      "page.fontPreview": "Preview",
+      "page.fontLive": "In effect",
       "page.shadow": "Shadows",
       "page.shadow_flat": "None",
       "page.shadow_soft": "Soft",
@@ -4285,6 +4575,63 @@ window.__ModuleLoader__.load({
         () => theme.getTheme().preference,
         (id) => theme.setTheme(id)
       );
+      const writeFonts = (recipe) => {
+        for (const role of FONT_ROLES) {
+          const family = recipe?.font?.[role] ?? "";
+          if (typeof theme.setFontFamily === "function") {
+            try {
+              theme.setFontFamily(role, family);
+            } catch (error) {
+              console.error("[dsh-fitout] could not set the " + role + " font", error);
+            }
+          }
+          const px = Number(recipe?.type?.[role]);
+          if (Number.isFinite(px) && typeof theme.setFontSize === "function") {
+            try {
+              theme.setFontSize(role, Math.round(px));
+            } catch (error) {
+              console.error("[dsh-fitout] could not set the " + role + " size", error);
+            }
+          }
+        }
+      };
+      let fontBaseline = null;
+      const syncFonts = (recipe) => {
+        if (fontBaseline === null) {
+          try {
+            const snapshot = theme.getTheme();
+            if (snapshot !== void 0 && snapshot !== null) {
+              fontBaseline = { font: { ...snapshot.fontFamilies }, type: { ...snapshot.fontSizes } };
+            }
+          } catch {
+          }
+        }
+        writeFonts(recipe);
+      };
+      bindFontSync(syncFonts);
+      bindFontRestore(() => {
+        if (fontBaseline === null) return;
+        const baseline = fontBaseline;
+        fontBaseline = null;
+        writeFonts(baseline);
+      });
+      ctx.effect(() => {
+        const read = () => {
+          try {
+            const snapshot = theme.getTheme();
+            if (snapshot !== void 0 && snapshot !== null) {
+              pushLiveFonts(snapshot.fontFamilies, snapshot.fontSizes);
+            }
+          } catch {
+          }
+        };
+        read();
+        if (typeof ctx.on !== "function") return () => {
+        };
+        const off = ctx.on("theme/change", read);
+        return typeof off === "function" ? off : () => {
+        };
+      }, "dsh-fitout: live fonts");
       const api = Object.freeze({
         version: VERSION,
         get: getSettings,

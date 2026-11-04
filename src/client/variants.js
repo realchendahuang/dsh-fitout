@@ -10,20 +10,6 @@ import { surfaceTokens } from './surfaces.js'
 
 const BASE_ACCENT = ACCENTS[0]
 
-const FONT_SIZES = Object.freeze({
-  auto: null,
-  compact: { content: '13px', code: '11px', terminal: '12px' },
-  standard: { content: '15px', code: '12px', terminal: '13px' },
-  large: { content: '17px', code: '13px', terminal: '14px' },
-})
-
-const FONT_FAMILIES = Object.freeze({
-  default: null,
-  serif: '"Songti SC","Source Han Serif SC","Noto Serif CJK SC",Georgia,"Times New Roman",serif',
-  mono: 'ui-monospace,"SF Mono",Menlo,Consolas,monospace',
-  rounded: '"SF Pro Rounded","Hiragino Maru Gothic ProN","PingFang SC",system-ui,sans-serif',
-})
-
 const SHADOWS = Object.freeze({
   flat: { mode: 'none' },
   soft: null,
@@ -136,24 +122,10 @@ function applyOptions(out, settings) {
     }
   }
 
-  const size = FONT_SIZES[settings?.fontSize]
-  if (size !== undefined && size !== null) {
-    out['--dsh-content-font-size'] = both(size.content)
-    out['--dsh-code-font-size'] = both(size.code)
-    out['--dsh-terminal-font-size'] = both(size.terminal)
-  }
-
-  const family = FONT_FAMILIES[settings?.fontFamily]
-  if (family !== undefined && family !== null) {
-    out['--dsh-font-family-text'] = both(family)
-    out['--dsw-font-family'] = both(family)
-  }
-
-  const customFont = typeof settings?.fontFamilyCustom === 'string' ? settings.fontFamilyCustom.trim() : ''
-  if (customFont !== '') {
-    out['--dsh-font-family-text'] = both(customFont)
-    out['--dsw-font-family'] = both(customFont)
-  }
+  // Type is not layered here on purpose. Families and sizes are the app's own
+  // setting, so they are written through ctx.theme.setFontFamily/setFontSize;
+  // a token override on the same variables would only win the last paint and
+  // leave the Appearance page showing values that do nothing.
 
   // A continuous radius overrides the three-step scale.
   const radiusValue = Number(settings?.radiusCustom)
