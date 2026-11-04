@@ -24,7 +24,11 @@
 | 折叠区 | **微调** —— 强调色 / 圆角 / 疏密 / 十二组版式 |
 | 关闭 | 设置 → 通用 → 「装修」开关，或卸载插件 |
 
-![装修面板](docs/panel-fitout.png)
+![主题架](docs/panel-themes.png)
+
+展开「微调」之后：
+
+![微调](docs/panel-tune.png)
 
 ## 装
 

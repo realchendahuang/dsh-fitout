@@ -48,11 +48,14 @@
     }
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "scripts": {
     "gen:tokens": "python3 scripts/gen-tokens.py",
     "build:client": "node scripts/build-client.mjs",
-    "build": "npm run gen:tokens && npm run build:client"
+    "build": "npm run gen:tokens && npm run build:client",
+    "preview": "node scripts/preview.mjs"
   }
 }
