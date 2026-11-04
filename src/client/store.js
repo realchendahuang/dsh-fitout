@@ -8,7 +8,6 @@
  * Persisted record:
  *   enabled   master switch
  *   preset    id of the applied preset, or 'custom' once a field was touched
- *   list      sidebar list: the task list or the shipped browser
  *   name      custom sidebar wordmark; empty keeps the shipped brand
  *   icon      { kind: 'official' | preset-id | 'custom', value }
  *   accent    accent hue id          (see ACCENTS)
@@ -60,7 +59,6 @@ export const TYPE_DEFAULTS = Object.freeze({ text: 14, code: 11, terminal: 13 })
 const DEFAULTS = Object.freeze({
   enabled: true,
   preset: 'standard',
-  list: 'zcode',
   name: '',
   icon: { kind: 'official', value: '' },
   accent: 'sky',
@@ -105,7 +103,6 @@ export function clone(state) {
   return {
     enabled: state.enabled,
     preset: state.preset,
-    list: state.list,
     name: state.name,
     icon: { ...state.icon },
     accent: state.accent,
@@ -198,7 +195,6 @@ function readLegacy() {
     return {
       enabled: skin?.enabled !== false,
       preset: 'custom',
-      list: skin?.list === 'native' ? 'native' : 'zcode',
       name: typeof skin?.name === 'string' ? skin.name : '',
       icon: skin?.icon && typeof skin.icon === 'object'
         ? { kind: String(skin.icon.kind ?? 'official'), value: String(skin.icon.value ?? '') }
@@ -343,7 +339,6 @@ function readStored() {
       return {
         enabled: parsed?.enabled !== false,
         preset: typeof parsed?.preset === 'string' ? parsed.preset : DEFAULTS.preset,
-        list: parsed?.list === 'native' ? 'native' : 'zcode',
         name: typeof parsed?.name === 'string' ? parsed.name : '',
         icon: parsed?.icon && typeof parsed.icon === 'object'
           ? { kind: String(parsed.icon.kind ?? 'official'), value: String(parsed.icon.value ?? '') }
@@ -587,12 +582,6 @@ export function renameTheme(id, name) {
 
 /* --- 高定 fields ---------------------------------------------------------- */
 
-export function setList(mode) {
-  const next = mode === 'native' ? 'native' : 'zcode'
-  if (next === state.list) return
-  commit({ ...state, list: next }, false)
-}
-
 export function setAppearance(patch) {
   const next = { ...state }
   if (Object.prototype.hasOwnProperty.call(patch, 'name')) {
@@ -699,13 +688,12 @@ export function resetAppearance() {
   const next = {
     ...clone(DEFAULTS),
     enabled: state.enabled,
-    list: state.list,
   }
   commit(next)
   pushFonts(next)
 }
 
-/** Reset everything, including the list mode and the master switch. */
+/** Reset everything, including the master switch. */
 export function resetAll() {
   const next = clone(DEFAULTS)
   commit(next)

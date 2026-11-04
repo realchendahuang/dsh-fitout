@@ -19,14 +19,12 @@ import { CSS, adoptStyles } from './styles.js'
 import { FitoutMark, FitoutBrandName } from './brand.jsx'
 import { FitoutSettingsRow } from './settings-row.jsx'
 import { FitoutSettingsPage } from './settings-page.jsx'
-import { FitoutTaskList } from './task-list.jsx'
 import { WorkspaceChip } from './header-chip.jsx'
-import { TurnProcessHeader } from './turn-process.jsx'
 import { ALL_GROUPS, PRESETS, findPreset } from './presets.js'
 import { pushLiveFonts } from './fonts.js'
 import {
   FONT_ROLES, bindApplier, bindFontRestore, bindFontSync, bindThemeBridge, getSettings, resetAll, setAccent,
-  setAllLayoutGroups, setAppearance, setDensity, setEffect, setEnabled, setLayoutGroup, setList,
+  setAllLayoutGroups, setAppearance, setDensity, setEffect, setEnabled, setLayoutGroup,
   setRadius, subscribe,
 } from './store.js'
 
@@ -36,7 +34,7 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.8.1'
+const VERSION = '0.9.0'
 
 export const ZH = {
   title: '装修',
@@ -119,10 +117,7 @@ export const ZH = {
   'page.layoutGroup': '版式',
   'page.layoutAllOn': '全开',
   'page.layoutAllOff': '全关',
-  'page.listGroup': '列表与细节',
-  'page.list': '任务列表',
-  'page.listZcode': '分组',
-  'page.listNative': '官方',
+  'page.detailGroup': '细节',
   'page.chip': '项目标签',
   'page.underline': '链接下划线',
   'page.brandGroup': '品牌',
@@ -142,24 +137,6 @@ export const ZH = {
   'page.importBad': '无法识别这个文件。支持装修导出的 JSON，或 dsh-dream-skin 的主题包。',
   'page.importDone': '已导入「{name}」',
   'page.loadingTheme': '',
-  'list.title': '任务',
-  'list.group': '分组',
-  'list.recent': '最近',
-  'list.untitled': '新会话',
-  'list.empty': '还没有任务',
-  'list.emptyGroup': '暂无会话',
-  'list.ungrouped': '其他',
-  'list.search': '搜索',
-  'list.searchPlaceholder': '搜索会话…',
-  'list.newTask': '新建会话',
-  'menu.open': '打开',
-  'menu.fork': '分叉会话',
-  'menu.archive': '归档',
-  'menu.copyId': '复制会话 ID',
-  'time.now': '刚刚',
-  'time.minute': ' 分钟',
-  'time.hour': ' 小时',
-  'time.day': ' 天',
 }
 
 
@@ -247,10 +224,7 @@ const EN = {
   'page.layoutGroup': 'Layout',
   'page.layoutAllOn': 'All on',
   'page.layoutAllOff': 'All off',
-  'page.listGroup': 'List & details',
-  'page.list': 'Task list',
-  'page.listZcode': 'Grouped',
-  'page.listNative': 'Shipped',
+  'page.detailGroup': 'Details',
   'page.chip': 'Project tag',
   'page.underline': 'Underlined links',
   'page.brandGroup': 'Brand',
@@ -270,31 +244,12 @@ const EN = {
   'page.importBad': 'Unrecognised file. Expected a Fitout export or a dsh-dream-skin theme pack.',
   'page.importDone': 'Imported “{name}”',
   'page.loadingTheme': '',
-  'list.title': 'Tasks',
-  'list.group': 'Groups',
-  'list.recent': 'Recent',
-  'list.untitled': 'New session',
-  'list.empty': 'No tasks yet',
-  'list.emptyGroup': 'No sessions',
-  'list.ungrouped': 'Other',
-  'list.search': 'Search',
-  'list.searchPlaceholder': 'Search sessions…',
-  'list.newTask': 'New session',
-  'menu.open': 'Open',
-  'menu.fork': 'Fork',
-  'menu.archive': 'Archive',
-  'menu.copyId': 'Copy session ID',
-  'time.now': 'now',
-  'time.minute': 'm',
-  'time.hour': 'h',
-  'time.day': 'd',
 }
 
 export function apply(ctx) {
   const theme = ctx.get('theme') ?? ctx.theme
   let layer = null
   let layoutTag = null
-  let disposeRenderer = null
 
   /** Wallpaper layer: one fixed ::before element painted from body variables. */
   const syncWallpaper = (settings) => {
@@ -349,18 +304,6 @@ export function apply(ctx) {
       }
     }
     layoutTag.textContent = wanted ? buildCss(settings.layout.disabled) : ''
-    if (wanted && disposeRenderer === null) {
-      const slots = ctx.get('slots') ?? ctx.slots
-      if (slots !== undefined && slots !== null) {
-        disposeRenderer = slots.inject('conversation.chat.node', () => slots.register(
-          { name: 'conversation.chat.node', key: 'turn-process', priority: -1 },
-          TurnProcessHeader,
-        ))
-      }
-    } else if (!wanted && disposeRenderer !== null) {
-      disposeRenderer()
-      disposeRenderer = null
-    }
   }
 
   const applyAppearance = (settings) => {
@@ -454,7 +397,6 @@ export function apply(ctx) {
     get: getSettings,
     subscribe,
     setEnabled,
-    setList,
     setAccent,
     setRadius,
     setDensity,
@@ -559,9 +501,8 @@ export function apply(ctx) {
   bindBrand('sidebar.brand.mark', FitoutMark, (settings) => settings.icon.kind !== 'official')
   bindBrand('sidebar.brand.name', FitoutBrandName, (settings) => settings.name.trim() !== '')
 
-  // The task list shadows the shipped WorkspaceBrowser while the setting is
-  // 'zcode'. The services must exist before the occupant can be registered, so
-  // the whole thing lives inside ctx.inject (activation order is not assumed).
+  // The header chip reads the shipped workspace list; the services have to
+  // exist first, so the registration lives inside ctx.inject.
   ctx.inject(['workspaces', 'sessions', 'uiWorkspace'], (scope) => {
     const workspaces = scope.workspaces ?? ctx.get('workspaces')
     const sessions = scope.sessions ?? ctx.get('sessions')
@@ -581,47 +522,6 @@ export function apply(ctx) {
             order: -1,
             inject: () => ({ hooks: { sessions: sessions.list, workspaces: workspaces.list } }),
           }, WorkspaceChip)
-        } else if (!want && dispose !== null) {
-          dispose()
-          dispose = null
-        }
-      }
-      const off = subscribe(sync)
-      sync()
-      return () => {
-        off()
-        if (dispose !== null) {
-          dispose()
-          dispose = null
-        }
-      }
-    })
-
-    slots.inject('sidebar.workspaces', () => {
-      let dispose = null
-      const sync = () => {
-        const want = getSettings().list === 'zcode'
-        if (want && dispose === null) {
-          dispose = slots.register({
-            name: 'sidebar.workspaces',
-            priority: -1,
-            locale: NS,
-            inject: () => ({
-              hooks: { workspaces: workspaces.list, sessions: sessions.list },
-              openSession: (sessionId) => { uiWorkspace.openSession(sessionId) },
-              startSession: (workspaceId) => { uiWorkspace.startSession(workspaceId) },
-              archiveSession: (sessionId) => { workspaces.archiveSession(sessionId) },
-              unarchiveSession: (sessionId) => { workspaces.unarchiveSession(sessionId) },
-              forkSession: (sessionId) => { uiWorkspace.forkSession(sessionId) },
-              copyText: (text) => {
-                try {
-                  void globalThis.navigator?.clipboard?.writeText(text)
-                } catch {
-                  /* clipboard is optional */
-                }
-              },
-            }),
-          }, FitoutTaskList)
         } else if (!want && dispose !== null) {
           dispose()
           dispose = null

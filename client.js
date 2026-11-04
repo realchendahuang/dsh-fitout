@@ -210,7 +210,6 @@ window.__ModuleLoader__.load({
     var DEFAULTS = Object.freeze({
       enabled: true,
       preset: "standard",
-      list: "zcode",
       name: "",
       icon: { kind: "official", value: "" },
       accent: "sky",
@@ -251,7 +250,6 @@ window.__ModuleLoader__.load({
       return {
         enabled: state2.enabled,
         preset: state2.preset,
-        list: state2.list,
         name: state2.name,
         icon: { ...state2.icon },
         accent: state2.accent,
@@ -336,7 +334,6 @@ window.__ModuleLoader__.load({
         return {
           enabled: skin?.enabled !== false,
           preset: "custom",
-          list: skin?.list === "native" ? "native" : "zcode",
           name: typeof skin?.name === "string" ? skin.name : "",
           icon: skin?.icon && typeof skin.icon === "object" ? { kind: String(skin.icon.kind ?? "official"), value: String(skin.icon.value ?? "") } : { ...DEFAULTS.icon },
           accent: oneOf(skin?.accent, ACCENTS.map((a) => a.id), DEFAULTS.accent),
@@ -458,7 +455,6 @@ window.__ModuleLoader__.load({
           return {
             enabled: parsed?.enabled !== false,
             preset: typeof parsed?.preset === "string" ? parsed.preset : DEFAULTS.preset,
-            list: parsed?.list === "native" ? "native" : "zcode",
             name: typeof parsed?.name === "string" ? parsed.name : "",
             icon: parsed?.icon && typeof parsed.icon === "object" ? { kind: String(parsed.icon.kind ?? "official"), value: String(parsed.icon.value ?? "") } : { ...DEFAULTS.icon },
             accent: oneOf(parsed?.accent, ACCENTS.map((a) => a.id), DEFAULTS.accent),
@@ -636,11 +632,6 @@ window.__ModuleLoader__.load({
         preset: state.preset === id ? "custom" : state.preset
       });
     }
-    function setList(mode) {
-      const next = mode === "native" ? "native" : "zcode";
-      if (next === state.list) return;
-      commit({ ...state, list: next }, false);
-    }
     function setAppearance(patch) {
       const next = { ...state };
       if (Object.prototype.hasOwnProperty.call(patch, "name")) {
@@ -719,8 +710,7 @@ window.__ModuleLoader__.load({
     function resetAppearance() {
       const next = {
         ...clone(DEFAULTS),
-        enabled: state.enabled,
-        list: state.list
+        enabled: state.enabled
       };
       commit(next);
       pushFonts(next);
@@ -1409,55 +1399,6 @@ window.__ModuleLoader__.load({
     [data-step-process]:has([data-state="running"]) [data-step-process-icon] svg{ animation:fto-live-pulse 2.4s ease-in-out infinite; }
     @keyframes fto-live-pulse{ 0%,100%{opacity:1;} 50%{opacity:.55;} }
 
-    /* \u2550\u2550\u2550 4. \u8F6E\u6B21\u6298\u53E0\u5934 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
-    button.fto-turn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      width:fit-content;
-      max-width:100%;
-      height:var(--fto-h);
-      padding:0 8px;
-      margin:2px -8px 8px;
-      border:0;
-      background:transparent;
-      border-radius:var(--fto-r-sm);
-      font-size:var(--fto-fs);
-      font-weight:500;
-      color:var(--fto-fg3);
-      letter-spacing:.01em;
-      cursor:pointer;
-      transition:background-color .16s ease,color .16s ease;
-    }
-    button.fto-turn:hover{ background:var(--fto-hover); color:var(--fto-fg2); }
-    button.fto-turn:disabled{ cursor:default; }
-    button.fto-turn:disabled:hover{ background:transparent; color:var(--fto-fg3); }
-    button.fto-turn:focus-visible{ outline:2px solid var(--fto-brand); outline-offset:1px; }
-    .fto-turn-label{ white-space:nowrap; }
-    .fto-turn-dot{
-      width:3px; height:3px; border-radius:50%;
-      background:var(--fto-fg4);
-    }
-    .fto-turn-duration{
-      font-size:var(--fto-fs);
-      color:var(--fto-fg2);
-      font-variant-numeric:tabular-nums;
-      font-weight:500;
-    }
-    .fto-turn-meta{
-      font-size:var(--fto-fs2);
-      color:var(--fto-fg4);
-      font-weight:400;
-      white-space:nowrap;
-    }
-    .fto-turn-chevron{
-      color:var(--fto-fg4);
-      opacity:.55;
-      transition:opacity .2s ease-out,transform .2s ease-out;
-    }
-    button.fto-turn:hover .fto-turn-chevron{ opacity:.95; }
-    button.fto-turn[data-open] .fto-turn-chevron{ transform:rotate(90deg); }
-
     /* \u901A\u7528\u8BE6\u60C5\u89C6\u56FE\uFF1A\u5C0F\u6807\u9898\u3001\u6761\u76EE\u3001\u5FBD\u6807\u3001\u5B57\u6BB5\u540D */
     [data-caption="true"][data-inspect="true"] [class*="_caption"]{
       font-size:11px;
@@ -1726,7 +1667,6 @@ window.__ModuleLoader__.load({
     /* \u2550\u2550\u2550 18. \u952E\u76D8\u53EF\u8FBE\u6027\uFF1A\u6574\u884C\u53EF\u70B9\uFF0C\u4E5F\u8981\u6709\u6E05\u695A\u7684\u7126\u70B9\u73AF \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
     [data-disclosure-row]:focus-visible,
     [data-step-process] button[data-process-activity]:focus-visible,
-    button.fto-turn:focus-visible,
     [data-changed-files] [class*="_header"]:focus-visible{
       outline:none !important;
       box-shadow:0 0 0 2px color-mix(in srgb,var(--fto-brand) 55%,transparent);
@@ -2149,58 +2089,6 @@ window.__ModuleLoader__.load({
       --dsw-alias-scrollbar-bg-l2:#545557;
       --dsw-alias-scrollbar-hover-l2:#65676b;
     }
-
-    /* --- ZCode task list (sidebar.workspaces replacement) --- */
-    .fto-list-root{display:flex;flex-direction:column;min-height:0;font-size:13px;color:var(--dsw-alias-label-primary);padding:2px 6px 8px}
-    .fto-list-head{display:flex;flex-direction:column;gap:6px;padding:2px 2px 6px}
-    .fto-list-headLine{display:flex;align-items:center;gap:6px;height:22px;color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
-    .fto-list-count{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-tertiary);font-size:10px}
-    .fto-list-headGap{flex:1}
-    .fto-list-iconBtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:0;background:transparent;color:var(--dsw-alias-label-tertiary);border-radius:6px;cursor:pointer;opacity:0;transition:opacity .12s ease}
-    .fto-list-head .fto-list-iconBtn{opacity:.55}
-    .fto-list-head:hover .fto-list-iconBtn,.fto-list-groupRow:hover .fto-list-iconBtn,.fto-list-iconBtn[data-on="true"]{opacity:1}
-    .fto-list-iconBtn:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}
-    .fto-list-search{height:26px;padding:0 8px;border:1px solid var(--dsw-alias-border-l2);border-radius:6px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font-size:12px;outline:none}
-    .fto-list-search:focus{border-color:var(--dsw-alias-link,#0284c7)}
-    .fto-list-seg{display:inline-flex;gap:2px;padding:2px;border-radius:7px;background:var(--dsw-alias-bg-layer-3);width:max-content}
-    .fto-list-segBtn{height:20px;padding:0 8px;border:0;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary);font-size:11px;cursor:pointer}
-    .fto-list-segBtn[data-on="true"]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px rgba(0,0,0,.06)}
-    .fto-list-scroll{overflow:auto;min-height:0;padding-right:2px}
-    .fto-list-group{margin-bottom:2px}
-    .fto-list-groupRow{display:flex;align-items:center;gap:6px;height:28px;padding:0 6px;border-radius:6px;cursor:pointer;color:var(--dsw-alias-label-secondary)}
-    .fto-list-groupRow:hover{background:var(--dsw-alias-interactive-bg-hover)}
-    .fto-list-groupIcon{display:inline-flex;color:var(--dsw-alias-label-tertiary)}
-    .fto-list-groupTitle{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .fto-list-chevron{display:inline-flex;color:var(--dsw-alias-label-tertiary);opacity:0}
-    .fto-list-groupRow:hover .fto-list-chevron{opacity:1}
-    .fto-list-rows{display:flex;flex-direction:column;gap:1px;padding-left:8px}
-    .fto-list-row{position:relative;display:flex;align-items:center;gap:6px;height:28px;padding:0 6px;border-radius:6px;cursor:default;color:var(--dsw-alias-label-secondary)}
-    .fto-list-row:hover{background:var(--dsw-alias-interactive-bg-hover)}
-    .fto-list-row[data-active="true"]{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--dsw-alias-label-primary)}
-    .fto-list-state{width:6px;height:6px;border-radius:50%;background:transparent;flex:0 0 auto}
-    .fto-list-state[data-running="true"]{background:var(--dsw-alias-state-success-primary)}
-    .fto-list-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
-    .fto-list-row[data-active="true"] .fto-list-title{font-weight:500}
-    .fto-list-time{flex:0 0 auto;color:var(--dsw-alias-label-tertiary);font-size:11px}
-    .fto-list-time{transition:opacity .12s ease}
-    .fto-list-row:hover .fto-list-time,.fto-list-row:focus-within .fto-list-time{opacity:0}
-    .fto-list-more{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:0;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-tertiary);border-radius:5px;cursor:pointer;opacity:0;transition:opacity .12s ease}
-    .fto-list-row:hover .fto-list-more,.fto-list-row:focus-within .fto-list-more{opacity:1}
-    .fto-list-more:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}
-    .fto-list-empty{color:var(--dsw-alias-label-tertiary);font-size:11px;padding:6px 8px}
-    .fto-list-emptyAll{padding:18px 10px;text-align:center}
-    .fto-list-backdrop{position:fixed;inset:0;z-index:80}
-    .fto-list-menu{position:fixed;z-index:81;min-width:168px;padding:4px;border-radius:8px;background:var(--dsw-alias-bg-layer-1);border:.5px solid var(--dsw-alias-border-l2);box-shadow:var(--dsw-elevation-panel);font-size:12px}
-    .fto-list-menuItem{display:flex;align-items:center;height:28px;padding:0 8px;border-radius:5px;color:var(--dsw-alias-label-primary);cursor:pointer}
-    .fto-list-menuItem:hover{background:var(--dsw-alias-interactive-bg-hover)}
-
-    /* --- density for the self-drawn task list (it has no data-row-key rows) --- */
-    html.fto-dense-sidebar .fto-list-row,
-    html.fto-dense-sidebar .fto-list-groupRow{height:24px}
-    html.fto-dense-sidebar .fto-list-row{font-size:12px}
-    html.fto-dense-sidebar .fto-list-title{font-size:12px}
-    html.fto-dense-sidebar .fto-list-time{font-size:10px}
-    html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
     /* --- frosted glass: expensive, so it is opt-in and never full-strength --- */
     html.fto-glass-all [data-slot="sidebar"]{
@@ -3662,19 +3550,7 @@ window.__ModuleLoader__.load({
           ),
           import_react3.default.createElement(
             Group,
-            { title: translate("page.listGroup") },
-            import_react3.default.createElement(
-              Feature,
-              { title: translate("page.list") },
-              import_react3.default.createElement(Seg, {
-                value: settings.list,
-                choices: [
-                  { id: "zcode", label: translate("page.listZcode") },
-                  { id: "native", label: translate("page.listNative") }
-                ],
-                onChange: setList
-              })
-            ),
+            { title: translate("page.detailGroup") },
             import_react3.default.createElement(
               Feature,
               { title: translate("page.chip") },
@@ -3759,316 +3635,10 @@ window.__ModuleLoader__.load({
       );
     }
 
-    // src/client/task-list.jsx
-    var import_react4 = __toESM(require("react"), 1);
-    var GROUP_STORAGE_KEY = "dsh-fitout:collapsed-groups";
-    function readCollapsed() {
-      try {
-        const raw = globalThis.localStorage?.getItem(GROUP_STORAGE_KEY);
-        if (raw === null || raw === void 0) return /* @__PURE__ */ new Set();
-        const parsed = JSON.parse(raw);
-        return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
-      } catch {
-        return /* @__PURE__ */ new Set();
-      }
-    }
-    function writeCollapsed(set) {
-      try {
-        globalThis.localStorage?.setItem(GROUP_STORAGE_KEY, JSON.stringify([...set]));
-      } catch {
-      }
-    }
-    function relativeTime(ms, now, t) {
-      if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) return "";
-      const delta = Math.max(0, now - ms);
-      const minute = 6e4;
-      const hour = 60 * minute;
-      const day = 24 * hour;
-      if (delta < minute) return t("time.now");
-      if (delta < hour) return String(Math.floor(delta / minute)) + t("time.minute");
-      if (delta < day) return String(Math.floor(delta / hour)) + t("time.hour");
-      if (delta < 30 * day) return String(Math.floor(delta / day)) + t("time.day");
-      const date = new Date(ms);
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const dayOfMonth = String(date.getDate()).padStart(2, "0");
-      return month + "-" + dayOfMonth;
-    }
-    function HashIcon() {
-      return import_react4.default.createElement(
-        "svg",
-        { width: 14, height: 14, viewBox: "0 0 14 14", fill: "none", "aria-hidden": "true" },
-        import_react4.default.createElement("path", { d: "M5.4 2 4.6 12M9.4 2 8.6 12M2.2 5h9.6M1.8 9h9.6", stroke: "currentColor", "stroke-width": 1.2, "stroke-linecap": "round" })
-      );
-    }
-    function PlusIcon() {
-      return import_react4.default.createElement(
-        "svg",
-        { width: 14, height: 14, viewBox: "0 0 14 14", fill: "none", "aria-hidden": "true" },
-        import_react4.default.createElement("path", { d: "M7 2.5v9M2.5 7h9", stroke: "currentColor", "stroke-width": 1.4, "stroke-linecap": "round" })
-      );
-    }
-    function SearchIcon() {
-      return import_react4.default.createElement(
-        "svg",
-        { width: 14, height: 14, viewBox: "0 0 14 14", fill: "none", "aria-hidden": "true" },
-        import_react4.default.createElement("circle", { cx: 6.2, cy: 6.2, r: 3.9, stroke: "currentColor", "stroke-width": 1.2 }),
-        import_react4.default.createElement("path", { d: "m9.2 9.2 2.6 2.6", stroke: "currentColor", "stroke-width": 1.2, "stroke-linecap": "round" })
-      );
-    }
-    function MoreIcon() {
-      return import_react4.default.createElement(
-        "svg",
-        { width: 14, height: 14, viewBox: "0 0 14 14", fill: "currentColor", "aria-hidden": "true" },
-        import_react4.default.createElement("circle", { cx: 3, cy: 7, r: 1.1 }),
-        import_react4.default.createElement("circle", { cx: 7, cy: 7, r: 1.1 }),
-        import_react4.default.createElement("circle", { cx: 11, cy: 7, r: 1.1 })
-      );
-    }
-    function CollapseIcon({ collapsed }) {
-      return import_react4.default.createElement("svg", {
-        width: 12,
-        height: 12,
-        viewBox: "0 0 12 12",
-        fill: "none",
-        "aria-hidden": "true",
-        style: { transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)", transition: "transform .12s ease" }
-      }, import_react4.default.createElement("path", { d: "M2.5 4.5 6 8l3.5-3.5", stroke: "currentColor", "stroke-width": 1.3, "stroke-linecap": "round", "stroke-linejoin": "round" }));
-    }
-    function SessionRow({ summary, label, time, active, onOpen, onMenu }) {
-      return import_react4.default.createElement(
-        "div",
-        {
-          className: "fto-list-row",
-          "data-active": active ? "true" : "false",
-          role: "treeitem",
-          "aria-selected": active ? "true" : "false",
-          onClick: onOpen,
-          onContextMenu: (event) => {
-            event.preventDefault();
-            onMenu({ x: event.clientX, y: event.clientY });
-          }
-        },
-        import_react4.default.createElement("span", { className: "fto-list-state", "data-running": summary.running ? "true" : "false", "aria-hidden": "true" }),
-        import_react4.default.createElement("span", { className: "fto-list-title" }, label),
-        import_react4.default.createElement("span", { className: "fto-list-time" }, time),
-        import_react4.default.createElement("button", {
-          type: "button",
-          className: "fto-list-more",
-          "aria-label": label,
-          onClick: (event) => {
-            event.stopPropagation();
-            const rect = event.currentTarget.getBoundingClientRect();
-            onMenu({ x: rect.left, y: rect.bottom + 2 });
-          }
-        }, import_react4.default.createElement(MoreIcon))
-      );
-    }
-    function FitoutTaskList(props) {
-      const { t, useWorkspaces, useSessions, openSession, startSession, archiveSession, forkSession, copyText } = props;
-      const items = useWorkspaces((state2) => state2.items);
-      const pinnedSessionIds = useWorkspaces((state2) => state2.pinnedSessionIds);
-      const archivedSessionIds = useWorkspaces((state2) => state2.archivedSessionIds);
-      const list = useSessions((state2) => state2);
-      const [mode, setMode] = import_react4.default.useState("group");
-      const [query, setQuery] = import_react4.default.useState("");
-      const [collapsed, setCollapsed] = import_react4.default.useState(readCollapsed);
-      const [now, setNow] = import_react4.default.useState(() => Date.now());
-      const [menu, setMenu] = import_react4.default.useState(null);
-      import_react4.default.useEffect(() => {
-        const timer = globalThis.setInterval(() => setNow(Date.now()), 6e4);
-        return () => globalThis.clearInterval(timer);
-      }, []);
-      const pinned = import_react4.default.useMemo(() => new Set(pinnedSessionIds ?? []), [pinnedSessionIds]);
-      const archived = import_react4.default.useMemo(() => new Set(archivedSessionIds ?? []), [archivedSessionIds]);
-      const byId = list?.byId ?? {};
-      const needle = query.trim().toLowerCase();
-      const visible = import_react4.default.useCallback((summary) => {
-        if (summary === void 0 || summary === null) return false;
-        if (archived.has(summary.id)) return false;
-        if (needle === "") return true;
-        return String(summary.title ?? "").toLowerCase().includes(needle);
-      }, [archived, needle]);
-      const labelOf = (summary) => {
-        if (summary.blank === true || summary.title === void 0 || summary.title.trim() === "") return t("list.untitled");
-        return summary.title;
-      };
-      const sortMembers = (members) => members.slice().sort((a, b) => {
-        const pa = pinned.has(a.id) ? 0 : 1;
-        const pb = pinned.has(b.id) ? 0 : 1;
-        if (pa !== pb) return pa - pb;
-        return (b.updatedAt ?? 0) - (a.updatedAt ?? 0);
-      });
-      const groups = import_react4.default.useMemo(() => {
-        if (mode === "recent") {
-          const members = sortMembers(Object.values(byId).filter(visible));
-          return [{ id: "__recent__", title: t("list.recent"), path: "", members, synthetic: true }];
-        }
-        const out = [];
-        const accounted = /* @__PURE__ */ new Set();
-        for (const workspace of items ?? []) {
-          const members = sortMembers((workspace.sessionIds ?? []).map((id) => byId[id]).filter((summary) => summary !== void 0 && visible(summary)));
-          for (const summary of members) accounted.add(summary.id);
-          if (needle !== "" && members.length === 0) continue;
-          out.push({ id: workspace.workspaceId, title: workspace.title, path: workspace.path, members });
-        }
-        const loose = sortMembers(Object.values(byId).filter((summary) => !accounted.has(summary.id) && visible(summary)));
-        if (loose.length > 0) out.push({ id: "__loose__", title: t("list.ungrouped"), path: "", members: loose, synthetic: true });
-        return out;
-      }, [mode, byId, items, visible, pinned, t]);
-      const total = groups.reduce((sum, group) => sum + group.members.length, 0);
-      const toggleGroup = (id) => {
-        setCollapsed((previous) => {
-          const next = new Set(previous);
-          if (next.has(id)) next.delete(id);
-          else next.add(id);
-          writeCollapsed(next);
-          return next;
-        });
-      };
-      const header = import_react4.default.createElement(
-        "div",
-        { className: "fto-list-head" },
-        import_react4.default.createElement(
-          "div",
-          { className: "fto-list-headLine" },
-          import_react4.default.createElement("span", { className: "fto-list-headTitle" }, t("list.title")),
-          import_react4.default.createElement("span", { className: "fto-list-count" }, String(total)),
-          import_react4.default.createElement("span", { className: "fto-list-headGap" }),
-          import_react4.default.createElement("button", {
-            type: "button",
-            className: "fto-list-iconBtn",
-            "data-on": query !== "" ? "true" : "false",
-            "aria-label": t("list.search"),
-            title: t("list.search"),
-            onClick: () => setQuery(query === "" ? "__focus__" : "")
-          }, import_react4.default.createElement(SearchIcon))
-        ),
-        query === "" ? null : import_react4.default.createElement("input", {
-          className: "fto-list-search",
-          type: "text",
-          autoFocus: true,
-          value: query === "__focus__" ? "" : query,
-          placeholder: t("list.searchPlaceholder"),
-          onChange: (event) => setQuery(event.target.value),
-          onKeyDown: (event) => {
-            if (event.key === "Escape") setQuery("");
-          }
-        }),
-        import_react4.default.createElement(
-          "div",
-          { className: "fto-list-seg" },
-          import_react4.default.createElement("button", {
-            type: "button",
-            className: "fto-list-segBtn",
-            "data-on": mode === "group" ? "true" : "false",
-            onClick: () => setMode("group")
-          }, t("list.group")),
-          import_react4.default.createElement("button", {
-            type: "button",
-            className: "fto-list-segBtn",
-            "data-on": mode === "recent" ? "true" : "false",
-            onClick: () => setMode("recent")
-          }, t("list.recent"))
-        )
-      );
-      const body = groups.map((group) => {
-        const isCollapsed = collapsed.has(group.id);
-        const groupRow = import_react4.default.createElement(
-          "div",
-          {
-            className: "fto-list-groupRow",
-            role: "button",
-            tabIndex: 0,
-            onClick: () => toggleGroup(group.id),
-            onKeyDown: (event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                toggleGroup(group.id);
-              }
-            },
-            onContextMenu: group.synthetic ? void 0 : (event) => {
-              event.preventDefault();
-              openWorkspaceMenu(group.id, group.path, group.title, { x: event.clientX, y: event.clientY });
-            }
-          },
-          import_react4.default.createElement("span", { className: "fto-list-groupIcon" }, import_react4.default.createElement(HashIcon)),
-          import_react4.default.createElement("span", { className: "fto-list-groupTitle" }, group.title),
-          import_react4.default.createElement("span", { className: "fto-list-count" }, String(group.members.length)),
-          import_react4.default.createElement("span", { className: "fto-list-headGap" }),
-          isCollapsed ? null : import_react4.default.createElement("button", {
-            type: "button",
-            className: "fto-list-iconBtn fto-list-add",
-            "aria-label": t("list.newTask"),
-            title: t("list.newTask"),
-            onClick: (event) => {
-              event.stopPropagation();
-              if (group.id === "__recent__" || group.id === "__loose__") startSession(void 0);
-              else startSession(group.id);
-            }
-          }, import_react4.default.createElement(PlusIcon)),
-          import_react4.default.createElement("span", { className: "fto-list-chevron" }, import_react4.default.createElement(CollapseIcon, { collapsed: isCollapsed }))
-        );
-        const rows = isCollapsed || group.members.length === 0 ? null : import_react4.default.createElement(
-          "div",
-          { className: "fto-list-rows" },
-          group.members.map((summary) => import_react4.default.createElement(SessionRow, {
-            key: summary.id,
-            summary,
-            label: labelOf(summary),
-            time: relativeTime(summary.updatedAt, now, t),
-            active: (summary.retainedBy?.mainView ?? 0) > 0,
-            onOpen: () => openSession(summary.id),
-            onMenu: (point) => setMenu({ summary, x: point.x, y: point.y })
-          }))
-        );
-        return import_react4.default.createElement("div", { className: "fto-list-group", key: group.id }, groupRow, rows);
-      });
-      const menuItem = (label, onSelect) => import_react4.default.createElement("div", {
-        className: "fto-list-menuItem",
-        role: "menuitem",
-        onClick: () => {
-          onSelect();
-          setMenu(null);
-        }
-      }, label);
-      const menuLayer = menu === null ? null : import_react4.default.createElement(
-        import_react4.default.Fragment,
-        null,
-        import_react4.default.createElement("div", { className: "fto-list-backdrop", onPointerDown: () => setMenu(null) }),
-        import_react4.default.createElement(
-          "div",
-          {
-            className: "fto-list-menu",
-            role: "menu",
-            style: { left: String(Math.min(menu.x, globalThis.innerWidth - 180)) + "px", top: String(Math.min(menu.y, globalThis.innerHeight - 140)) + "px" }
-          },
-          menuItem(t("menu.open"), () => openSession(menu.summary.id)),
-          menuItem(t("menu.fork"), () => {
-            void forkSession(menu.summary.id);
-          }),
-          menu.summary.running ? null : menuItem(t("menu.archive"), () => {
-            void archiveSession(menu.summary.id);
-          }),
-          menuItem(t("menu.copyId"), () => copyText(menu.summary.id))
-        )
-      );
-      return import_react4.default.createElement(
-        "div",
-        { className: "fto-list-root", "data-mode": mode },
-        header,
-        import_react4.default.createElement(
-          "div",
-          { className: "fto-list-scroll" },
-          total === 0 ? import_react4.default.createElement("div", { className: "fto-list-empty fto-list-emptyAll" }, t("list.empty")) : body
-        ),
-        menuLayer
-      );
-    }
-
     // src/client/header-chip.jsx
-    var import_react5 = __toESM(require("react"), 1);
+    var import_react4 = __toESM(require("react"), 1);
     function FolderIcon() {
-      return import_react5.default.createElement(
+      return import_react4.default.createElement(
         "svg",
         {
           width: 13,
@@ -4078,7 +3648,7 @@ window.__ModuleLoader__.load({
           "aria-hidden": "true",
           strokeWidth: 1
         },
-        import_react5.default.createElement("path", {
+        import_react4.default.createElement("path", {
           d: "M1.5 3.6c0-.55.45-1 1-1h2.93c.24 0 .48.09.66.25l1.62 1.43c.18.16.42.25.66.25h5.12c.55 0 1 .45 1 1v7.85c0 .55-.45 1-1 1H2.5c-.55 0-1-.45-1-1V3.6Z",
           stroke: "currentColor"
         })
@@ -4088,11 +3658,11 @@ window.__ModuleLoader__.load({
       const { useSessions, useWorkspaces } = props;
       const list = useSessions((state2) => state2);
       const items = useWorkspaces((state2) => state2.items);
-      const current = import_react5.default.useMemo(() => {
+      const current = import_react4.default.useMemo(() => {
         const byId = list?.byId ?? {};
         return Object.values(byId).find((summary) => (summary?.retainedBy?.mainView ?? 0) > 0);
       }, [list]);
-      const name2 = import_react5.default.useMemo(() => {
+      const name2 = import_react4.default.useMemo(() => {
         if (current === void 0 || current === null) return "";
         const workspace = (items ?? []).find((candidate) => (candidate.sessionIds ?? []).includes(current.id));
         if (workspace !== void 0 && workspace.title) return workspace.title;
@@ -4102,106 +3672,15 @@ window.__ModuleLoader__.load({
         return parts.length === 0 ? cwd : parts[parts.length - 1];
       }, [current, items]);
       if (name2 === "") return null;
-      return import_react5.default.createElement(
+      return import_react4.default.createElement(
         "span",
         {
           className: "fto-chip-chip",
           title: current?.cwd ?? name2,
           "data-zcode-workspace-chip": "true"
         },
-        import_react5.default.createElement(FolderIcon),
-        import_react5.default.createElement("span", { className: "fto-chip-name" }, name2)
-      );
-    }
-
-    // src/client/turn-process.jsx
-    var import_react6 = __toESM(require("react"), 1);
-    var VISUALLY_HIDDEN = {
-      position: "absolute",
-      width: "1px",
-      height: "1px",
-      overflow: "hidden",
-      clipPath: "inset(50%)",
-      whiteSpace: "nowrap"
-    };
-    function formatDuration(milliseconds) {
-      const total = Math.max(0, Math.floor(milliseconds / 1e3));
-      const hours = Math.floor(total / 3600);
-      const minutes = Math.floor(total / 60) % 60;
-      const seconds = total % 60;
-      const parts = [];
-      if (hours > 0) parts.push(`${hours} \u5C0F\u65F6`);
-      if (total >= 60) parts.push(`${minutes} \u5206`);
-      parts.push(`${seconds} \u79D2`);
-      return parts.join(" ");
-    }
-    function TurnProcessHeader({ node, turnProcess }) {
-      if (turnProcess === void 0) return null;
-      const location = node.location;
-      const turn = location?.kind === "turn" || location?.kind === "step" ? location.turn : void 0;
-      if (turn?.status !== "closed") return null;
-      const reason = turn.end?.data?.reason?.kind;
-      const stopped = reason === "aborted" || reason === "interrupted";
-      const failed = reason === "error";
-      const alwaysOpen = stopped || failed;
-      const canCollapse = turnProcess.foldable && turnProcess.hasContent && !alwaysOpen;
-      const open = !turnProcess.foldable || turnProcess.open;
-      const elapsed = turn.start === void 0 || turn.end === void 0 ? void 0 : Math.max(1e3, turn.end.time - turn.start.time);
-      const data = node.data ?? {};
-      const calls = data.toolCallCount ?? 0;
-      const meta = [];
-      if (calls > 0) meta.push(`${calls} \u6B21\u5DE5\u5177\u8C03\u7528`);
-      const title = stopped ? "\u5DF2\u505C\u6B62" : failed ? "\u5904\u7406\u5931\u8D25" : elapsed === void 0 ? "\u5DF2\u5904\u7406" : "\u5DF2\u5B8C\u6210";
-      const announcement = stopped ? "\u672C\u8F6E\u5DF2\u505C\u6B62" : failed ? "\u672C\u8F6E\u5904\u7406\u5931\u8D25" : "\u672C\u8F6E\u5DF2\u5B8C\u6210";
-      const showDuration = !stopped && !failed && elapsed !== void 0;
-      return import_react6.default.createElement(
-        import_react6.default.Fragment,
-        null,
-        import_react6.default.createElement("span", {
-          role: "status",
-          "aria-live": "polite",
-          "aria-atomic": "true",
-          style: VISUALLY_HIDDEN
-        }, announcement),
-        import_react6.default.createElement(
-          "button",
-          {
-            type: "button",
-            className: "fto-turn",
-            "data-turn-process": data.turn,
-            "data-turn-process-messages": data.messageCount,
-            "data-turn-process-tool-calls": data.toolCallCount,
-            "data-open": open || void 0,
-            "aria-expanded": turnProcess.hasContent ? open : void 0,
-            disabled: !canCollapse,
-            onClick: (event) => {
-              event.currentTarget.focus();
-              turnProcess.setOpen(!open);
-            }
-          },
-          import_react6.default.createElement("span", { className: "fto-turn-label" }, title),
-          showDuration ? import_react6.default.createElement(
-            import_react6.default.Fragment,
-            null,
-            import_react6.default.createElement("span", { className: "fto-turn-dot", "aria-hidden": "true" }),
-            import_react6.default.createElement("span", { className: "fto-turn-duration" }, formatDuration(elapsed))
-          ) : null,
-          meta.length > 0 ? import_react6.default.createElement("span", { className: "fto-turn-meta" }, meta.join(" \xB7 ")) : null,
-          canCollapse ? import_react6.default.createElement("svg", {
-            className: "fto-turn-chevron",
-            viewBox: "0 0 16 16",
-            width: 14,
-            height: 14,
-            "aria-hidden": "true"
-          }, import_react6.default.createElement("path", {
-            d: "M6 3.5L10.5 8L6 12.5",
-            fill: "none",
-            stroke: "currentColor",
-            strokeWidth: 1.6,
-            strokeLinecap: "round",
-            strokeLinejoin: "round"
-          })) : null
-        )
+        import_react4.default.createElement(FolderIcon),
+        import_react4.default.createElement("span", { className: "fto-chip-name" }, name2)
       );
     }
 
@@ -4209,7 +3688,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.8.1";
+    var VERSION = "0.9.0";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
@@ -4290,10 +3769,7 @@ window.__ModuleLoader__.load({
       "page.layoutGroup": "\u7248\u5F0F",
       "page.layoutAllOn": "\u5168\u5F00",
       "page.layoutAllOff": "\u5168\u5173",
-      "page.listGroup": "\u5217\u8868\u4E0E\u7EC6\u8282",
-      "page.list": "\u4EFB\u52A1\u5217\u8868",
-      "page.listZcode": "\u5206\u7EC4",
-      "page.listNative": "\u5B98\u65B9",
+      "page.detailGroup": "\u7EC6\u8282",
       "page.chip": "\u9879\u76EE\u6807\u7B7E",
       "page.underline": "\u94FE\u63A5\u4E0B\u5212\u7EBF",
       "page.brandGroup": "\u54C1\u724C",
@@ -4312,25 +3788,7 @@ window.__ModuleLoader__.load({
       "page.export": "\u5BFC\u51FA\u5F53\u524D",
       "page.importBad": "\u65E0\u6CD5\u8BC6\u522B\u8FD9\u4E2A\u6587\u4EF6\u3002\u652F\u6301\u88C5\u4FEE\u5BFC\u51FA\u7684 JSON\uFF0C\u6216 dsh-dream-skin \u7684\u4E3B\u9898\u5305\u3002",
       "page.importDone": "\u5DF2\u5BFC\u5165\u300C{name}\u300D",
-      "page.loadingTheme": "",
-      "list.title": "\u4EFB\u52A1",
-      "list.group": "\u5206\u7EC4",
-      "list.recent": "\u6700\u8FD1",
-      "list.untitled": "\u65B0\u4F1A\u8BDD",
-      "list.empty": "\u8FD8\u6CA1\u6709\u4EFB\u52A1",
-      "list.emptyGroup": "\u6682\u65E0\u4F1A\u8BDD",
-      "list.ungrouped": "\u5176\u4ED6",
-      "list.search": "\u641C\u7D22",
-      "list.searchPlaceholder": "\u641C\u7D22\u4F1A\u8BDD\u2026",
-      "list.newTask": "\u65B0\u5EFA\u4F1A\u8BDD",
-      "menu.open": "\u6253\u5F00",
-      "menu.fork": "\u5206\u53C9\u4F1A\u8BDD",
-      "menu.archive": "\u5F52\u6863",
-      "menu.copyId": "\u590D\u5236\u4F1A\u8BDD ID",
-      "time.now": "\u521A\u521A",
-      "time.minute": " \u5206\u949F",
-      "time.hour": " \u5C0F\u65F6",
-      "time.day": " \u5929"
+      "page.loadingTheme": ""
     };
     var EN = {
       title: "Fitout",
@@ -4412,10 +3870,7 @@ window.__ModuleLoader__.load({
       "page.layoutGroup": "Layout",
       "page.layoutAllOn": "All on",
       "page.layoutAllOff": "All off",
-      "page.listGroup": "List & details",
-      "page.list": "Task list",
-      "page.listZcode": "Grouped",
-      "page.listNative": "Shipped",
+      "page.detailGroup": "Details",
       "page.chip": "Project tag",
       "page.underline": "Underlined links",
       "page.brandGroup": "Brand",
@@ -4434,31 +3889,12 @@ window.__ModuleLoader__.load({
       "page.export": "Export current",
       "page.importBad": "Unrecognised file. Expected a Fitout export or a dsh-dream-skin theme pack.",
       "page.importDone": "Imported \u201C{name}\u201D",
-      "page.loadingTheme": "",
-      "list.title": "Tasks",
-      "list.group": "Groups",
-      "list.recent": "Recent",
-      "list.untitled": "New session",
-      "list.empty": "No tasks yet",
-      "list.emptyGroup": "No sessions",
-      "list.ungrouped": "Other",
-      "list.search": "Search",
-      "list.searchPlaceholder": "Search sessions\u2026",
-      "list.newTask": "New session",
-      "menu.open": "Open",
-      "menu.fork": "Fork",
-      "menu.archive": "Archive",
-      "menu.copyId": "Copy session ID",
-      "time.now": "now",
-      "time.minute": "m",
-      "time.hour": "h",
-      "time.day": "d"
+      "page.loadingTheme": ""
     };
     function apply(ctx) {
       const theme = ctx.get("theme") ?? ctx.theme;
       let layer = null;
       let layoutTag = null;
-      let disposeRenderer = null;
       const syncWallpaper = (settings) => {
         if (typeof document === "undefined") return;
         const root = document.documentElement;
@@ -4505,18 +3941,6 @@ window.__ModuleLoader__.load({
           }
         }
         layoutTag.textContent = wanted ? buildCss(settings.layout.disabled) : "";
-        if (wanted && disposeRenderer === null) {
-          const slots2 = ctx.get("slots") ?? ctx.slots;
-          if (slots2 !== void 0 && slots2 !== null) {
-            disposeRenderer = slots2.inject("conversation.chat.node", () => slots2.register(
-              { name: "conversation.chat.node", key: "turn-process", priority: -1 },
-              TurnProcessHeader
-            ));
-          }
-        } else if (!wanted && disposeRenderer !== null) {
-          disposeRenderer();
-          disposeRenderer = null;
-        }
       };
       const applyAppearance = (settings) => {
         syncTokens(settings);
@@ -4591,7 +4015,6 @@ window.__ModuleLoader__.load({
         get: getSettings,
         subscribe,
         setEnabled,
-        setList,
         setAccent,
         setRadius,
         setDensity,
@@ -4705,55 +4128,6 @@ window.__ModuleLoader__.load({
                 order: -1,
                 inject: () => ({ hooks: { sessions: sessions.list, workspaces: workspaces.list } })
               }, WorkspaceChip);
-            } else if (!want && dispose !== null) {
-              dispose();
-              dispose = null;
-            }
-          };
-          const off = subscribe(sync);
-          sync();
-          return () => {
-            off();
-            if (dispose !== null) {
-              dispose();
-              dispose = null;
-            }
-          };
-        });
-        slots.inject("sidebar.workspaces", () => {
-          let dispose = null;
-          const sync = () => {
-            const want = getSettings().list === "zcode";
-            if (want && dispose === null) {
-              dispose = slots.register({
-                name: "sidebar.workspaces",
-                priority: -1,
-                locale: NS,
-                inject: () => ({
-                  hooks: { workspaces: workspaces.list, sessions: sessions.list },
-                  openSession: (sessionId) => {
-                    uiWorkspace.openSession(sessionId);
-                  },
-                  startSession: (workspaceId) => {
-                    uiWorkspace.startSession(workspaceId);
-                  },
-                  archiveSession: (sessionId) => {
-                    workspaces.archiveSession(sessionId);
-                  },
-                  unarchiveSession: (sessionId) => {
-                    workspaces.unarchiveSession(sessionId);
-                  },
-                  forkSession: (sessionId) => {
-                    uiWorkspace.forkSession(sessionId);
-                  },
-                  copyText: (text) => {
-                    try {
-                      void globalThis.navigator?.clipboard?.writeText(text);
-                    } catch {
-                    }
-                  }
-                })
-              }, FitoutTaskList);
             } else if (!want && dispose !== null) {
               dispose();
               dispose = null;

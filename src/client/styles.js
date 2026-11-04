@@ -114,58 +114,6 @@ body[data-ds-dark-theme] [data-queue-dock]{
   --dsw-alias-scrollbar-hover-l2:#65676b;
 }
 
-/* --- ZCode task list (sidebar.workspaces replacement) --- */
-.fto-list-root{display:flex;flex-direction:column;min-height:0;font-size:13px;color:var(--dsw-alias-label-primary);padding:2px 6px 8px}
-.fto-list-head{display:flex;flex-direction:column;gap:6px;padding:2px 2px 6px}
-.fto-list-headLine{display:flex;align-items:center;gap:6px;height:22px;color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
-.fto-list-count{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-tertiary);font-size:10px}
-.fto-list-headGap{flex:1}
-.fto-list-iconBtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:0;background:transparent;color:var(--dsw-alias-label-tertiary);border-radius:6px;cursor:pointer;opacity:0;transition:opacity .12s ease}
-.fto-list-head .fto-list-iconBtn{opacity:.55}
-.fto-list-head:hover .fto-list-iconBtn,.fto-list-groupRow:hover .fto-list-iconBtn,.fto-list-iconBtn[data-on="true"]{opacity:1}
-.fto-list-iconBtn:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}
-.fto-list-search{height:26px;padding:0 8px;border:1px solid var(--dsw-alias-border-l2);border-radius:6px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font-size:12px;outline:none}
-.fto-list-search:focus{border-color:var(--dsw-alias-link,#0284c7)}
-.fto-list-seg{display:inline-flex;gap:2px;padding:2px;border-radius:7px;background:var(--dsw-alias-bg-layer-3);width:max-content}
-.fto-list-segBtn{height:20px;padding:0 8px;border:0;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary);font-size:11px;cursor:pointer}
-.fto-list-segBtn[data-on="true"]{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);box-shadow:0 1px 2px rgba(0,0,0,.06)}
-.fto-list-scroll{overflow:auto;min-height:0;padding-right:2px}
-.fto-list-group{margin-bottom:2px}
-.fto-list-groupRow{display:flex;align-items:center;gap:6px;height:28px;padding:0 6px;border-radius:6px;cursor:pointer;color:var(--dsw-alias-label-secondary)}
-.fto-list-groupRow:hover{background:var(--dsw-alias-interactive-bg-hover)}
-.fto-list-groupIcon{display:inline-flex;color:var(--dsw-alias-label-tertiary)}
-.fto-list-groupTitle{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fto-list-chevron{display:inline-flex;color:var(--dsw-alias-label-tertiary);opacity:0}
-.fto-list-groupRow:hover .fto-list-chevron{opacity:1}
-.fto-list-rows{display:flex;flex-direction:column;gap:1px;padding-left:8px}
-.fto-list-row{position:relative;display:flex;align-items:center;gap:6px;height:28px;padding:0 6px;border-radius:6px;cursor:default;color:var(--dsw-alias-label-secondary)}
-.fto-list-row:hover{background:var(--dsw-alias-interactive-bg-hover)}
-.fto-list-row[data-active="true"]{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--dsw-alias-label-primary)}
-.fto-list-state{width:6px;height:6px;border-radius:50%;background:transparent;flex:0 0 auto}
-.fto-list-state[data-running="true"]{background:var(--dsw-alias-state-success-primary)}
-.fto-list-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
-.fto-list-row[data-active="true"] .fto-list-title{font-weight:500}
-.fto-list-time{flex:0 0 auto;color:var(--dsw-alias-label-tertiary);font-size:11px}
-.fto-list-time{transition:opacity .12s ease}
-.fto-list-row:hover .fto-list-time,.fto-list-row:focus-within .fto-list-time{opacity:0}
-.fto-list-more{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:0;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-tertiary);border-radius:5px;cursor:pointer;opacity:0;transition:opacity .12s ease}
-.fto-list-row:hover .fto-list-more,.fto-list-row:focus-within .fto-list-more{opacity:1}
-.fto-list-more:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}
-.fto-list-empty{color:var(--dsw-alias-label-tertiary);font-size:11px;padding:6px 8px}
-.fto-list-emptyAll{padding:18px 10px;text-align:center}
-.fto-list-backdrop{position:fixed;inset:0;z-index:80}
-.fto-list-menu{position:fixed;z-index:81;min-width:168px;padding:4px;border-radius:8px;background:var(--dsw-alias-bg-layer-1);border:.5px solid var(--dsw-alias-border-l2);box-shadow:var(--dsw-elevation-panel);font-size:12px}
-.fto-list-menuItem{display:flex;align-items:center;height:28px;padding:0 8px;border-radius:5px;color:var(--dsw-alias-label-primary);cursor:pointer}
-.fto-list-menuItem:hover{background:var(--dsw-alias-interactive-bg-hover)}
-
-/* --- density for the self-drawn task list (it has no data-row-key rows) --- */
-html.fto-dense-sidebar .fto-list-row,
-html.fto-dense-sidebar .fto-list-groupRow{height:24px}
-html.fto-dense-sidebar .fto-list-row{font-size:12px}
-html.fto-dense-sidebar .fto-list-title{font-size:12px}
-html.fto-dense-sidebar .fto-list-time{font-size:10px}
-html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
-
 /* --- frosted glass: expensive, so it is opt-in and never full-strength --- */
 html.fto-glass-all [data-slot="sidebar"]{
   background:color-mix(in srgb,var(--dsw-alias-bg-base) 62%,transparent) !important;

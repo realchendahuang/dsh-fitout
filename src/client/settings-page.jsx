@@ -10,7 +10,7 @@ import {
   ACCENTS, FONT_ROLES, RADIUS_SCALES, TYPE_RANGES, applyPreset, getSettings, getThemePreference,
   normalizeFont, resetAll, resetAppearance, saveTheme, setAccent, setAccentCustom, setAppearance,
   setAllLayoutGroups, setBackground, setDensity, setEffect, setEnabled, setFontFamily,
-  setLayoutGroup, setList, setOption, setRadius, setRadiusCustom, setThemePreference,
+  setLayoutGroup, setOption, setRadius, setRadiusCustom, setThemePreference,
   setTypeSize, subscribe, deleteTheme,
 } from './store.js'
 import { OPTIONS } from './store.js'
@@ -578,16 +578,7 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
         React.createElement(Feature, { title: translate('page.glass') },
           React.createElement(OptionSeg, { t: translate, settings, name: 'glass' }))),
 
-      React.createElement(Group, { title: translate('page.listGroup') },
-        React.createElement(Feature, { title: translate('page.list') },
-          React.createElement(Seg, {
-            value: settings.list,
-            choices: [
-              { id: 'zcode', label: translate('page.listZcode') },
-              { id: 'native', label: translate('page.listNative') },
-            ],
-            onChange: setList,
-          })),
+      React.createElement(Group, { title: translate('page.detailGroup') },
         React.createElement(Feature, { title: translate('page.chip') },
           React.createElement(Switch, {
             size: 'sm', label: translate('page.chip'),
