@@ -36,7 +36,7 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.8.0'
+const VERSION = '0.8.1'
 
 export const ZH = {
   title: '装修',
@@ -290,68 +290,6 @@ const EN = {
   'time.day': 'd',
 }
 
-
-
-
-
-/** Auto-prefetch older history when the chat approaches the top.
- *
- * ZCode prefetches the previous window on scroll instead of showing a manual
- * "Load earlier" row. The shipped chat renders that row while `hasMore`; this
- * watcher hides it (via the `fto-auto-older` root class) and clicks it whenever
- * the chat scroller is near the top, until the history is exhausted.
- */
-function installAutoOlder() {
-  if (typeof document === 'undefined') return () => {}
-
-  const getScroller = () => {
-    const flow = document.querySelector('[data-chat-flow]')
-    return flow === null ? null : flow.parentElement
-  }
-  const getButton = () => {
-    const row = document.querySelector('[data-chat-flow] [class*="_older"]')
-    return row === null ? null : row.querySelector('button')
-  }
-
-  let scheduled = false
-  let timer = null
-
-  const syncRoot = () => {
-    document.documentElement.classList.add('fto-auto-older')
-  }
-
-  const tryLoad = () => {
-    const scroller = getScroller()
-    const button = getButton()
-    if (scroller === null || button === null || button.disabled) return
-    if (scroller.scrollTop > 160) return
-    button.click()
-  }
-
-  const onScroll = () => {
-    if (scheduled) return
-    scheduled = true
-    globalThis.setTimeout(() => {
-      scheduled = false
-      tryLoad()
-    }, 120)
-  }
-
-  document.addEventListener('scroll', onScroll, true)
-  // DOM updates (a new page arrives, a session opens) do not always fire scroll.
-  timer = globalThis.setInterval(() => {
-    syncRoot()
-    tryLoad()
-  }, 700)
-  syncRoot()
-
-  return () => {
-    document.removeEventListener('scroll', onScroll, true)
-    if (timer !== null) globalThis.clearInterval(timer)
-    document.documentElement.classList.remove('fto-auto-older')
-  }
-}
-
 export function apply(ctx) {
   const theme = ctx.get('theme') ?? ctx.theme
   let layer = null
@@ -578,7 +516,6 @@ export function apply(ctx) {
   }
 
   ctx.effect(() => adoptStyles(CSS), 'dsh-fitout: styles')
-  ctx.effect(() => installAutoOlder(), 'dsh-fitout: auto older')
 
   const slots = ctx.get('slots') ?? ctx.slots
   if (slots === undefined || slots === null || typeof slots.inject !== 'function') return

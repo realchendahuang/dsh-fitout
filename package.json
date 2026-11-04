@@ -1,6 +1,6 @@
 {
   "name": "dsh-fitout",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "给 DeepSeek Harness 做装修：主题与版式，成屋可择，也可逐处自装。",
   "type": "module",
   "license": "MIT",

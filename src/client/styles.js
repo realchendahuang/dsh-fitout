@@ -87,9 +87,6 @@ html.fto-underline-links [data-chat-node-key] a:hover{text-decoration-color:var(
 .fto-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 [data-slot="conversation.session.header"] [class*="crumbCurrent"]{font-size:13px;font-weight:600;color:var(--dsw-alias-label-primary)}
 
-/* --- auto-prefetch: hide the manual "load earlier" row when the watcher runs --- */
-html.fto-auto-older [data-chat-flow] [class*="_older"]:has(> button){display:none}
-
 /* --- queue dock exemption: keep the official look (user request) --- */
 [data-queue-dock]{
   --dsw-radius-xs:4px;--dsw-radius-sm:8px;--dsw-radius-md:12px;--dsw-radius-lg:16px;

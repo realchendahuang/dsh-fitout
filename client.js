@@ -2123,9 +2123,6 @@ window.__ModuleLoader__.load({
     .fto-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     [data-slot="conversation.session.header"] [class*="crumbCurrent"]{font-size:13px;font-weight:600;color:var(--dsw-alias-label-primary)}
 
-    /* --- auto-prefetch: hide the manual "load earlier" row when the watcher runs --- */
-    html.fto-auto-older [data-chat-flow] [class*="_older"]:has(> button){display:none}
-
     /* --- queue dock exemption: keep the official look (user request) --- */
     [data-queue-dock]{
       --dsw-radius-xs:4px;--dsw-radius-sm:8px;--dsw-radius-md:12px;--dsw-radius-lg:16px;
@@ -4212,7 +4209,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.8.0";
+    var VERSION = "0.8.1";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
@@ -4457,49 +4454,6 @@ window.__ModuleLoader__.load({
       "time.hour": "h",
       "time.day": "d"
     };
-    function installAutoOlder() {
-      if (typeof document === "undefined") return () => {
-      };
-      const getScroller = () => {
-        const flow = document.querySelector("[data-chat-flow]");
-        return flow === null ? null : flow.parentElement;
-      };
-      const getButton = () => {
-        const row = document.querySelector('[data-chat-flow] [class*="_older"]');
-        return row === null ? null : row.querySelector("button");
-      };
-      let scheduled = false;
-      let timer = null;
-      const syncRoot = () => {
-        document.documentElement.classList.add("fto-auto-older");
-      };
-      const tryLoad = () => {
-        const scroller = getScroller();
-        const button = getButton();
-        if (scroller === null || button === null || button.disabled) return;
-        if (scroller.scrollTop > 160) return;
-        button.click();
-      };
-      const onScroll = () => {
-        if (scheduled) return;
-        scheduled = true;
-        globalThis.setTimeout(() => {
-          scheduled = false;
-          tryLoad();
-        }, 120);
-      };
-      document.addEventListener("scroll", onScroll, true);
-      timer = globalThis.setInterval(() => {
-        syncRoot();
-        tryLoad();
-      }, 700);
-      syncRoot();
-      return () => {
-        document.removeEventListener("scroll", onScroll, true);
-        if (timer !== null) globalThis.clearInterval(timer);
-        document.documentElement.classList.remove("fto-auto-older");
-      };
-    }
     function apply(ctx) {
       const theme = ctx.get("theme") ?? ctx.theme;
       let layer = null;
@@ -4699,7 +4653,6 @@ window.__ModuleLoader__.load({
         }
       }
       ctx.effect(() => adoptStyles(CSS), "dsh-fitout: styles");
-      ctx.effect(() => installAutoOlder(), "dsh-fitout: auto older");
       const slots = ctx.get("slots") ?? ctx.slots;
       if (slots === void 0 || slots === null || typeof slots.inject !== "function") return;
       slots.inject("settings.section", () => slots.register(
