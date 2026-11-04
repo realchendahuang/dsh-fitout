@@ -209,7 +209,8 @@ window.__ModuleLoader__.load({
       radius: "default",
       density: "default",
       effects: { underline: true, chip: true },
-      layout: { disabled: [] }
+      layout: { disabled: [] },
+      themes: []
     });
     function clone(state2) {
       return {
@@ -222,8 +223,38 @@ window.__ModuleLoader__.load({
         radius: state2.radius,
         density: state2.density,
         effects: { ...state2.effects },
-        layout: { disabled: [...state2.layout.disabled] }
+        layout: { disabled: [...state2.layout.disabled] },
+        themes: state2.themes.map(copyTheme)
       };
+    }
+    function copyTheme(theme) {
+      return {
+        id: theme.id,
+        name: theme.name,
+        accent: theme.accent,
+        radius: theme.radius,
+        density: theme.density,
+        effects: { ...theme.effects },
+        layout: { disabled: [...theme.layout.disabled] }
+      };
+    }
+    function readSavedTheme(raw) {
+      if (raw === null || typeof raw !== "object") return null;
+      if (typeof raw.id !== "string" || raw.id === "" || typeof raw.name !== "string") return null;
+      return copyTheme({
+        id: raw.id,
+        name: raw.name.slice(0, 20),
+        accent: typeof raw.accent === "string" ? raw.accent : DEFAULTS.accent,
+        radius: typeof raw.radius === "string" ? raw.radius : DEFAULTS.radius,
+        density: raw.density === "compact" ? "compact" : "default",
+        effects: {
+          underline: raw.effects?.underline !== false,
+          chip: raw.effects?.chip !== false
+        },
+        layout: {
+          disabled: Array.isArray(raw.layout?.disabled) ? raw.layout.disabled.filter((x) => typeof x === "string") : []
+        }
+      });
     }
     function oneOf(value, allowed, fallback) {
       return allowed.includes(value) ? value : fallback;
@@ -250,7 +281,8 @@ window.__ModuleLoader__.load({
           },
           layout: {
             disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : []
-          }
+          },
+          themes: []
         };
       } catch {
         return null;
@@ -276,7 +308,8 @@ window.__ModuleLoader__.load({
             },
             layout: {
               disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === "string") : []
-            }
+            },
+            themes: Array.isArray(parsed?.themes) ? parsed.themes.map(readSavedTheme).filter((theme) => theme !== null) : []
           };
         }
       } catch {
@@ -336,6 +369,29 @@ window.__ModuleLoader__.load({
         density: preset.density,
         effects: { ...state.effects, ...preset.effects },
         layout: { disabled: [...preset.layout.disabled] }
+      });
+    }
+    function saveTheme(name2) {
+      const label = String(name2 ?? "").trim().slice(0, 20) || "\u6211\u7684\u4E3B\u9898";
+      const theme = copyTheme({
+        id: "u-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: label,
+        accent: state.accent,
+        radius: state.radius,
+        density: state.density,
+        effects: state.effects,
+        layout: state.layout
+      });
+      commit({ ...state, themes: [...state.themes, theme], preset: theme.id });
+      return theme;
+    }
+    function deleteTheme(id) {
+      const themes = state.themes.filter((theme) => theme.id !== id);
+      if (themes.length === state.themes.length) return;
+      commit({
+        ...state,
+        themes,
+        preset: state.preset === id ? "custom" : state.preset
       });
     }
     function setList(mode) {
@@ -1636,9 +1692,23 @@ window.__ModuleLoader__.load({
     /* --- the theme shelf: a card is a whole look, not a setting --- */
     .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
     .fto-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
-    .fto-theme{display:flex;flex-direction:column;gap:7px;padding:0;border:0;background:transparent;
-      cursor:pointer;text-align:left;font:inherit}
-    .fto-theme[data-static="true"]{cursor:default}
+    .fto-theme{position:relative}
+    .fto-themePick,.fto-theme.fto-themeAdd{display:flex;flex-direction:column;gap:7px;width:100%;
+      padding:0;border:0;background:transparent;cursor:pointer;text-align:left;font:inherit}
+    .fto-theme[data-static="true"] .fto-themePick{cursor:default}
+    .fto-themeDel{position:absolute;top:-5px;right:-5px;width:18px;height:18px;padding:0;
+      border:1px solid var(--dsw-alias-border-l2);border-radius:50%;
+      background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-tertiary);
+      font-size:11px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s ease}
+    .fto-theme:hover .fto-themeDel{opacity:1}
+    .fto-themeDel:hover{color:var(--dsw-alias-state-error-primary,#dc2626);border-color:currentColor}
+    .fto-themeAdd{cursor:pointer}
+    .fto-addArt{display:flex;align-items:center;justify-content:center;border-style:dashed;
+      color:var(--dsw-alias-label-tertiary);font-size:18px;line-height:1}
+    .fto-themeAdd:hover .fto-addArt{border-color:var(--dsw-alias-border-l3);color:var(--dsw-alias-label-secondary)}
+    .fto-addInput{width:100%;height:54px;padding:0 10px;border:1px solid var(--dsw-alias-link,#0284c7);
+      border-radius:10px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
+      font-size:12px;outline:none}
     .fto-themeArt{position:relative;display:block;height:54px;
       background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l2);
       transition:border-color .14s ease,box-shadow .14s ease}
@@ -2002,21 +2072,61 @@ window.__ModuleLoader__.load({
         }, import_react3.default.createElement("span", { className: "fto-segLabel" }, choice.label)))
       );
     }
-    function ThemeCard({ preset, active }) {
+    function ThemeCard({ preset, active, onDelete }) {
       const accent = (ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]).light;
+      return import_react3.default.createElement(
+        "div",
+        { className: "fto-theme", "data-on": active ? "true" : "false" },
+        import_react3.default.createElement(
+          "button",
+          {
+            type: "button",
+            className: "fto-themePick",
+            onClick: () => applyPreset(preset)
+          },
+          import_react3.default.createElement("span", {
+            className: "fto-themeArt",
+            style: { borderRadius: RADIUS_PX[preset.radius] ?? "10px" }
+          }, import_react3.default.createElement("span", { className: "fto-themeDot", style: { background: accent } })),
+          import_react3.default.createElement("span", { className: "fto-themeName" }, preset.name)
+        ),
+        onDelete === void 0 ? null : import_react3.default.createElement("button", {
+          type: "button",
+          className: "fto-themeDel",
+          "aria-label": "\u5220\u9664\u4E3B\u9898",
+          onClick: onDelete
+        }, "\xD7")
+      );
+    }
+    function AddCard({ saving, draft, onDraft, onStart, onCancel, onSave }) {
+      if (saving) {
+        return import_react3.default.createElement(
+          "div",
+          { className: "fto-theme fto-themeAdd" },
+          import_react3.default.createElement("input", {
+            className: "fto-addInput",
+            autoFocus: true,
+            value: draft,
+            maxLength: 20,
+            placeholder: "\u4E3B\u9898\u540D",
+            onChange: (event) => onDraft(event.target.value),
+            onKeyDown: (event) => {
+              if (event.key === "Enter") onSave();
+              else if (event.key === "Escape") onCancel();
+            },
+            onBlur: onSave
+          })
+        );
+      }
       return import_react3.default.createElement(
         "button",
         {
           type: "button",
-          className: "fto-theme",
-          "data-on": active ? "true" : "false",
-          onClick: () => applyPreset(preset)
+          className: "fto-theme fto-themeAdd",
+          onClick: onStart
         },
-        import_react3.default.createElement("span", {
-          className: "fto-themeArt",
-          style: { borderRadius: RADIUS_PX[preset.radius] ?? "10px" }
-        }, import_react3.default.createElement("span", { className: "fto-themeDot", style: { background: accent } })),
-        import_react3.default.createElement("span", { className: "fto-themeName" }, preset.name)
+        import_react3.default.createElement("span", { className: "fto-themeArt fto-addArt" }, "+"),
+        import_react3.default.createElement("span", { className: "fto-themeName" }, "\u4FDD\u5B58\u5F53\u524D")
       );
     }
     function CustomCard({ active }) {
@@ -2124,8 +2234,17 @@ window.__ModuleLoader__.load({
       const settings = useSettings();
       const [tuning, setTuning] = import_react3.default.useState(false);
       const translate = typeof t === "function" ? t : (key) => key;
+      const saved = settings.themes ?? [];
+      const cards = [...PRESETS, ...saved];
+      const [saving, setSaving] = import_react3.default.useState(false);
+      const [draft, setDraft] = import_react3.default.useState("");
       const disabled = new Set(settings.layout.disabled);
-      const isCustom = !PRESETS.some((preset) => settings.preset === preset.id && matchesPreset(preset, settings));
+      const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings));
+      const commitSave = () => {
+        saveTheme(draft);
+        setSaving(false);
+        setDraft("");
+      };
       return import_react3.default.createElement(
         "div",
         { className: "fto-page" },
@@ -2142,12 +2261,27 @@ window.__ModuleLoader__.load({
         import_react3.default.createElement(
           "div",
           { className: "fto-themes" },
-          PRESETS.map((preset) => import_react3.default.createElement(ThemeCard, {
-            key: preset.id,
-            preset,
-            active: settings.preset === preset.id && matchesPreset(preset, settings)
+          cards.map((theme) => import_react3.default.createElement(ThemeCard, {
+            key: theme.id,
+            preset: theme,
+            active: settings.preset === theme.id && matchesPreset(theme, settings),
+            onDelete: PRESETS.some((preset) => preset.id === theme.id) ? void 0 : () => deleteTheme(theme.id)
           })),
-          import_react3.default.createElement(CustomCard, { active: isCustom })
+          import_react3.default.createElement(CustomCard, { active: isCustom }),
+          import_react3.default.createElement(AddCard, {
+            saving,
+            draft,
+            onDraft: setDraft,
+            onStart: () => {
+              setDraft("");
+              setSaving(true);
+            },
+            onCancel: () => {
+              setSaving(false);
+              setDraft("");
+            },
+            onSave: commitSave
+          })
         ),
         import_react3.default.createElement(
           "button",

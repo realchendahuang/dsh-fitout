@@ -51,6 +51,7 @@ const DEFAULTS = Object.freeze({
   density: 'default',
   effects: { underline: true, chip: true },
   layout: { disabled: [] },
+  themes: [],
 })
 
 export function clone(state) {
@@ -65,7 +66,43 @@ export function clone(state) {
     density: state.density,
     effects: { ...state.effects },
     layout: { disabled: [...state.layout.disabled] },
+    themes: state.themes.map(copyTheme),
   }
+}
+
+/** One saved theme: the same shape as a built-in preset, plus its own id. */
+function copyTheme(theme) {
+  return {
+    id: theme.id,
+    name: theme.name,
+    accent: theme.accent,
+    radius: theme.radius,
+    density: theme.density,
+    effects: { ...theme.effects },
+    layout: { disabled: [...theme.layout.disabled] },
+  }
+}
+
+/** A saved theme is only trusted when it is complete and well-typed. */
+function readSavedTheme(raw) {
+  if (raw === null || typeof raw !== 'object') return null
+  if (typeof raw.id !== 'string' || raw.id === '' || typeof raw.name !== 'string') return null
+  return copyTheme({
+    id: raw.id,
+    name: raw.name.slice(0, 20),
+    accent: typeof raw.accent === 'string' ? raw.accent : DEFAULTS.accent,
+    radius: typeof raw.radius === 'string' ? raw.radius : DEFAULTS.radius,
+    density: raw.density === 'compact' ? 'compact' : 'default',
+    effects: {
+      underline: raw.effects?.underline !== false,
+      chip: raw.effects?.chip !== false,
+    },
+    layout: {
+      disabled: Array.isArray(raw.layout?.disabled)
+        ? raw.layout.disabled.filter((x) => typeof x === 'string')
+        : [],
+    },
+  })
 }
 
 function oneOf(value, allowed, fallback) {
@@ -97,6 +134,7 @@ function readLegacy() {
       layout: {
         disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : [],
       },
+      themes: [],
     }
   } catch {
     return null
@@ -126,6 +164,9 @@ function readStored() {
         layout: {
           disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === 'string') : [],
         },
+        themes: Array.isArray(parsed?.themes)
+          ? parsed.themes.map(readSavedTheme).filter((theme) => theme !== null)
+          : [],
       }
     }
   } catch {
@@ -203,6 +244,43 @@ export function applyPreset(preset) {
     effects: { ...state.effects, ...preset.effects },
     layout: { disabled: [...preset.layout.disabled] },
   })
+}
+
+/* --- saved themes ---------------------------------------------------------- */
+
+/** Store the current appearance as a named theme and make it the active one. */
+export function saveTheme(name) {
+  const label = String(name ?? '').trim().slice(0, 20) || '我的主题'
+  const theme = copyTheme({
+    id: 'u-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name: label,
+    accent: state.accent,
+    radius: state.radius,
+    density: state.density,
+    effects: state.effects,
+    layout: state.layout,
+  })
+  commit({ ...state, themes: [...state.themes, theme], preset: theme.id })
+  return theme
+}
+
+export function deleteTheme(id) {
+  const themes = state.themes.filter((theme) => theme.id !== id)
+  if (themes.length === state.themes.length) return
+  commit({
+    ...state,
+    themes,
+    preset: state.preset === id ? 'custom' : state.preset,
+  })
+}
+
+export function renameTheme(id, name) {
+  const label = String(name ?? '').trim().slice(0, 20)
+  if (label === '') return
+  commit({
+    ...state,
+    themes: state.themes.map((theme) => (theme.id === id ? { ...theme, name: label } : theme)),
+  }, false)
 }
 
 /* --- 高定 fields ---------------------------------------------------------- */

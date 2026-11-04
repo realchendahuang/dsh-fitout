@@ -172,9 +172,23 @@ html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 /* --- the theme shelf: a card is a whole look, not a setting --- */
 .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
 .fto-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
-.fto-theme{display:flex;flex-direction:column;gap:7px;padding:0;border:0;background:transparent;
-  cursor:pointer;text-align:left;font:inherit}
-.fto-theme[data-static="true"]{cursor:default}
+.fto-theme{position:relative}
+.fto-themePick,.fto-theme.fto-themeAdd{display:flex;flex-direction:column;gap:7px;width:100%;
+  padding:0;border:0;background:transparent;cursor:pointer;text-align:left;font:inherit}
+.fto-theme[data-static="true"] .fto-themePick{cursor:default}
+.fto-themeDel{position:absolute;top:-5px;right:-5px;width:18px;height:18px;padding:0;
+  border:1px solid var(--dsw-alias-border-l2);border-radius:50%;
+  background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-tertiary);
+  font-size:11px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s ease}
+.fto-theme:hover .fto-themeDel{opacity:1}
+.fto-themeDel:hover{color:var(--dsw-alias-state-error-primary,#dc2626);border-color:currentColor}
+.fto-themeAdd{cursor:pointer}
+.fto-addArt{display:flex;align-items:center;justify-content:center;border-style:dashed;
+  color:var(--dsw-alias-label-tertiary);font-size:18px;line-height:1}
+.fto-themeAdd:hover .fto-addArt{border-color:var(--dsw-alias-border-l3);color:var(--dsw-alias-label-secondary)}
+.fto-addInput{width:100%;height:54px;padding:0 10px;border:1px solid var(--dsw-alias-link,#0284c7);
+  border-radius:10px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
+  font-size:12px;outline:none}
 .fto-themeArt{position:relative;display:block;height:54px;
   background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l2);
   transition:border-color .14s ease,box-shadow .14s ease}

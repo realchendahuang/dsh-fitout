@@ -10,6 +10,7 @@ import {
   ACCENTS, RADIUS_SCALES, applyPreset, getSettings, getThemePreference, resetAll,
   resetAppearance, setAccent, setAppearance, setAllLayoutGroups, setDensity, setEffect,
   setEnabled, setLayoutGroup, setList, setRadius, setThemePreference, subscribe,
+  saveTheme, deleteTheme,
 } from './store.js'
 import { PRESETS, matchesPreset } from './presets.js'
 import { MARK_PRESETS, renderMark } from './brand.jsx'
@@ -57,17 +58,44 @@ function Seg({ value, choices, onChange }) {
 }
 
 /** One theme card: a small mock of the surface it installs. */
-function ThemeCard({ preset, active }) {
+function ThemeCard({ preset, active, onDelete }) {
   const accent = (ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]).light
+  return React.createElement('div', { className: 'fto-theme', 'data-on': active ? 'true' : 'false' },
+    React.createElement('button', {
+      type: 'button', className: 'fto-themePick',
+      onClick: () => applyPreset(preset),
+    },
+    React.createElement('span', {
+      className: 'fto-themeArt',
+      style: { borderRadius: RADIUS_PX[preset.radius] ?? '10px' },
+    }, React.createElement('span', { className: 'fto-themeDot', style: { background: accent } })),
+    React.createElement('span', { className: 'fto-themeName' }, preset.name)),
+    onDelete === undefined ? null : React.createElement('button', {
+      type: 'button', className: 'fto-themeDel', 'aria-label': '删除主题',
+      onClick: onDelete,
+    }, '\u00d7'))
+}
+
+/** The trailing card: save whatever is on screen as a named theme. */
+function AddCard({ saving, draft, onDraft, onStart, onCancel, onSave }) {
+  if (saving) {
+    return React.createElement('div', { className: 'fto-theme fto-themeAdd' },
+      React.createElement('input', {
+        className: 'fto-addInput', autoFocus: true, value: draft, maxLength: 20,
+        placeholder: '主题名',
+        onChange: (event) => onDraft(event.target.value),
+        onKeyDown: (event) => {
+          if (event.key === 'Enter') onSave()
+          else if (event.key === 'Escape') onCancel()
+        },
+        onBlur: onSave,
+      }))
+  }
   return React.createElement('button', {
-    type: 'button', className: 'fto-theme', 'data-on': active ? 'true' : 'false',
-    onClick: () => applyPreset(preset),
+    type: 'button', className: 'fto-theme fto-themeAdd', onClick: onStart,
   },
-  React.createElement('span', {
-    className: 'fto-themeArt',
-    style: { borderRadius: RADIUS_PX[preset.radius] ?? '10px' },
-  }, React.createElement('span', { className: 'fto-themeDot', style: { background: accent } })),
-  React.createElement('span', { className: 'fto-themeName' }, preset.name))
+  React.createElement('span', { className: 'fto-themeArt fto-addArt' }, '+'),
+  React.createElement('span', { className: 'fto-themeName' }, '保存当前'))
 }
 
 function CustomCard({ active }) {
@@ -163,8 +191,18 @@ export function FitoutSettingsPage({ t }) {
   const settings = useSettings()
   const [tuning, setTuning] = React.useState(false)
   const translate = typeof t === 'function' ? t : (key) => key
+  const saved = settings.themes ?? []
+  const cards = [...PRESETS, ...saved]
+  const [saving, setSaving] = React.useState(false)
+  const [draft, setDraft] = React.useState('')
   const disabled = new Set(settings.layout.disabled)
-  const isCustom = !PRESETS.some((preset) => settings.preset === preset.id && matchesPreset(preset, settings))
+  const isCustom = !cards.some((theme) => settings.preset === theme.id && matchesPreset(theme, settings))
+
+  const commitSave = () => {
+    saveTheme(draft)
+    setSaving(false)
+    setDraft('')
+  }
 
   return React.createElement('div', { className: 'fto-page' },
     React.createElement('div', { className: 'fto-head' },
@@ -174,11 +212,21 @@ export function FitoutSettingsPage({ t }) {
       })),
 
     React.createElement('div', { className: 'fto-themes' },
-      PRESETS.map((preset) => React.createElement(ThemeCard, {
-        key: preset.id, preset,
-        active: settings.preset === preset.id && matchesPreset(preset, settings),
+      cards.map((theme) => React.createElement(ThemeCard, {
+        key: theme.id, preset: theme,
+        active: settings.preset === theme.id && matchesPreset(theme, settings),
+        onDelete: PRESETS.some((preset) => preset.id === theme.id)
+          ? undefined
+          : () => deleteTheme(theme.id),
       })),
-      React.createElement(CustomCard, { active: isCustom })),
+      React.createElement(CustomCard, { active: isCustom }),
+      React.createElement(AddCard, {
+        saving, draft,
+        onDraft: setDraft,
+        onStart: () => { setDraft(''); setSaving(true) },
+        onCancel: () => { setSaving(false); setDraft('') },
+        onSave: commitSave,
+      })),
 
     React.createElement('button', {
       type: 'button', className: 'fto-tuneBtn', 'data-open': tuning ? 'true' : 'false',
