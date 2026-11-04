@@ -26,7 +26,9 @@ await mkdir(dist, { recursive: true })
 
 const TRANSLATIONS = {
   'page.title': '装修', 'page.enable': '启用装修', 'page.tune': '微调',
-  'page.shapeGroup': '形状', 'page.accent': '强调色', 'page.radius': '圆角',
+  'page.shapeGroup': '形状', 'page.surface': '底色',
+  'page.surface_neutral': '中性', 'page.surface_paper': '暖纸', 'page.surface_night': '夜蓝', 'page.surface_nord': '极地',
+  'page.accent': '强调色', 'page.radius': '圆角',
   'page.radius_compact': '紧凑', 'page.radius_default': '标准', 'page.radius_round': '圆润',
   'page.density': '侧栏密度', 'page.density_default': '标准', 'page.density_compact': '紧凑',
   'page.appearance': '明暗', 'page.themeSystem': '跟随系统', 'page.themeLight': '浅色', 'page.themeDark': '深色',

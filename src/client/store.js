@@ -51,6 +51,7 @@ const DEFAULTS = Object.freeze({
   density: 'default',
   effects: { underline: true, chip: true },
   layout: { disabled: [] },
+  surface: 'neutral',
   fontSize: 'auto',
   fontFamily: 'default',
   shadow: 'soft',
@@ -62,6 +63,7 @@ const DEFAULTS = Object.freeze({
 
 /** Every enumerated design option and its accepted values. */
 export const OPTIONS = Object.freeze({
+  surface: Object.freeze(['neutral', 'paper', 'night', 'nord']),
   fontSize: Object.freeze(['auto', 'compact', 'standard', 'large']),
   fontFamily: Object.freeze(['default', 'serif', 'mono', 'rounded']),
   shadow: Object.freeze(['flat', 'soft', 'lifted']),
@@ -87,6 +89,7 @@ export function clone(state) {
     density: state.density,
     effects: { ...state.effects },
     layout: { disabled: [...state.layout.disabled] },
+    surface: state.surface,
     fontSize: state.fontSize,
     fontFamily: state.fontFamily,
     shadow: state.shadow,
@@ -107,6 +110,7 @@ function copyTheme(theme) {
     density: theme.density,
     effects: { ...theme.effects },
     layout: { disabled: [...theme.layout.disabled] },
+    surface: theme.surface ?? DEFAULTS.surface,
     fontSize: theme.fontSize ?? DEFAULTS.fontSize,
     fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
     shadow: theme.shadow ?? DEFAULTS.shadow,
@@ -135,6 +139,7 @@ function readSavedTheme(raw) {
         ? raw.layout.disabled.filter((x) => typeof x === 'string')
         : [],
     },
+    surface: readOption('surface', raw.surface),
     fontSize: readOption('fontSize', raw.fontSize),
     fontFamily: readOption('fontFamily', raw.fontFamily),
     shadow: readOption('shadow', raw.shadow),
@@ -173,6 +178,7 @@ function readLegacy() {
       layout: {
         disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : [],
       },
+      surface: DEFAULTS.surface,
       fontSize: DEFAULTS.fontSize,
       fontFamily: DEFAULTS.fontFamily,
       shadow: DEFAULTS.shadow,
@@ -209,6 +215,7 @@ function readStored() {
         layout: {
           disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === 'string') : [],
         },
+        surface: readOption('surface', parsed?.surface),
         fontSize: readOption('fontSize', parsed?.fontSize),
         fontFamily: readOption('fontFamily', parsed?.fontFamily),
         shadow: readOption('shadow', parsed?.shadow),
@@ -292,6 +299,7 @@ export function applyPreset(preset) {
     accent: preset.accent,
     radius: preset.radius,
     density: preset.density,
+    surface: preset.surface ?? DEFAULTS.surface,
     fontSize: preset.fontSize ?? DEFAULTS.fontSize,
     fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
     shadow: preset.shadow ?? DEFAULTS.shadow,
@@ -324,6 +332,7 @@ export function saveTheme(name) {
     density: state.density,
     effects: state.effects,
     layout: state.layout,
+    surface: state.surface,
     fontSize: state.fontSize,
     fontFamily: state.fontFamily,
     shadow: state.shadow,

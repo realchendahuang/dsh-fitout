@@ -17,6 +17,7 @@ import { PRESETS, matchesPreset } from './presets.js'
 import { MARK_PRESETS, renderMark } from './brand.jsx'
 import { SECTIONS } from './sections.js'
 import { readPack, writePack } from './theme-pack.js'
+import { SURFACES } from './surfaces.js'
 
 const MAX_ICON_BYTES = 256 * 1024
 const ALL_GROUPS = SECTIONS.map((section) => section.id)
@@ -70,8 +71,24 @@ function Seg({ value, choices, onChange }) {
 }
 
 /** One theme card: a small mock of the surface it installs. */
+/** Paint a card with the palette of the theme it sells, not the active one. */
+function cardVars(preset) {
+  const surface = SURFACES[preset.surface] ?? SURFACES.neutral
+  const accent = ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]
+  const pick = (mode, token, fallback) => surface[mode][token] ?? fallback
+  return {
+    '--fto-card-bg': pick('light', '--dsw-alias-bg-base', '#fafafa'),
+    '--fto-card-bg-dark': pick('dark', '--dsw-alias-bg-base', '#171717'),
+    '--fto-card-side': pick('light', '--dsw-specific-sidebar-fill', '#f5f5f5'),
+    '--fto-card-side-dark': pick('dark', '--dsw-specific-sidebar-fill', '#1a1a1a'),
+    '--fto-card-ink': pick('light', '--dsw-alias-label-secondary', '#525252'),
+    '--fto-card-ink-dark': pick('dark', '--dsw-alias-label-secondary', '#a3a3a3'),
+    '--fto-card-accent': accent.light,
+    '--fto-card-accent-dark': accent.dark,
+  }
+}
+
 function ThemeCard({ preset, active, onDelete }) {
-  const accent = (ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]).light
   return React.createElement('div', { className: 'fto-theme', 'data-on': active ? 'true' : 'false' },
     React.createElement('button', {
       type: 'button', className: 'fto-themePick',
@@ -79,7 +96,7 @@ function ThemeCard({ preset, active, onDelete }) {
     },
     React.createElement('span', {
       className: 'fto-themeArt',
-      style: { borderRadius: RADIUS_PX[preset.radius] ?? '10px' },
+      style: { borderRadius: RADIUS_PX[preset.radius] ?? '10px', ...cardVars(preset) },
     },
     React.createElement('span', { className: 'fto-themeSide' }),
     React.createElement('span', { className: 'fto-themeSideDash', style: { top: '12px' } }),
@@ -87,7 +104,7 @@ function ThemeCard({ preset, active, onDelete }) {
     React.createElement('span', { className: 'fto-themeSideDash', style: { top: '32px' } }),
     React.createElement('span', { className: 'fto-themeLine', style: { top: '16px', width: '42%' } }),
     React.createElement('span', { className: 'fto-themeLine', style: { top: '27px', width: '30%' } }),
-    React.createElement('span', { className: 'fto-themeDot', style: { background: accent } })),
+    React.createElement('span', { className: 'fto-themeDot' })),
     React.createElement('span', { className: 'fto-themeName' }, preset.name)),
     onDelete === undefined ? null : React.createElement('button', {
       type: 'button', className: 'fto-themeDel', 'aria-label': '删除主题',
@@ -119,7 +136,7 @@ function AddCard({ saving, draft, onDraft, onStart, onCancel, onSave }) {
 
 function CustomCard({ active }) {
   return React.createElement('div', {
-    className: 'fto-theme', 'data-on': active ? 'true' : 'false', 'data-static': 'true',
+    className: 'fto-theme', 'data-on': active ? 'true' : 'false', 'data-static': 'true', 'data-live': 'true',
   },
   React.createElement('span', { className: 'fto-themeArt', style: { borderRadius: '10px' } },
     React.createElement('span', { className: 'fto-themeSide' }),
@@ -128,7 +145,7 @@ function CustomCard({ active }) {
     React.createElement('span', { className: 'fto-themeSideDash', style: { top: '32px' } }),
     React.createElement('span', { className: 'fto-themeLine', style: { top: '16px', width: '42%' } }),
     React.createElement('span', { className: 'fto-themeLine', style: { top: '27px', width: '30%' } }),
-    React.createElement('span', { className: 'fto-themeDot', style: { background: 'var(--dsw-alias-label-tertiary)' } })),
+    React.createElement('span', { className: 'fto-themeDot' })),
   React.createElement('span', { className: 'fto-themeName' }, '自定义'))
 }
 
@@ -303,6 +320,8 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
 
     tuning ? React.createElement('div', { className: 'fto-tune' },
       React.createElement(Group, { title: translate('page.shapeGroup') },
+        React.createElement(Feature, { title: translate('page.surface') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'surface' })),
         React.createElement(Feature, { title: translate('page.accent') },
           React.createElement('div', { className: 'fto-swatches' },
             ACCENTS.map((accent) => React.createElement('button', {

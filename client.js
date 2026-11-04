@@ -210,6 +210,7 @@ window.__ModuleLoader__.load({
       density: "default",
       effects: { underline: true, chip: true },
       layout: { disabled: [] },
+      surface: "neutral",
       fontSize: "auto",
       fontFamily: "default",
       shadow: "soft",
@@ -219,6 +220,7 @@ window.__ModuleLoader__.load({
       themes: []
     });
     var OPTIONS = Object.freeze({
+      surface: Object.freeze(["neutral", "paper", "night", "nord"]),
       fontSize: Object.freeze(["auto", "compact", "standard", "large"]),
       fontFamily: Object.freeze(["default", "serif", "mono", "rounded"]),
       shadow: Object.freeze(["flat", "soft", "lifted"]),
@@ -242,6 +244,7 @@ window.__ModuleLoader__.load({
         density: state2.density,
         effects: { ...state2.effects },
         layout: { disabled: [...state2.layout.disabled] },
+        surface: state2.surface,
         fontSize: state2.fontSize,
         fontFamily: state2.fontFamily,
         shadow: state2.shadow,
@@ -260,6 +263,7 @@ window.__ModuleLoader__.load({
         density: theme.density,
         effects: { ...theme.effects },
         layout: { disabled: [...theme.layout.disabled] },
+        surface: theme.surface ?? DEFAULTS.surface,
         fontSize: theme.fontSize ?? DEFAULTS.fontSize,
         fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
         shadow: theme.shadow ?? DEFAULTS.shadow,
@@ -284,6 +288,7 @@ window.__ModuleLoader__.load({
         layout: {
           disabled: Array.isArray(raw.layout?.disabled) ? raw.layout.disabled.filter((x) => typeof x === "string") : []
         },
+        surface: readOption("surface", raw.surface),
         fontSize: readOption("fontSize", raw.fontSize),
         fontFamily: readOption("fontFamily", raw.fontFamily),
         shadow: readOption("shadow", raw.shadow),
@@ -318,6 +323,7 @@ window.__ModuleLoader__.load({
           layout: {
             disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : []
           },
+          surface: DEFAULTS.surface,
           fontSize: DEFAULTS.fontSize,
           fontFamily: DEFAULTS.fontFamily,
           shadow: DEFAULTS.shadow,
@@ -351,6 +357,7 @@ window.__ModuleLoader__.load({
             layout: {
               disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === "string") : []
             },
+            surface: readOption("surface", parsed?.surface),
             fontSize: readOption("fontSize", parsed?.fontSize),
             fontFamily: readOption("fontFamily", parsed?.fontFamily),
             shadow: readOption("shadow", parsed?.shadow),
@@ -415,6 +422,7 @@ window.__ModuleLoader__.load({
         accent: preset.accent,
         radius: preset.radius,
         density: preset.density,
+        surface: preset.surface ?? DEFAULTS.surface,
         fontSize: preset.fontSize ?? DEFAULTS.fontSize,
         fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
         shadow: preset.shadow ?? DEFAULTS.shadow,
@@ -441,6 +449,7 @@ window.__ModuleLoader__.load({
         density: state.density,
         effects: state.effects,
         layout: state.layout,
+        surface: state.surface,
         fontSize: state.fontSize,
         fontFamily: state.fontFamily,
         shadow: state.shadow,
@@ -539,6 +548,261 @@ window.__ModuleLoader__.load({
       }
     }
 
+    // src/client/surfaces.js
+    var NEUTRAL = {
+      light: {
+        "--dsw-alias-bg-base": "#fafafa",
+        "--dsw-alias-bg-layer-1": "#ffffff",
+        "--dsw-alias-bg-layer-2": "#ffffff",
+        "--dsw-alias-bg-layer-3": "#f5f5f5",
+        "--dsw-alias-bg-overlay": "#e5e5e5",
+        "--dsw-alias-bg-module-platform": "#f5f5f5",
+        "--dsw-alias-bg-multi-select": "#f5f5f5",
+        "--dsw-alias-bg-skeleton": "#0a0a0a0a",
+        "--dsw-alias-label-primary": "#0a0a0a",
+        "--dsw-alias-label-secondary": "#525252",
+        "--dsw-alias-label-tertiary": "#737373",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #737373 62%, transparent)",
+        "--dsw-alias-border-l1": "#0a0a0a0d",
+        "--dsw-alias-border-l2": "#0a0a0a1a",
+        "--dsw-alias-border-l3": "#0a0a0a24",
+        "--dsw-alias-border-l4": "#0a0a0a33",
+        "--dsw-alias-interactive-bg-hover": "#0a0a0a0a",
+        "--dsw-alias-interactive-bg-active": "#0a0a0a14",
+        "--dsw-alias-button-elevated-fill": "#ffffff",
+        "--dsw-alias-button-floating-fill": "#ffffff",
+        "--dsw-alias-button-floating-hover": "#f5f5f5",
+        "--dsw-alias-button-ghost-active-fill": "#f5f5f5",
+        "--dsw-specific-sidebar-fill": "#f5f5f5",
+        "--dsw-alias-markdown-code-block": "#fafafa",
+        "--dsw-alias-markdown-inline-code": "#f0f0f0",
+        "--dsw-alias-scrollbar-bg-l1": "#e5e5e5",
+        "--dsw-alias-scrollbar-hover-l1": "#d4d4d4",
+        "--dsw-elevation-stroke-color": "#0a0a0a14"
+      },
+      dark: {
+        "--dsw-alias-bg-base": "#171717",
+        "--dsw-alias-bg-layer-1": "#1f1f1f",
+        "--dsw-alias-bg-layer-2": "#262626",
+        "--dsw-alias-bg-layer-3": "#2e2e2e",
+        "--dsw-alias-bg-overlay": "#525252",
+        "--dsw-alias-bg-module-platform": "#2e2e2e",
+        "--dsw-alias-bg-multi-select": "#262626",
+        "--dsw-alias-bg-skeleton": "#ffffff14",
+        "--dsw-alias-label-primary": "#fafafa",
+        "--dsw-alias-label-secondary": "#a3a3a3",
+        "--dsw-alias-label-tertiary": "#737373",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #737373 62%, transparent)",
+        "--dsw-alias-border-l1": "#ffffff0f",
+        "--dsw-alias-border-l2": "#ffffff1a",
+        "--dsw-alias-border-l3": "#ffffff24",
+        "--dsw-alias-border-l4": "#ffffff2e",
+        "--dsw-alias-interactive-bg-hover": "#ffffff0f",
+        "--dsw-alias-interactive-bg-active": "#ffffff1a",
+        "--dsw-alias-button-elevated-fill": "#2e2e2e",
+        "--dsw-alias-button-floating-fill": "#262626",
+        "--dsw-alias-button-floating-hover": "#2e2e2e",
+        "--dsw-alias-button-ghost-active-fill": "#404040",
+        "--dsw-specific-sidebar-fill": "#1a1a1a",
+        "--dsw-alias-markdown-code-block": "#111111",
+        "--dsw-alias-markdown-inline-code": "#2e2e2e",
+        "--dsw-alias-scrollbar-bg-l1": "#404040",
+        "--dsw-alias-scrollbar-hover-l1": "#525252",
+        "--dsw-elevation-stroke-color": "#ffffff14"
+      }
+    };
+    var PAPER = {
+      light: {
+        "--dsw-alias-bg-base": "#faf4ea",
+        "--dsw-alias-bg-layer-1": "#fffaf2",
+        "--dsw-alias-bg-layer-2": "#fdf7ee",
+        "--dsw-alias-bg-layer-3": "#f3ece0",
+        "--dsw-alias-bg-overlay": "#e6ddcd",
+        "--dsw-alias-bg-module-platform": "#f3ece0",
+        "--dsw-alias-bg-multi-select": "#f3ece0",
+        "--dsw-alias-bg-skeleton": "#3d36300a",
+        "--dsw-alias-label-primary": "#3d3630",
+        "--dsw-alias-label-secondary": "#6b6157",
+        "--dsw-alias-label-tertiary": "#8f8478",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #8f8478 62%, transparent)",
+        "--dsw-alias-border-l1": "#3d36300d",
+        "--dsw-alias-border-l2": "#3d36301a",
+        "--dsw-alias-border-l3": "#3d363024",
+        "--dsw-alias-border-l4": "#3d363033",
+        "--dsw-alias-interactive-bg-hover": "#3d36300a",
+        "--dsw-alias-interactive-bg-active": "#3d363014",
+        "--dsw-alias-button-elevated-fill": "#fffaf2",
+        "--dsw-alias-button-floating-fill": "#fffaf2",
+        "--dsw-alias-button-floating-hover": "#f5eee2",
+        "--dsw-alias-button-ghost-active-fill": "#f0e8da",
+        "--dsw-specific-sidebar-fill": "#f2ebde",
+        "--dsw-alias-markdown-code-block": "#f2ebde",
+        "--dsw-alias-markdown-inline-code": "#ece2d2",
+        "--dsw-alias-scrollbar-bg-l1": "#ded3c2",
+        "--dsw-alias-scrollbar-hover-l1": "#cbbba4",
+        "--dsw-elevation-stroke-color": "#3d363014"
+      },
+      dark: {
+        "--dsw-alias-bg-base": "#1c1917",
+        "--dsw-alias-bg-layer-1": "#262220",
+        "--dsw-alias-bg-layer-2": "#2d2926",
+        "--dsw-alias-bg-layer-3": "#363230",
+        "--dsw-alias-bg-overlay": "#4a443f",
+        "--dsw-alias-bg-module-platform": "#363230",
+        "--dsw-alias-bg-multi-select": "#2d2926",
+        "--dsw-alias-bg-skeleton": "#f5ede214",
+        "--dsw-alias-label-primary": "#ece3d7",
+        "--dsw-alias-label-secondary": "#a89d90",
+        "--dsw-alias-label-tertiary": "#7d7369",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #7d7369 62%, transparent)",
+        "--dsw-alias-border-l1": "#ece3d714",
+        "--dsw-alias-border-l2": "#ece3d722",
+        "--dsw-alias-border-l3": "#ece3d72e",
+        "--dsw-alias-border-l4": "#ece3d73d",
+        "--dsw-alias-interactive-bg-hover": "#ece3d712",
+        "--dsw-alias-interactive-bg-active": "#ece3d71f",
+        "--dsw-alias-button-elevated-fill": "#363230",
+        "--dsw-alias-button-floating-fill": "#2d2926",
+        "--dsw-alias-button-floating-hover": "#363230",
+        "--dsw-alias-button-ghost-active-fill": "#443e3a",
+        "--dsw-specific-sidebar-fill": "#181514",
+        "--dsw-alias-markdown-code-block": "#141211",
+        "--dsw-alias-markdown-inline-code": "#332f2c",
+        "--dsw-alias-scrollbar-bg-l1": "#443e3a",
+        "--dsw-alias-scrollbar-hover-l1": "#57504b",
+        "--dsw-elevation-stroke-color": "#ece3d714"
+      }
+    };
+    var NIGHT = {
+      light: {
+        "--dsw-alias-bg-base": "#f3f5fb",
+        "--dsw-alias-bg-layer-1": "#ffffff",
+        "--dsw-alias-bg-layer-2": "#f8f9fd",
+        "--dsw-alias-bg-layer-3": "#ecefF8",
+        "--dsw-alias-bg-overlay": "#dde2f0",
+        "--dsw-alias-bg-module-platform": "#eceff8",
+        "--dsw-alias-bg-multi-select": "#eceff8",
+        "--dsw-alias-bg-skeleton": "#1a1b260a",
+        "--dsw-alias-label-primary": "#1a1b26",
+        "--dsw-alias-label-secondary": "#4a5068",
+        "--dsw-alias-label-tertiary": "#7a819c",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #7a819c 62%, transparent)",
+        "--dsw-alias-border-l1": "#1a1b260d",
+        "--dsw-alias-border-l2": "#1a1b261a",
+        "--dsw-alias-border-l3": "#1a1b2624",
+        "--dsw-alias-border-l4": "#1a1b2633",
+        "--dsw-alias-interactive-bg-hover": "#1a1b260a",
+        "--dsw-alias-interactive-bg-active": "#1a1b2614",
+        "--dsw-alias-button-elevated-fill": "#ffffff",
+        "--dsw-alias-button-floating-fill": "#ffffff",
+        "--dsw-alias-button-floating-hover": "#f3f5fb",
+        "--dsw-alias-button-ghost-active-fill": "#eceff8",
+        "--dsw-specific-sidebar-fill": "#eceff8",
+        "--dsw-alias-markdown-code-block": "#eceff8",
+        "--dsw-alias-markdown-inline-code": "#e4e8f4",
+        "--dsw-alias-scrollbar-bg-l1": "#d8deeb",
+        "--dsw-alias-scrollbar-hover-l1": "#c2cade",
+        "--dsw-elevation-stroke-color": "#1a1b2614"
+      },
+      dark: {
+        "--dsw-alias-bg-base": "#1a1b26",
+        "--dsw-alias-bg-layer-1": "#1f2335",
+        "--dsw-alias-bg-layer-2": "#24283b",
+        "--dsw-alias-bg-layer-3": "#292e42",
+        "--dsw-alias-bg-overlay": "#3b4261",
+        "--dsw-alias-bg-module-platform": "#292e42",
+        "--dsw-alias-bg-multi-select": "#24283b",
+        "--dsw-alias-bg-skeleton": "#c0caf514",
+        "--dsw-alias-label-primary": "#c0caf5",
+        "--dsw-alias-label-secondary": "#a9b1d6",
+        "--dsw-alias-label-tertiary": "#6f7bab",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #6f7bab 62%, transparent)",
+        "--dsw-alias-border-l1": "#c0caf514",
+        "--dsw-alias-border-l2": "#c0caf522",
+        "--dsw-alias-border-l3": "#c0caf52e",
+        "--dsw-alias-border-l4": "#c0caf53d",
+        "--dsw-alias-interactive-bg-hover": "#c0caf512",
+        "--dsw-alias-interactive-bg-active": "#c0caf51f",
+        "--dsw-alias-button-elevated-fill": "#292e42",
+        "--dsw-alias-button-floating-fill": "#24283b",
+        "--dsw-alias-button-floating-hover": "#292e42",
+        "--dsw-alias-button-ghost-active-fill": "#3b4261",
+        "--dsw-specific-sidebar-fill": "#16161e",
+        "--dsw-alias-markdown-code-block": "#14141b",
+        "--dsw-alias-markdown-inline-code": "#2c3250",
+        "--dsw-alias-scrollbar-bg-l1": "#3b4261",
+        "--dsw-alias-scrollbar-hover-l1": "#4d5680",
+        "--dsw-elevation-stroke-color": "#c0caf514"
+      }
+    };
+    var NORD = {
+      light: {
+        "--dsw-alias-bg-base": "#eef1f6",
+        "--dsw-alias-bg-layer-1": "#f9fafc",
+        "--dsw-alias-bg-layer-2": "#f3f5f9",
+        "--dsw-alias-bg-layer-3": "#e5e9f0",
+        "--dsw-alias-bg-overlay": "#d8dee9",
+        "--dsw-alias-bg-module-platform": "#e5e9f0",
+        "--dsw-alias-bg-multi-select": "#e5e9f0",
+        "--dsw-alias-bg-skeleton": "#2e34400a",
+        "--dsw-alias-label-primary": "#2e3440",
+        "--dsw-alias-label-secondary": "#4c566a",
+        "--dsw-alias-label-tertiary": "#6b7689",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #6b7689 62%, transparent)",
+        "--dsw-alias-border-l1": "#2e34400d",
+        "--dsw-alias-border-l2": "#2e34401a",
+        "--dsw-alias-border-l3": "#2e344024",
+        "--dsw-alias-border-l4": "#2e344033",
+        "--dsw-alias-interactive-bg-hover": "#2e34400a",
+        "--dsw-alias-interactive-bg-active": "#2e344014",
+        "--dsw-alias-button-elevated-fill": "#f9fafc",
+        "--dsw-alias-button-floating-fill": "#f9fafc",
+        "--dsw-alias-button-floating-hover": "#eef1f6",
+        "--dsw-alias-button-ghost-active-fill": "#e5e9f0",
+        "--dsw-specific-sidebar-fill": "#e8ecf3",
+        "--dsw-alias-markdown-code-block": "#e8ecf3",
+        "--dsw-alias-markdown-inline-code": "#e0e5ee",
+        "--dsw-alias-scrollbar-bg-l1": "#d3dae5",
+        "--dsw-alias-scrollbar-hover-l1": "#bcc5d4",
+        "--dsw-elevation-stroke-color": "#2e344014"
+      },
+      dark: {
+        "--dsw-alias-bg-base": "#2e3440",
+        "--dsw-alias-bg-layer-1": "#343b48",
+        "--dsw-alias-bg-layer-2": "#3b4252",
+        "--dsw-alias-bg-layer-3": "#434c5e",
+        "--dsw-alias-bg-overlay": "#4c566a",
+        "--dsw-alias-bg-module-platform": "#434c5e",
+        "--dsw-alias-bg-multi-select": "#3b4252",
+        "--dsw-alias-bg-skeleton": "#d8dee914",
+        "--dsw-alias-label-primary": "#eceff4",
+        "--dsw-alias-label-secondary": "#d8dee9",
+        "--dsw-alias-label-tertiary": "#8d97a8",
+        "--dsw-alias-label-quaternary": "color-mix(in srgb, #8d97a8 62%, transparent)",
+        "--dsw-alias-border-l1": "#d8dee914",
+        "--dsw-alias-border-l2": "#d8dee922",
+        "--dsw-alias-border-l3": "#d8dee92e",
+        "--dsw-alias-border-l4": "#d8dee93d",
+        "--dsw-alias-interactive-bg-hover": "#d8dee912",
+        "--dsw-alias-interactive-bg-active": "#d8dee91f",
+        "--dsw-alias-button-elevated-fill": "#434c5e",
+        "--dsw-alias-button-floating-fill": "#3b4252",
+        "--dsw-alias-button-floating-hover": "#434c5e",
+        "--dsw-alias-button-ghost-active-fill": "#4c566a",
+        "--dsw-specific-sidebar-fill": "#2b303a",
+        "--dsw-alias-markdown-code-block": "#272c36",
+        "--dsw-alias-markdown-inline-code": "#3f4859",
+        "--dsw-alias-scrollbar-bg-l1": "#4c566a",
+        "--dsw-alias-scrollbar-hover-l1": "#5e6b85",
+        "--dsw-elevation-stroke-color": "#d8dee914"
+      }
+    };
+    var SURFACES = Object.freeze({ neutral: NEUTRAL, paper: PAPER, night: NIGHT, nord: NORD });
+    var SURFACE_IDS = Object.freeze(Object.keys(SURFACES));
+    function surfaceTokens(id) {
+      return SURFACES[id] ?? null;
+    }
+
     // src/client/variants.js
     var BASE_ACCENT = ACCENTS[0];
     var FONT_SIZES = Object.freeze({
@@ -607,6 +871,15 @@ window.__ModuleLoader__.load({
     }
     function applyOptions(out, settings) {
       const both = (value) => ({ light: value, dark: value });
+      const surface = surfaceTokens(settings?.surface);
+      if (surface !== null) {
+        for (const [token, value] of Object.entries(surface.light)) {
+          out[token] = { ...out[token] ?? both(value), light: value };
+        }
+        for (const [token, value] of Object.entries(surface.dark)) {
+          out[token] = { ...out[token] ?? both(value), dark: value };
+        }
+      }
       const size = FONT_SIZES[settings?.fontSize];
       if (size !== void 0 && size !== null) {
         out["--dsh-content-font-size"] = both(size.content);
@@ -1827,7 +2100,7 @@ window.__ModuleLoader__.load({
 
     /* --- the theme shelf: a card is a whole look, not a setting --- */
     .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
-    .fto-themes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 10px}
+    .fto-themes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 10px}
     .fto-theme{position:relative}
     .fto-themePick,.fto-theme.fto-themeAdd{display:flex;flex-direction:column;gap:7px;width:100%;
       padding:0;border:0;background:transparent;cursor:pointer;text-align:left;font:inherit}
@@ -1846,19 +2119,29 @@ window.__ModuleLoader__.load({
       border-radius:10px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);
       font-size:12px;outline:none}
     .fto-themeArt{position:relative;display:block;height:58px;overflow:hidden;
-      background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l2);
+      background:var(--fto-card-bg,var(--dsw-alias-bg-layer-1));
+      border:1px solid var(--dsw-alias-border-l2);
       transition:border-color .14s ease,box-shadow .14s ease}
+    body[data-ds-dark-theme] .fto-themeArt{background:var(--fto-card-bg-dark,var(--dsw-alias-bg-layer-1))}
+    .fto-themeArt[data-live="true"],.fto-theme[data-live="true"] .fto-themeArt{
+      background:var(--dsw-alias-bg-layer-1)}
     .fto-themeSide{position:absolute;left:0;top:0;bottom:0;width:27%;
-      background:var(--dsw-alias-bg-layer-3);border-right:1px solid var(--dsw-alias-border-l1)}
+      background:var(--fto-card-side,var(--dsw-alias-bg-layer-3));
+      border-right:1px solid var(--dsw-alias-border-l1)}
+    body[data-ds-dark-theme] .fto-themeSide{background:var(--fto-card-side-dark,var(--dsw-alias-bg-layer-3))}
     .fto-themeSideDash{position:absolute;left:7%;width:13%;height:3px;border-radius:1.5px;
-      background:var(--dsw-alias-label-tertiary);opacity:.3}
+      background:var(--fto-card-ink,var(--dsw-alias-label-tertiary));opacity:.34}
+    body[data-ds-dark-theme] .fto-themeSideDash{background:var(--fto-card-ink-dark,var(--dsw-alias-label-tertiary))}
     .fto-themeLine{position:absolute;left:35%;height:4px;border-radius:2px;
-      background:var(--dsw-alias-label-tertiary);opacity:.32}
+      background:var(--fto-card-ink,var(--dsw-alias-label-tertiary));opacity:.36}
+    body[data-ds-dark-theme] .fto-themeLine{background:var(--fto-card-ink-dark,var(--dsw-alias-label-tertiary))}
     .fto-theme:hover .fto-themeArt{border-color:var(--dsw-alias-border-l3)}
     .fto-theme[data-on="true"] .fto-themeArt{
       border-color:var(--dsw-alias-link,#0284c7);
       box-shadow:0 0 0 1px var(--dsw-alias-link,#0284c7)}
-    .fto-themeDot{position:absolute;right:11px;bottom:11px;width:11px;height:11px;border-radius:50%}
+    .fto-themeDot{position:absolute;right:11px;bottom:11px;width:11px;height:11px;border-radius:50%;
+      background:var(--fto-card-accent,var(--dsw-alias-link))}
+    body[data-ds-dark-theme] .fto-themeDot{background:var(--fto-card-accent-dark,var(--dsw-alias-link))}
     .fto-themeName{padding-left:2px;font-size:12px;color:var(--dsw-alias-label-secondary)}
     .fto-theme[data-on="true"] .fto-themeName{color:var(--dsw-alias-label-primary);font-weight:500}
 
@@ -2103,6 +2386,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "standard",
         name: "\u6807\u51C6",
+        surface: "neutral",
         accent: "sky",
         radius: "default",
         density: "default",
@@ -2118,6 +2402,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "compact",
         name: "\u7D27\u51D1",
+        surface: "neutral",
         accent: "sky",
         radius: "compact",
         density: "compact",
@@ -2133,6 +2418,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "relaxed",
         name: "\u5BBD\u677E",
+        surface: "neutral",
         accent: "sky",
         radius: "round",
         density: "default",
@@ -2148,6 +2434,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "indigo",
         name: "\u975B\u9752",
+        surface: "neutral",
         accent: "violet",
         radius: "default",
         density: "default",
@@ -2163,6 +2450,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "celadon",
         name: "\u9752\u74F7",
+        surface: "paper",
         accent: "emerald",
         radius: "compact",
         density: "default",
@@ -2178,6 +2466,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "amber",
         name: "\u7425\u73C0",
+        surface: "paper",
         accent: "amber",
         radius: "round",
         density: "default",
@@ -2193,6 +2482,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "ink",
         name: "\u58A8",
+        surface: "night",
         accent: "sky",
         radius: "default",
         density: "default",
@@ -2208,6 +2498,7 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "terminal",
         name: "\u7EC8\u7AEF",
+        surface: "night",
         accent: "emerald",
         radius: "compact",
         density: "compact",
@@ -2219,6 +2510,38 @@ window.__ModuleLoader__.load({
         codeTone: "dark",
         effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "nordic",
+        name: "\u5317\u5883",
+        surface: "nord",
+        accent: "sky",
+        radius: "default",
+        density: "default",
+        fontSize: "auto",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "normal",
+        corner: "round",
+        codeTone: "auto",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "voyage",
+        name: "\u591C\u822A",
+        surface: "nord",
+        accent: "violet",
+        radius: "round",
+        density: "default",
+        fontSize: "auto",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "slow",
+        corner: "round",
+        codeTone: "auto",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
       })
     ]);
     var PRESET_IDS = Object.freeze(PRESETS.map((preset) => preset.id));
@@ -2227,7 +2550,7 @@ window.__ModuleLoader__.load({
       if (preset === null || settings === null) return false;
       const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key]);
       const sameLayout = preset.layout.disabled.length === settings.layout.disabled.length && preset.layout.disabled.every((id) => settings.layout.disabled.includes(id));
-      const sameOption = ["accent", "radius", "density", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
+      const sameOption = ["surface", "accent", "radius", "density", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
       return sameOption && sameEffects && sameLayout;
     }
 
@@ -2384,8 +2707,22 @@ window.__ModuleLoader__.load({
         }, import_react3.default.createElement("span", { className: "fto-segLabel" }, choice.label)))
       );
     }
+    function cardVars(preset) {
+      const surface = SURFACES[preset.surface] ?? SURFACES.neutral;
+      const accent = ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0];
+      const pick = (mode, token, fallback) => surface[mode][token] ?? fallback;
+      return {
+        "--fto-card-bg": pick("light", "--dsw-alias-bg-base", "#fafafa"),
+        "--fto-card-bg-dark": pick("dark", "--dsw-alias-bg-base", "#171717"),
+        "--fto-card-side": pick("light", "--dsw-specific-sidebar-fill", "#f5f5f5"),
+        "--fto-card-side-dark": pick("dark", "--dsw-specific-sidebar-fill", "#1a1a1a"),
+        "--fto-card-ink": pick("light", "--dsw-alias-label-secondary", "#525252"),
+        "--fto-card-ink-dark": pick("dark", "--dsw-alias-label-secondary", "#a3a3a3"),
+        "--fto-card-accent": accent.light,
+        "--fto-card-accent-dark": accent.dark
+      };
+    }
     function ThemeCard({ preset, active, onDelete }) {
-      const accent = (ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]).light;
       return import_react3.default.createElement(
         "div",
         { className: "fto-theme", "data-on": active ? "true" : "false" },
@@ -2400,7 +2737,7 @@ window.__ModuleLoader__.load({
             "span",
             {
               className: "fto-themeArt",
-              style: { borderRadius: RADIUS_PX[preset.radius] ?? "10px" }
+              style: { borderRadius: RADIUS_PX[preset.radius] ?? "10px", ...cardVars(preset) }
             },
             import_react3.default.createElement("span", { className: "fto-themeSide" }),
             import_react3.default.createElement("span", { className: "fto-themeSideDash", style: { top: "12px" } }),
@@ -2408,7 +2745,7 @@ window.__ModuleLoader__.load({
             import_react3.default.createElement("span", { className: "fto-themeSideDash", style: { top: "32px" } }),
             import_react3.default.createElement("span", { className: "fto-themeLine", style: { top: "16px", width: "42%" } }),
             import_react3.default.createElement("span", { className: "fto-themeLine", style: { top: "27px", width: "30%" } }),
-            import_react3.default.createElement("span", { className: "fto-themeDot", style: { background: accent } })
+            import_react3.default.createElement("span", { className: "fto-themeDot" })
           ),
           import_react3.default.createElement("span", { className: "fto-themeName" }, preset.name)
         ),
@@ -2457,7 +2794,8 @@ window.__ModuleLoader__.load({
         {
           className: "fto-theme",
           "data-on": active ? "true" : "false",
-          "data-static": "true"
+          "data-static": "true",
+          "data-live": "true"
         },
         import_react3.default.createElement(
           "span",
@@ -2468,7 +2806,7 @@ window.__ModuleLoader__.load({
           import_react3.default.createElement("span", { className: "fto-themeSideDash", style: { top: "32px" } }),
           import_react3.default.createElement("span", { className: "fto-themeLine", style: { top: "16px", width: "42%" } }),
           import_react3.default.createElement("span", { className: "fto-themeLine", style: { top: "27px", width: "30%" } }),
-          import_react3.default.createElement("span", { className: "fto-themeDot", style: { background: "var(--dsw-alias-label-tertiary)" } })
+          import_react3.default.createElement("span", { className: "fto-themeDot" })
         ),
         import_react3.default.createElement("span", { className: "fto-themeName" }, "\u81EA\u5B9A\u4E49")
       );
@@ -2666,6 +3004,11 @@ window.__ModuleLoader__.load({
           import_react3.default.createElement(
             Group,
             { title: translate("page.shapeGroup") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.surface") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "surface" })
+            ),
             import_react3.default.createElement(
               Feature,
               { title: translate("page.accent") },
@@ -3343,6 +3686,11 @@ window.__ModuleLoader__.load({
       "page.enable": "\u542F\u7528\u88C5\u4FEE",
       "page.tune": "\u5FAE\u8C03",
       "page.shapeGroup": "\u5F62\u72B6",
+      "page.surface": "\u5E95\u8272",
+      "page.surface_neutral": "\u4E2D\u6027",
+      "page.surface_paper": "\u6696\u7EB8",
+      "page.surface_night": "\u591C\u84DD",
+      "page.surface_nord": "\u6781\u5730",
       "page.textGroup": "\u8D28\u611F",
       "page.fontSize": "\u5B57\u53F7",
       "page.fontSize_auto": "\u8DDF\u968F",
@@ -3434,6 +3782,11 @@ window.__ModuleLoader__.load({
       "page.enable": "Enable fitout",
       "page.tune": "Fine tune",
       "page.shapeGroup": "Shape",
+      "page.surface": "Surface",
+      "page.surface_neutral": "Neutral",
+      "page.surface_paper": "Paper",
+      "page.surface_night": "Night",
+      "page.surface_nord": "Arctic",
       "page.textGroup": "Texture",
       "page.fontSize": "Text size",
       "page.fontSize_auto": "Follow",

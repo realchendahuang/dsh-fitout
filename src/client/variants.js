@@ -6,6 +6,7 @@
  */
 import { TOKENS } from './tokens.js'
 import { ACCENTS, RADIUS_SCALES } from './store.js'
+import { surfaceTokens } from './surfaces.js'
 
 const BASE_ACCENT = ACCENTS[0]
 
@@ -89,6 +90,17 @@ export function buildTokens(settings) {
 /** Stack the enumerated design options on top of the palette tokens. */
 function applyOptions(out, settings) {
   const both = (value) => ({ light: value, dark: value })
+
+  // The surface goes first: it repaints every layer, border and text step.
+  const surface = surfaceTokens(settings?.surface)
+  if (surface !== null) {
+    for (const [token, value] of Object.entries(surface.light)) {
+      out[token] = { ...(out[token] ?? both(value)), light: value }
+    }
+    for (const [token, value] of Object.entries(surface.dark)) {
+      out[token] = { ...(out[token] ?? both(value)), dark: value }
+    }
+  }
 
   const size = FONT_SIZES[settings?.fontSize]
   if (size !== undefined && size !== null) {
