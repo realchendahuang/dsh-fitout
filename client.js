@@ -210,8 +210,26 @@ window.__ModuleLoader__.load({
       density: "default",
       effects: { underline: true, chip: true },
       layout: { disabled: [] },
+      fontSize: "auto",
+      fontFamily: "default",
+      shadow: "soft",
+      motion: "normal",
+      corner: "round",
+      codeTone: "auto",
       themes: []
     });
+    var OPTIONS = Object.freeze({
+      fontSize: Object.freeze(["auto", "compact", "standard", "large"]),
+      fontFamily: Object.freeze(["default", "serif", "mono", "rounded"]),
+      shadow: Object.freeze(["flat", "soft", "lifted"]),
+      motion: Object.freeze(["off", "normal", "slow"]),
+      corner: Object.freeze(["round", "squircle"]),
+      codeTone: Object.freeze(["auto", "light", "dark"])
+    });
+    function readOption(key, value) {
+      const allowed = OPTIONS[key];
+      return allowed.includes(value) ? value : DEFAULTS[key];
+    }
     function clone(state2) {
       return {
         enabled: state2.enabled,
@@ -224,6 +242,12 @@ window.__ModuleLoader__.load({
         density: state2.density,
         effects: { ...state2.effects },
         layout: { disabled: [...state2.layout.disabled] },
+        fontSize: state2.fontSize,
+        fontFamily: state2.fontFamily,
+        shadow: state2.shadow,
+        motion: state2.motion,
+        corner: state2.corner,
+        codeTone: state2.codeTone,
         themes: state2.themes.map(copyTheme)
       };
     }
@@ -235,7 +259,13 @@ window.__ModuleLoader__.load({
         radius: theme.radius,
         density: theme.density,
         effects: { ...theme.effects },
-        layout: { disabled: [...theme.layout.disabled] }
+        layout: { disabled: [...theme.layout.disabled] },
+        fontSize: theme.fontSize ?? DEFAULTS.fontSize,
+        fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
+        shadow: theme.shadow ?? DEFAULTS.shadow,
+        motion: theme.motion ?? DEFAULTS.motion,
+        corner: theme.corner ?? DEFAULTS.corner,
+        codeTone: theme.codeTone ?? DEFAULTS.codeTone
       };
     }
     function readSavedTheme(raw) {
@@ -253,7 +283,13 @@ window.__ModuleLoader__.load({
         },
         layout: {
           disabled: Array.isArray(raw.layout?.disabled) ? raw.layout.disabled.filter((x) => typeof x === "string") : []
-        }
+        },
+        fontSize: readOption("fontSize", raw.fontSize),
+        fontFamily: readOption("fontFamily", raw.fontFamily),
+        shadow: readOption("shadow", raw.shadow),
+        motion: readOption("motion", raw.motion),
+        corner: readOption("corner", raw.corner),
+        codeTone: readOption("codeTone", raw.codeTone)
       });
     }
     function oneOf(value, allowed, fallback) {
@@ -282,6 +318,12 @@ window.__ModuleLoader__.load({
           layout: {
             disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : []
           },
+          fontSize: DEFAULTS.fontSize,
+          fontFamily: DEFAULTS.fontFamily,
+          shadow: DEFAULTS.shadow,
+          motion: DEFAULTS.motion,
+          corner: DEFAULTS.corner,
+          codeTone: DEFAULTS.codeTone,
           themes: []
         };
       } catch {
@@ -309,6 +351,12 @@ window.__ModuleLoader__.load({
             layout: {
               disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === "string") : []
             },
+            fontSize: readOption("fontSize", parsed?.fontSize),
+            fontFamily: readOption("fontFamily", parsed?.fontFamily),
+            shadow: readOption("shadow", parsed?.shadow),
+            motion: readOption("motion", parsed?.motion),
+            corner: readOption("corner", parsed?.corner),
+            codeTone: readOption("codeTone", parsed?.codeTone),
             themes: Array.isArray(parsed?.themes) ? parsed.themes.map(readSavedTheme).filter((theme) => theme !== null) : []
           };
         }
@@ -367,9 +415,21 @@ window.__ModuleLoader__.load({
         accent: preset.accent,
         radius: preset.radius,
         density: preset.density,
+        fontSize: preset.fontSize ?? DEFAULTS.fontSize,
+        fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
+        shadow: preset.shadow ?? DEFAULTS.shadow,
+        motion: preset.motion ?? DEFAULTS.motion,
+        corner: preset.corner ?? DEFAULTS.corner,
+        codeTone: preset.codeTone ?? DEFAULTS.codeTone,
         effects: { ...state.effects, ...preset.effects },
         layout: { disabled: [...preset.layout.disabled] }
       });
+    }
+    function setOption(key, value) {
+      const allowed = OPTIONS[key];
+      if (allowed === void 0 || !allowed.includes(value)) return;
+      if (state[key] === value) return;
+      commit(custom({ ...state, [key]: value }));
     }
     function saveTheme(name2) {
       const label = String(name2 ?? "").trim().slice(0, 20) || "\u6211\u7684\u4E3B\u9898";
@@ -380,7 +440,13 @@ window.__ModuleLoader__.load({
         radius: state.radius,
         density: state.density,
         effects: state.effects,
-        layout: state.layout
+        layout: state.layout,
+        fontSize: state.fontSize,
+        fontFamily: state.fontFamily,
+        shadow: state.shadow,
+        motion: state.motion,
+        corner: state.corner,
+        codeTone: state.codeTone
       });
       commit({ ...state, themes: [...state.themes, theme], preset: theme.id });
       return theme;
@@ -475,6 +541,38 @@ window.__ModuleLoader__.load({
 
     // src/client/variants.js
     var BASE_ACCENT = ACCENTS[0];
+    var FONT_SIZES = Object.freeze({
+      auto: null,
+      compact: { content: "13px", code: "11px", terminal: "12px" },
+      standard: { content: "15px", code: "12px", terminal: "13px" },
+      large: { content: "17px", code: "13px", terminal: "14px" }
+    });
+    var FONT_FAMILIES = Object.freeze({
+      default: null,
+      serif: '"Songti SC","Source Han Serif SC","Noto Serif CJK SC",Georgia,"Times New Roman",serif',
+      mono: 'ui-monospace,"SF Mono",Menlo,Consolas,monospace',
+      rounded: '"SF Pro Rounded","Hiragino Maru Gothic ProN","PingFang SC",system-ui,sans-serif'
+    });
+    var SHADOWS = Object.freeze({
+      flat: { mode: "none" },
+      soft: null,
+      lifted: {
+        mode: "pair",
+        light: "var(--dsw-elevation-stroke), 0 6px 20px 0 #0a0a0a12, 0 0 32px 0 #0a0a0a0a",
+        dark: "var(--dsw-elevation-stroke), 0 8px 26px 0 #00000059, 0 0 38px 0 #0000003d"
+      }
+    });
+    var MOTIONS = Object.freeze({
+      off: { base: "0s", fast: "0s", slow: "0s" },
+      normal: null,
+      slow: { base: "0.3s", fast: "0.18s", slow: "0.45s" }
+    });
+    var CORNERS = Object.freeze({ round: "round", squircle: "superellipse(1.5)" });
+    var CODE_TONES = Object.freeze({
+      auto: null,
+      light: { light: "#f5f5f5", dark: "#262626" },
+      dark: { light: "#1b1b1c", dark: "#0f0f10" }
+    });
     var RADIUS_SLOTS = Object.freeze({
       "--dsw-radius-xs": "xs",
       "--dsw-radius-sm": "sm",
@@ -504,6 +602,44 @@ window.__ModuleLoader__.load({
           dark = scale[slot];
         }
         out[key] = { light, dark };
+      }
+      return applyOptions(out, settings);
+    }
+    function applyOptions(out, settings) {
+      const both = (value) => ({ light: value, dark: value });
+      const size = FONT_SIZES[settings?.fontSize];
+      if (size !== void 0 && size !== null) {
+        out["--dsh-content-font-size"] = both(size.content);
+        out["--dsh-code-font-size"] = both(size.code);
+        out["--dsh-terminal-font-size"] = both(size.terminal);
+      }
+      const family = FONT_FAMILIES[settings?.fontFamily];
+      if (family !== void 0 && family !== null) {
+        out["--dsh-font-family-text"] = both(family);
+        out["--dsw-font-family"] = both(family);
+      }
+      const shadow = SHADOWS[settings?.shadow];
+      if (shadow !== void 0 && shadow !== null) {
+        if (shadow.mode === "none") {
+          out["--dsw-elevation-panel"] = both("none");
+          out["--dsw-elevation-prominent"] = both("none");
+          out["--dsw-elevation-soft"] = both("none");
+        } else {
+          out["--dsw-elevation-panel"] = { light: shadow.light, dark: shadow.dark };
+          out["--dsw-elevation-prominent"] = { light: shadow.light, dark: shadow.dark };
+          out["--dsw-elevation-soft"] = { light: shadow.light, dark: shadow.dark };
+        }
+      }
+      const motion = MOTIONS[settings?.motion];
+      if (motion !== void 0 && motion !== null) {
+        out["--ds-transition-duration"] = both(motion.base);
+        out["--ds-transition-duration-fast"] = both(motion.fast);
+        out["--ds-transition-duration-slow"] = both(motion.slow);
+      }
+      out["--dsw-corner-shape"] = both(CORNERS[settings?.corner] ?? CORNERS.round);
+      const tone = CODE_TONES[settings?.codeTone];
+      if (tone !== void 0 && tone !== null) {
+        out["--dsw-alias-markdown-code-block"] = { light: tone.light, dark: tone.dark };
       }
       return out;
     }
@@ -1970,6 +2106,12 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "default",
         density: "default",
+        fontSize: "auto",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "normal",
+        corner: "round",
+        codeTone: "auto",
         effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
       }),
@@ -1979,7 +2121,13 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "compact",
         density: "compact",
-        effects: Object.freeze({ underline: true, chip: false }),
+        fontSize: "compact",
+        fontFamily: "default",
+        shadow: "flat",
+        motion: "off",
+        corner: "round",
+        codeTone: "auto",
+        effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
       }),
       Object.freeze({
@@ -1988,6 +2136,12 @@ window.__ModuleLoader__.load({
         accent: "sky",
         radius: "round",
         density: "default",
+        fontSize: "large",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "slow",
+        corner: "round",
+        codeTone: "auto",
         effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
       }),
@@ -1997,15 +2151,72 @@ window.__ModuleLoader__.load({
         accent: "violet",
         radius: "default",
         density: "default",
+        fontSize: "auto",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "normal",
+        corner: "round",
+        codeTone: "auto",
         effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
       }),
       Object.freeze({
-        id: "jade",
+        id: "celadon",
         name: "\u9752\u74F7",
         accent: "emerald",
         radius: "compact",
         density: "default",
+        fontSize: "auto",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "normal",
+        corner: "round",
+        codeTone: "auto",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "amber",
+        name: "\u7425\u73C0",
+        accent: "amber",
+        radius: "round",
+        density: "default",
+        fontSize: "large",
+        fontFamily: "default",
+        shadow: "soft",
+        motion: "normal",
+        corner: "round",
+        codeTone: "auto",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "ink",
+        name: "\u58A8",
+        accent: "sky",
+        radius: "default",
+        density: "default",
+        fontSize: "large",
+        fontFamily: "serif",
+        shadow: "lifted",
+        motion: "slow",
+        corner: "squircle",
+        codeTone: "auto",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "terminal",
+        name: "\u7EC8\u7AEF",
+        accent: "emerald",
+        radius: "compact",
+        density: "compact",
+        fontSize: "compact",
+        fontFamily: "mono",
+        shadow: "flat",
+        motion: "off",
+        corner: "round",
+        codeTone: "dark",
         effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
       })
@@ -2016,7 +2227,8 @@ window.__ModuleLoader__.load({
       if (preset === null || settings === null) return false;
       const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key]);
       const sameLayout = preset.layout.disabled.length === settings.layout.disabled.length && preset.layout.disabled.every((id) => settings.layout.disabled.includes(id));
-      return preset.accent === settings.accent && preset.radius === settings.radius && preset.density === settings.density && sameEffects && sameLayout;
+      const sameOption = ["accent", "radius", "density", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"].every((key) => (preset[key] ?? null) === (settings[key] ?? null));
+      return sameOption && sameEffects && sameLayout;
     }
 
     // src/client/theme-pack.js
@@ -2133,6 +2345,14 @@ window.__ModuleLoader__.load({
         ),
         children
       );
+    }
+    function OptionSeg({ t, settings, name: name2 }) {
+      const values = OPTIONS[name2];
+      return import_react3.default.createElement(Seg, {
+        value: settings[name2],
+        choices: values.map((value) => ({ id: value, label: t("page." + name2 + "_" + value) })),
+        onChange: (value) => setOption(name2, value)
+      });
     }
     function Seg({ value, choices, onChange }) {
       return import_react3.default.createElement(
@@ -2471,6 +2691,40 @@ window.__ModuleLoader__.load({
               Feature,
               { title: translate("page.appearance") },
               import_react3.default.createElement(AppearancePicker, { t: translate })
+            )
+          ),
+          import_react3.default.createElement(
+            Group,
+            { title: translate("page.textGroup") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.fontSize") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "fontSize" })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.fontFamily") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "fontFamily" })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.shadow") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "shadow" })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.motion") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "motion" })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.corner") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "corner" })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.codeTone") },
+              import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "codeTone" })
             )
           ),
           import_react3.default.createElement(
@@ -3071,6 +3325,32 @@ window.__ModuleLoader__.load({
       "page.enable": "\u542F\u7528\u88C5\u4FEE",
       "page.tune": "\u5FAE\u8C03",
       "page.shapeGroup": "\u5F62\u72B6",
+      "page.textGroup": "\u8D28\u611F",
+      "page.fontSize": "\u5B57\u53F7",
+      "page.fontSize_auto": "\u8DDF\u968F",
+      "page.fontSize_compact": "\u5C0F",
+      "page.fontSize_standard": "\u6807\u51C6",
+      "page.fontSize_large": "\u5927",
+      "page.fontFamily": "\u5B57\u4F53",
+      "page.fontFamily_default": "\u9ED8\u8BA4",
+      "page.fontFamily_serif": "\u886C\u7EBF",
+      "page.fontFamily_mono": "\u7B49\u5BBD",
+      "page.fontFamily_rounded": "\u5706\u4F53",
+      "page.shadow": "\u9634\u5F71",
+      "page.shadow_flat": "\u65E0",
+      "page.shadow_soft": "\u67D4\u548C",
+      "page.shadow_lifted": "\u660E\u663E",
+      "page.motion": "\u52A8\u6548",
+      "page.motion_off": "\u5173",
+      "page.motion_normal": "\u6807\u51C6",
+      "page.motion_slow": "\u6162",
+      "page.corner": "\u8F6C\u89D2",
+      "page.corner_round": "\u5706\u89D2",
+      "page.corner_squircle": "\u8D85\u692D\u5706",
+      "page.codeTone": "\u4EE3\u7801\u5757",
+      "page.codeTone_auto": "\u8DDF\u968F",
+      "page.codeTone_light": "\u6D45",
+      "page.codeTone_dark": "\u6DF1",
       "page.accent": "\u5F3A\u8C03\u8272",
       "page.radius": "\u5706\u89D2",
       "page.radius_compact": "\u7D27\u51D1",
@@ -3136,6 +3416,32 @@ window.__ModuleLoader__.load({
       "page.enable": "Enable fitout",
       "page.tune": "Fine tune",
       "page.shapeGroup": "Shape",
+      "page.textGroup": "Texture",
+      "page.fontSize": "Text size",
+      "page.fontSize_auto": "Follow",
+      "page.fontSize_compact": "Small",
+      "page.fontSize_standard": "Standard",
+      "page.fontSize_large": "Large",
+      "page.fontFamily": "Typeface",
+      "page.fontFamily_default": "Default",
+      "page.fontFamily_serif": "Serif",
+      "page.fontFamily_mono": "Mono",
+      "page.fontFamily_rounded": "Rounded",
+      "page.shadow": "Shadows",
+      "page.shadow_flat": "None",
+      "page.shadow_soft": "Soft",
+      "page.shadow_lifted": "Lifted",
+      "page.motion": "Motion",
+      "page.motion_off": "Off",
+      "page.motion_normal": "Standard",
+      "page.motion_slow": "Slow",
+      "page.corner": "Corners",
+      "page.corner_round": "Round",
+      "page.corner_squircle": "Squircle",
+      "page.codeTone": "Code block",
+      "page.codeTone_auto": "Follow",
+      "page.codeTone_light": "Light",
+      "page.codeTone_dark": "Dark",
       "page.accent": "Accent",
       "page.radius": "Corners",
       "page.radius_compact": "Tight",

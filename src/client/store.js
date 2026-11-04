@@ -51,8 +51,29 @@ const DEFAULTS = Object.freeze({
   density: 'default',
   effects: { underline: true, chip: true },
   layout: { disabled: [] },
+  fontSize: 'auto',
+  fontFamily: 'default',
+  shadow: 'soft',
+  motion: 'normal',
+  corner: 'round',
+  codeTone: 'auto',
   themes: [],
 })
+
+/** Every enumerated design option and its accepted values. */
+export const OPTIONS = Object.freeze({
+  fontSize: Object.freeze(['auto', 'compact', 'standard', 'large']),
+  fontFamily: Object.freeze(['default', 'serif', 'mono', 'rounded']),
+  shadow: Object.freeze(['flat', 'soft', 'lifted']),
+  motion: Object.freeze(['off', 'normal', 'slow']),
+  corner: Object.freeze(['round', 'squircle']),
+  codeTone: Object.freeze(['auto', 'light', 'dark']),
+})
+
+function readOption(key, value) {
+  const allowed = OPTIONS[key]
+  return allowed.includes(value) ? value : DEFAULTS[key]
+}
 
 export function clone(state) {
   return {
@@ -66,6 +87,12 @@ export function clone(state) {
     density: state.density,
     effects: { ...state.effects },
     layout: { disabled: [...state.layout.disabled] },
+    fontSize: state.fontSize,
+    fontFamily: state.fontFamily,
+    shadow: state.shadow,
+    motion: state.motion,
+    corner: state.corner,
+    codeTone: state.codeTone,
     themes: state.themes.map(copyTheme),
   }
 }
@@ -80,6 +107,12 @@ function copyTheme(theme) {
     density: theme.density,
     effects: { ...theme.effects },
     layout: { disabled: [...theme.layout.disabled] },
+    fontSize: theme.fontSize ?? DEFAULTS.fontSize,
+    fontFamily: theme.fontFamily ?? DEFAULTS.fontFamily,
+    shadow: theme.shadow ?? DEFAULTS.shadow,
+    motion: theme.motion ?? DEFAULTS.motion,
+    corner: theme.corner ?? DEFAULTS.corner,
+    codeTone: theme.codeTone ?? DEFAULTS.codeTone,
   }
 }
 
@@ -102,6 +135,12 @@ function readSavedTheme(raw) {
         ? raw.layout.disabled.filter((x) => typeof x === 'string')
         : [],
     },
+    fontSize: readOption('fontSize', raw.fontSize),
+    fontFamily: readOption('fontFamily', raw.fontFamily),
+    shadow: readOption('shadow', raw.shadow),
+    motion: readOption('motion', raw.motion),
+    corner: readOption('corner', raw.corner),
+    codeTone: readOption('codeTone', raw.codeTone),
   })
 }
 
@@ -134,6 +173,12 @@ function readLegacy() {
       layout: {
         disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : [],
       },
+      fontSize: DEFAULTS.fontSize,
+      fontFamily: DEFAULTS.fontFamily,
+      shadow: DEFAULTS.shadow,
+      motion: DEFAULTS.motion,
+      corner: DEFAULTS.corner,
+      codeTone: DEFAULTS.codeTone,
       themes: [],
     }
   } catch {
@@ -164,6 +209,12 @@ function readStored() {
         layout: {
           disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === 'string') : [],
         },
+        fontSize: readOption('fontSize', parsed?.fontSize),
+        fontFamily: readOption('fontFamily', parsed?.fontFamily),
+        shadow: readOption('shadow', parsed?.shadow),
+        motion: readOption('motion', parsed?.motion),
+        corner: readOption('corner', parsed?.corner),
+        codeTone: readOption('codeTone', parsed?.codeTone),
         themes: Array.isArray(parsed?.themes)
           ? parsed.themes.map(readSavedTheme).filter((theme) => theme !== null)
           : [],
@@ -241,9 +292,23 @@ export function applyPreset(preset) {
     accent: preset.accent,
     radius: preset.radius,
     density: preset.density,
+    fontSize: preset.fontSize ?? DEFAULTS.fontSize,
+    fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
+    shadow: preset.shadow ?? DEFAULTS.shadow,
+    motion: preset.motion ?? DEFAULTS.motion,
+    corner: preset.corner ?? DEFAULTS.corner,
+    codeTone: preset.codeTone ?? DEFAULTS.codeTone,
     effects: { ...state.effects, ...preset.effects },
     layout: { disabled: [...preset.layout.disabled] },
   })
+}
+
+/** One enumerated option (see OPTIONS); marks the record custom. */
+export function setOption(key, value) {
+  const allowed = OPTIONS[key]
+  if (allowed === undefined || !allowed.includes(value)) return
+  if (state[key] === value) return
+  commit(custom({ ...state, [key]: value }))
 }
 
 /* --- saved themes ---------------------------------------------------------- */
@@ -259,6 +324,12 @@ export function saveTheme(name) {
     density: state.density,
     effects: state.effects,
     layout: state.layout,
+    fontSize: state.fontSize,
+    fontFamily: state.fontFamily,
+    shadow: state.shadow,
+    motion: state.motion,
+    corner: state.corner,
+    codeTone: state.codeTone,
   })
   commit({ ...state, themes: [...state.themes, theme], preset: theme.id })
   return theme

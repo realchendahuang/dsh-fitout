@@ -9,9 +9,10 @@ import React from 'react'
 import {
   ACCENTS, RADIUS_SCALES, applyPreset, getSettings, getThemePreference, resetAll,
   resetAppearance, setAccent, setAppearance, setAllLayoutGroups, setDensity, setEffect,
-  setEnabled, setLayoutGroup, setList, setRadius, setThemePreference, subscribe,
+  setEnabled, setLayoutGroup, setList, setRadius, setOption, setThemePreference, subscribe,
   saveTheme, deleteTheme,
 } from './store.js'
+import { OPTIONS } from './store.js'
 import { PRESETS, matchesPreset } from './presets.js'
 import { MARK_PRESETS, renderMark } from './brand.jsx'
 import { SECTIONS } from './sections.js'
@@ -47,6 +48,16 @@ function Group({ title, tools, children }) {
       React.createElement('h3', { className: 'fto-groupTitle' }, title),
       tools === undefined ? null : React.createElement('div', { className: 'fto-groupTools' }, tools)),
     children)
+}
+
+/** A segmented control driven by one OPTIONS entry. */
+function OptionSeg({ t, settings, name }) {
+  const values = OPTIONS[name]
+  return React.createElement(Seg, {
+    value: settings[name],
+    choices: values.map((value) => ({ id: value, label: t('page.' + name + '_' + value) })),
+    onChange: (value) => setOption(name, value),
+  })
 }
 
 function Seg({ value, choices, onChange }) {
@@ -317,6 +328,20 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
           })),
         React.createElement(Feature, { title: translate('page.appearance') },
           React.createElement(AppearancePicker, { t: translate }))),
+
+      React.createElement(Group, { title: translate('page.textGroup') },
+        React.createElement(Feature, { title: translate('page.fontSize') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'fontSize' })),
+        React.createElement(Feature, { title: translate('page.fontFamily') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'fontFamily' })),
+        React.createElement(Feature, { title: translate('page.shadow') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'shadow' })),
+        React.createElement(Feature, { title: translate('page.motion') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'motion' })),
+        React.createElement(Feature, { title: translate('page.corner') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'corner' })),
+        React.createElement(Feature, { title: translate('page.codeTone') },
+          React.createElement(OptionSeg, { t: translate, settings, name: 'codeTone' }))),
 
       React.createElement(Group, {
         title: translate('page.layoutGroup'),
