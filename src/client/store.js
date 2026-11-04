@@ -58,6 +58,8 @@ const DEFAULTS = Object.freeze({
   motion: 'normal',
   corner: 'round',
   codeTone: 'auto',
+  background: { image: '', opacity: 55, blur: 0 },
+  accentCustom: '',
   themes: [],
 })
 
@@ -90,12 +92,16 @@ export function clone(state) {
     effects: { ...state.effects },
     layout: { disabled: [...state.layout.disabled] },
     surface: state.surface,
+    background: { ...state.background },
+    accentCustom: state.accentCustom,
     fontSize: state.fontSize,
     fontFamily: state.fontFamily,
     shadow: state.shadow,
     motion: state.motion,
     corner: state.corner,
     codeTone: state.codeTone,
+    background: { ...state.background },
+    accentCustom: state.accentCustom,
     themes: state.themes.map(copyTheme),
   }
 }
@@ -117,6 +123,8 @@ function copyTheme(theme) {
     motion: theme.motion ?? DEFAULTS.motion,
     corner: theme.corner ?? DEFAULTS.corner,
     codeTone: theme.codeTone ?? DEFAULTS.codeTone,
+    background: { ...DEFAULTS.background },
+    accentCustom: theme.accentCustom ?? DEFAULTS.accentCustom,
   }
 }
 
@@ -178,6 +186,8 @@ function readLegacy() {
       layout: {
         disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : [],
       },
+      background: { ...DEFAULTS.background },
+      accentCustom: DEFAULTS.accentCustom,
       surface: DEFAULTS.surface,
       fontSize: DEFAULTS.fontSize,
       fontFamily: DEFAULTS.fontFamily,
@@ -190,6 +200,25 @@ function readLegacy() {
   } catch {
     return null
   }
+}
+
+/** Background image + its two sliders; any malformed field falls back. */
+function readBackground(raw) {
+  if (raw === null || typeof raw !== 'object') return { ...DEFAULTS.background }
+  const clamp = (value, min, max, fallback) => {
+    const n = Number(value)
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : fallback
+  }
+  return {
+    image: typeof raw.image === 'string' ? raw.image : '',
+    opacity: clamp(raw.opacity, 0, 100, DEFAULTS.background.opacity),
+    blur: clamp(raw.blur, 0, 40, DEFAULTS.background.blur),
+  }
+}
+
+/** An arbitrary accent colour, or '' for the preset hues. */
+function readAccent(raw) {
+  return typeof raw === 'string' && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : ''
 }
 
 function readStored() {
@@ -215,6 +244,8 @@ function readStored() {
         layout: {
           disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === 'string') : [],
         },
+        background: readBackground(parsed?.background),
+        accentCustom: readAccent(parsed?.accentCustom),
         surface: readOption('surface', parsed?.surface),
         fontSize: readOption('fontSize', parsed?.fontSize),
         fontFamily: readOption('fontFamily', parsed?.fontFamily),
@@ -300,6 +331,8 @@ export function applyPreset(preset) {
     radius: preset.radius,
     density: preset.density,
     surface: preset.surface ?? DEFAULTS.surface,
+    background: { ...DEFAULTS.background },
+    accentCustom: '',
     fontSize: preset.fontSize ?? DEFAULTS.fontSize,
     fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
     shadow: preset.shadow ?? DEFAULTS.shadow,
@@ -405,6 +438,22 @@ export function setDensity(id) {
 export function setEffect(key, on) {
   if (!(key in state.effects) || state.effects[key] === Boolean(on)) return
   commit(custom({ ...state, effects: { ...state.effects, [key]: Boolean(on) } }))
+}
+
+/** Wallpaper: an image URL or data URL, plus visibility and blur. */
+export function setBackground(patch) {
+  const next = readBackground({ ...state.background, ...patch })
+  if (next.image === state.background.image
+    && next.opacity === state.background.opacity
+    && next.blur === state.background.blur) return
+  commit(custom({ ...state, background: next }))
+}
+
+/** An arbitrary accent hex; '' restores the preset hues. */
+export function setAccentCustom(hex) {
+  const next = readAccent(hex)
+  if (next === state.accentCustom) return
+  commit(custom({ ...state, accentCustom: next }))
 }
 
 /* --- 版式 groups ---------------------------------------------------------- */

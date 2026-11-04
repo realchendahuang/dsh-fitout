@@ -169,6 +169,27 @@ html.fto-dense-sidebar .fto-list-title{font-size:12px}
 html.fto-dense-sidebar .fto-list-time{font-size:10px}
 html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
+/* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
+html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:var(--fto-wallpaper);background-size:cover;background-position:center;
+  opacity:var(--fto-wallpaper-opacity,.55);
+  filter:blur(var(--fto-wallpaper-blur,0px))}
+
+/* --- sliders used by the background controls --- */
+.fto-slider{display:flex;align-items:center;gap:10px}
+.fto-slider input[type="range"]{-webkit-appearance:none;appearance:none;width:132px;height:4px;
+  border-radius:2px;background:var(--dsw-alias-bg-layer-3);outline:none;cursor:pointer}
+.fto-slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--dsw-alias-label-primary);border:0;cursor:pointer}
+.fto-slider input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+  background:var(--dsw-alias-label-primary);border:0;cursor:pointer}
+.fto-sliderValue{min-width:34px;text-align:right;font-size:11.5px;
+  color:var(--dsw-alias-label-tertiary);font-variant-numeric:tabular-nums}
+.fto-colorInput{width:26px;height:26px;padding:0;border:1px solid var(--dsw-alias-border-l2);
+  border-radius:7px;background:transparent;cursor:pointer}
+.fto-colorInput::-webkit-color-swatch-wrapper{padding:2px}
+.fto-colorInput::-webkit-color-swatch{border:0;border-radius:5px}
+
 /* --- the theme shelf: a card is a whole look, not a setting --- */
 .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
 .fto-themes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 10px}

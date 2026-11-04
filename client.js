@@ -217,6 +217,8 @@ window.__ModuleLoader__.load({
       motion: "normal",
       corner: "round",
       codeTone: "auto",
+      background: { image: "", opacity: 55, blur: 0 },
+      accentCustom: "",
       themes: []
     });
     var OPTIONS = Object.freeze({
@@ -245,12 +247,16 @@ window.__ModuleLoader__.load({
         effects: { ...state2.effects },
         layout: { disabled: [...state2.layout.disabled] },
         surface: state2.surface,
+        background: { ...state2.background },
+        accentCustom: state2.accentCustom,
         fontSize: state2.fontSize,
         fontFamily: state2.fontFamily,
         shadow: state2.shadow,
         motion: state2.motion,
         corner: state2.corner,
         codeTone: state2.codeTone,
+        background: { ...state2.background },
+        accentCustom: state2.accentCustom,
         themes: state2.themes.map(copyTheme)
       };
     }
@@ -269,7 +275,9 @@ window.__ModuleLoader__.load({
         shadow: theme.shadow ?? DEFAULTS.shadow,
         motion: theme.motion ?? DEFAULTS.motion,
         corner: theme.corner ?? DEFAULTS.corner,
-        codeTone: theme.codeTone ?? DEFAULTS.codeTone
+        codeTone: theme.codeTone ?? DEFAULTS.codeTone,
+        background: { ...DEFAULTS.background },
+        accentCustom: theme.accentCustom ?? DEFAULTS.accentCustom
       };
     }
     function readSavedTheme(raw) {
@@ -323,6 +331,8 @@ window.__ModuleLoader__.load({
           layout: {
             disabled: Array.isArray(steps?.disabled) ? [...steps.disabled] : []
           },
+          background: { ...DEFAULTS.background },
+          accentCustom: DEFAULTS.accentCustom,
           surface: DEFAULTS.surface,
           fontSize: DEFAULTS.fontSize,
           fontFamily: DEFAULTS.fontFamily,
@@ -335,6 +345,21 @@ window.__ModuleLoader__.load({
       } catch {
         return null;
       }
+    }
+    function readBackground(raw) {
+      if (raw === null || typeof raw !== "object") return { ...DEFAULTS.background };
+      const clamp = (value, min, max, fallback) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : fallback;
+      };
+      return {
+        image: typeof raw.image === "string" ? raw.image : "",
+        opacity: clamp(raw.opacity, 0, 100, DEFAULTS.background.opacity),
+        blur: clamp(raw.blur, 0, 40, DEFAULTS.background.blur)
+      };
+    }
+    function readAccent(raw) {
+      return typeof raw === "string" && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : "";
     }
     function readStored() {
       try {
@@ -357,6 +382,8 @@ window.__ModuleLoader__.load({
             layout: {
               disabled: Array.isArray(parsed?.layout?.disabled) ? parsed.layout.disabled.filter((x) => typeof x === "string") : []
             },
+            background: readBackground(parsed?.background),
+            accentCustom: readAccent(parsed?.accentCustom),
             surface: readOption("surface", parsed?.surface),
             fontSize: readOption("fontSize", parsed?.fontSize),
             fontFamily: readOption("fontFamily", parsed?.fontFamily),
@@ -423,6 +450,8 @@ window.__ModuleLoader__.load({
         radius: preset.radius,
         density: preset.density,
         surface: preset.surface ?? DEFAULTS.surface,
+        background: { ...DEFAULTS.background },
+        accentCustom: "",
         fontSize: preset.fontSize ?? DEFAULTS.fontSize,
         fontFamily: preset.fontFamily ?? DEFAULTS.fontFamily,
         shadow: preset.shadow ?? DEFAULTS.shadow,
@@ -503,6 +532,16 @@ window.__ModuleLoader__.load({
     function setEffect(key, on) {
       if (!(key in state.effects) || state.effects[key] === Boolean(on)) return;
       commit(custom({ ...state, effects: { ...state.effects, [key]: Boolean(on) } }));
+    }
+    function setBackground(patch) {
+      const next = readBackground({ ...state.background, ...patch });
+      if (next.image === state.background.image && next.opacity === state.background.opacity && next.blur === state.background.blur) return;
+      commit(custom({ ...state, background: next }));
+    }
+    function setAccentCustom(hex) {
+      const next = readAccent(hex);
+      if (next === state.accentCustom) return;
+      commit(custom({ ...state, accentCustom: next }));
     }
     function setLayoutGroup(id, on) {
       const off = !on;
@@ -845,12 +884,26 @@ window.__ModuleLoader__.load({
       "--dsw-radius-xl": "xl",
       "--dsw-radius-panel": "panel"
     });
+    function mixHex(a, b, t) {
+      const parse = (hex) => {
+        const m = /^#([0-9a-f]{6})$/i.exec(hex);
+        return m === null ? [0, 0, 0] : [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16));
+      };
+      const [r1, g1, b1] = parse(a);
+      const [r2, g2, b2] = parse(b);
+      const channel = (x, y) => Math.round(x * (1 - t) + y * t).toString(16).padStart(2, "0");
+      return "#" + channel(r1, r2) + channel(g1, g2) + channel(b1, b2);
+    }
+    function liftAccent(hex) {
+      return /^#[0-9a-f]{6}$/i.test(hex) ? mixHex(hex, "#ffffff", 0.34) : hex;
+    }
     function recolor(value, accent) {
       if (typeof value !== "string" || !value.includes("#")) return value;
       return value.split(BASE_ACCENT.light).join(accent.light).split(BASE_ACCENT.dark).join(accent.dark);
     }
     function buildTokens(settings) {
-      const accent = ACCENTS.find((item) => item.id === settings?.accent) ?? BASE_ACCENT;
+      const custom2 = typeof settings?.accentCustom === "string" && /^#[0-9a-f]{6}$/i.test(settings.accentCustom) ? { id: "custom", light: settings.accentCustom.toLowerCase(), dark: liftAccent(settings.accentCustom.toLowerCase()) } : null;
+      const accent = custom2 ?? ACCENTS.find((item) => item.id === settings?.accent) ?? BASE_ACCENT;
       const scale = RADIUS_SCALES[settings?.radius] ?? RADIUS_SCALES.default;
       const out = {};
       for (const [key, pair] of Object.entries(TOKENS)) {
@@ -913,6 +966,19 @@ window.__ModuleLoader__.load({
       const tone = CODE_TONES[settings?.codeTone];
       if (tone !== void 0 && tone !== null) {
         out["--dsw-alias-markdown-code-block"] = { light: tone.light, dark: tone.dark };
+      }
+      const image = settings?.background?.image;
+      if (typeof image === "string" && image !== "") {
+        const visible = Math.min(100, Math.max(0, Number(settings.background.opacity) || 0));
+        const keep = Math.round(100 - visible * 0.55);
+        for (const token of ["--dsw-alias-bg-base", "--dsw-alias-bg-layer-1"]) {
+          const pair = out[token];
+          if (pair === void 0) continue;
+          out[token] = {
+            light: `color-mix(in srgb, ${pair.light} ${keep}%, transparent)`,
+            dark: `color-mix(in srgb, ${pair.dark} ${keep}%, transparent)`
+          };
+        }
       }
       return out;
     }
@@ -2098,6 +2164,27 @@ window.__ModuleLoader__.load({
     html.fto-dense-sidebar .fto-list-time{font-size:10px}
     html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
+    /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
+    html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background-image:var(--fto-wallpaper);background-size:cover;background-position:center;
+      opacity:var(--fto-wallpaper-opacity,.55);
+      filter:blur(var(--fto-wallpaper-blur,0px))}
+
+    /* --- sliders used by the background controls --- */
+    .fto-slider{display:flex;align-items:center;gap:10px}
+    .fto-slider input[type="range"]{-webkit-appearance:none;appearance:none;width:132px;height:4px;
+      border-radius:2px;background:var(--dsw-alias-bg-layer-3);outline:none;cursor:pointer}
+    .fto-slider input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+      border-radius:50%;background:var(--dsw-alias-label-primary);border:0;cursor:pointer}
+    .fto-slider input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+      background:var(--dsw-alias-label-primary);border:0;cursor:pointer}
+    .fto-sliderValue{min-width:34px;text-align:right;font-size:11.5px;
+      color:var(--dsw-alias-label-tertiary);font-variant-numeric:tabular-nums}
+    .fto-colorInput{width:26px;height:26px;padding:0;border:1px solid var(--dsw-alias-border-l2);
+      border-radius:7px;background:transparent;cursor:pointer}
+    .fto-colorInput::-webkit-color-swatch-wrapper{padding:2px}
+    .fto-colorInput::-webkit-color-swatch{border:0;border-radius:5px}
+
     /* --- the theme shelf: a card is a whole look, not a setting --- */
     .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
     .fto-themes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 10px}
@@ -2604,6 +2691,7 @@ window.__ModuleLoader__.load({
           density: json.density === "compact" ? "compact" : "default",
           layout: Array.isArray(json.layout?.disabled) ? json.layout.disabled.filter((id) => typeof id === "string") : [],
           options: readOptions(json),
+          accentCustom: typeof json.accentCustom === "string" && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : "",
           source: "fitout"
         };
       }
@@ -2618,6 +2706,7 @@ window.__ModuleLoader__.load({
           density: "default",
           layout: [],
           options: {},
+          accentCustom: "",
           source: "pack"
         };
       }
@@ -2639,7 +2728,8 @@ window.__ModuleLoader__.load({
         shadow: settings.shadow,
         motion: settings.motion,
         corner: settings.corner,
-        codeTone: settings.codeTone
+        codeTone: settings.codeTone,
+        accentCustom: settings.accentCustom
       };
     }
 
@@ -2812,6 +2902,110 @@ window.__ModuleLoader__.load({
         import_react3.default.createElement("span", { className: "fto-themeName" }, "\u81EA\u5B9A\u4E49")
       );
     }
+    function Slider({ value, min, max, suffix, onChange }) {
+      return import_react3.default.createElement(
+        "div",
+        { className: "fto-slider" },
+        import_react3.default.createElement("input", {
+          type: "range",
+          min,
+          max,
+          value,
+          onChange: (event) => onChange(Number(event.target.value))
+        }),
+        import_react3.default.createElement("span", { className: "fto-sliderValue" }, String(value) + (suffix ?? ""))
+      );
+    }
+    var MAX_WALLPAPER_BYTES = 700 * 1024;
+    function BackgroundPicker({ t, settings }) {
+      const bg = settings.background;
+      const fileRef = import_react3.default.useRef(null);
+      const [error, setError] = import_react3.default.useState("");
+      const has = bg.image !== "";
+      const onFile = (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (file === void 0) return;
+        if (!file.type.startsWith("image/")) {
+          setError(t("page.bgTooLarge"));
+          return;
+        }
+        if (file.size > MAX_WALLPAPER_BYTES) {
+          setError(t("page.bgTooLarge"));
+          return;
+        }
+        setError("");
+        const reader = new FileReader();
+        reader.onload = () => {
+          const url = typeof reader.result === "string" ? reader.result : "";
+          if (url !== "") setBackground({ image: url });
+        };
+        reader.readAsDataURL(file);
+      };
+      return import_react3.default.createElement(
+        "div",
+        { className: "fto-bg" },
+        import_react3.default.createElement(
+          Feature,
+          { title: t("page.bgImage") },
+          import_react3.default.createElement(
+            "div",
+            { className: "fto-bgActions" },
+            import_react3.default.createElement("button", {
+              type: "button",
+              className: "fto-btn",
+              onClick: () => fileRef.current?.click()
+            }, has ? t("page.bgReplace") : t("page.bgUpload")),
+            has ? import_react3.default.createElement("button", {
+              type: "button",
+              className: "fto-btn",
+              onClick: () => setBackground({ image: "", blur: 0, opacity: 55 })
+            }, t("page.bgClear")) : null,
+            import_react3.default.createElement("input", {
+              ref: fileRef,
+              type: "file",
+              accept: "image/*",
+              style: { display: "none" },
+              onChange: onFile
+            })
+          )
+        ),
+        import_react3.default.createElement(
+          Feature,
+          { title: t("page.bgLink") },
+          import_react3.default.createElement("input", {
+            className: "fto-input",
+            type: "text",
+            value: bg.image.startsWith("data:") ? "" : bg.image,
+            placeholder: bg.image.startsWith("data:") ? t("page.bgLocal") : t("page.bgLinkPlaceholder"),
+            onChange: (event) => setBackground({ image: event.target.value.trim() })
+          })
+        ),
+        has ? import_react3.default.createElement(
+          Feature,
+          { title: t("page.bgOpacity") },
+          import_react3.default.createElement(Slider, {
+            value: bg.opacity,
+            min: 0,
+            max: 100,
+            suffix: "%",
+            onChange: (value) => setBackground({ opacity: value })
+          })
+        ) : null,
+        has ? import_react3.default.createElement(
+          Feature,
+          { title: t("page.bgBlur") },
+          import_react3.default.createElement(Slider, {
+            value: bg.blur,
+            min: 0,
+            max: 40,
+            suffix: "px",
+            onChange: (value) => setBackground({ blur: value })
+          })
+        ) : null,
+        error === "" ? null : import_react3.default.createElement("div", { className: "fto-note" }, error)
+      );
+    }
     function IconPicker({ t, settings }) {
       const [error, setError] = import_react3.default.useState("");
       const fileRef = import_react3.default.useRef(null);
@@ -2935,6 +3129,7 @@ window.__ModuleLoader__.load({
           setAllLayoutGroups(true, ALL_GROUPS2);
           for (const id of spec.layout) setLayoutGroup(id, false);
           for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value);
+          setAccentCustom(spec.accentCustom ?? "");
           saveTheme(spec.name);
           setNotice(translate("page.importDone").replace("{name}", spec.name));
         });
@@ -3025,7 +3220,15 @@ window.__ModuleLoader__.load({
                   title: accent.label,
                   style: { background: accent.light },
                   onClick: () => setAccent(accent.id)
-                }))
+                })),
+                import_react3.default.createElement("input", {
+                  type: "color",
+                  className: "fto-colorInput",
+                  value: settings.accentCustom === "" ? (ACCENTS.find((a) => a.id === settings.accent) ?? ACCENTS[0]).light : settings.accentCustom,
+                  title: translate("page.accentCustom"),
+                  "aria-label": translate("page.accentCustom"),
+                  onChange: (event) => setAccentCustom(event.target.value)
+                })
               )
             ),
             import_react3.default.createElement(
@@ -3088,6 +3291,11 @@ window.__ModuleLoader__.load({
               { title: translate("page.codeTone") },
               import_react3.default.createElement(OptionSeg, { t: translate, settings, name: "codeTone" })
             )
+          ),
+          import_react3.default.createElement(
+            Group,
+            { title: translate("page.bgGroup") },
+            import_react3.default.createElement(BackgroundPicker, { t: translate, settings })
           ),
           import_react3.default.createElement(
             Group,
@@ -3692,6 +3900,18 @@ window.__ModuleLoader__.load({
       "page.surface_paper": "\u6696\u7EB8",
       "page.surface_night": "\u591C\u84DD",
       "page.surface_nord": "\u6781\u5730",
+      "page.accentCustom": "\u81EA\u5B9A\u4E49\u989C\u8272",
+      "page.bgGroup": "\u80CC\u666F",
+      "page.bgImage": "\u56FE\u7247",
+      "page.bgUpload": "\u4E0A\u4F20\u56FE\u7247\u2026",
+      "page.bgReplace": "\u6362\u4E00\u5F20",
+      "page.bgClear": "\u6E05\u9664",
+      "page.bgLink": "\u94FE\u63A5",
+      "page.bgLinkPlaceholder": "\u7C98\u8D34\u56FE\u7247\u5730\u5740",
+      "page.bgLocal": "\u5DF2\u4F7F\u7528\u672C\u5730\u56FE\u7247",
+      "page.bgOpacity": "\u53EF\u89C1\u5EA6",
+      "page.bgBlur": "\u6A21\u7CCA",
+      "page.bgTooLarge": "\u8BF7\u9009\u62E9\u56FE\u7247\u6587\u4EF6\uFF0C\u4E14\u4E0D\u8D85\u8FC7 700 KB",
       "page.textGroup": "\u8D28\u611F",
       "page.fontSize": "\u5B57\u53F7",
       "page.fontSize_auto": "\u8DDF\u968F",
@@ -3788,6 +4008,18 @@ window.__ModuleLoader__.load({
       "page.surface_paper": "Paper",
       "page.surface_night": "Night",
       "page.surface_nord": "Arctic",
+      "page.accentCustom": "Custom colour",
+      "page.bgGroup": "Background",
+      "page.bgImage": "Image",
+      "page.bgUpload": "Upload image\u2026",
+      "page.bgReplace": "Replace",
+      "page.bgClear": "Clear",
+      "page.bgLink": "Link",
+      "page.bgLinkPlaceholder": "Paste an image URL",
+      "page.bgLocal": "Using a local image",
+      "page.bgOpacity": "Visibility",
+      "page.bgBlur": "Blur",
+      "page.bgTooLarge": "Choose an image file of 700 KB or less",
       "page.textGroup": "Texture",
       "page.fontSize": "Text size",
       "page.fontSize_auto": "Follow",
@@ -3919,6 +4151,22 @@ window.__ModuleLoader__.load({
       let layer = null;
       let layoutTag = null;
       let disposeRenderer = null;
+      const syncWallpaper = (settings) => {
+        if (typeof document === "undefined") return;
+        const root = document.documentElement;
+        const bg = settings.background ?? {};
+        const on = settings.enabled && typeof bg.image === "string" && bg.image !== "";
+        root.classList.toggle("fto-has-wallpaper", on);
+        if (!on) {
+          root.style.removeProperty("--fto-wallpaper");
+          root.style.removeProperty("--fto-wallpaper-opacity");
+          root.style.removeProperty("--fto-wallpaper-blur");
+          return;
+        }
+        root.style.setProperty("--fto-wallpaper", 'url("' + bg.image + '")');
+        root.style.setProperty("--fto-wallpaper-opacity", String((bg.opacity ?? 55) / 100));
+        root.style.setProperty("--fto-wallpaper-blur", (bg.blur ?? 0) + "px");
+      };
       const syncRoot = (settings) => {
         if (typeof document === "undefined") return;
         const root = document.documentElement;
@@ -3961,6 +4209,7 @@ window.__ModuleLoader__.load({
       const applyAppearance = (settings) => {
         syncTokens(settings);
         syncRoot(settings);
+        syncWallpaper(settings);
         syncLayout(settings);
       };
       bindApplier(applyAppearance);
@@ -4014,7 +4263,7 @@ window.__ModuleLoader__.load({
           layoutTag = null;
         }
         if (typeof document !== "undefined") {
-          document.documentElement.classList.remove("fto-underline-links", "fto-dense-sidebar");
+          document.documentElement.classList.remove("fto-underline-links", "fto-dense-sidebar", "fto-has-wallpaper");
         }
       }, "dsh-fitout: teardown");
       let translate = (key) => key;

@@ -57,6 +57,23 @@ const RADIUS_SLOTS = Object.freeze({
   '--dsw-radius-panel': 'panel',
 })
 
+/** Mix two hex colours; `t` is how much of `b` ends up in the result. */
+function mixHex(a, b, t) {
+  const parse = (hex) => {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex)
+    return m === null ? [0, 0, 0] : [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16))
+  }
+  const [r1, g1, b1] = parse(a)
+  const [r2, g2, b2] = parse(b)
+  const channel = (x, y) => Math.round(x * (1 - t) + y * t).toString(16).padStart(2, '0')
+  return '#' + channel(r1, r2) + channel(g1, g2) + channel(b1, b2)
+}
+
+/** The dark-palette twin of an arbitrary accent: same hue, lifted. */
+export function liftAccent(hex) {
+  return /^#[0-9a-f]{6}$/i.test(hex) ? mixHex(hex, '#ffffff', 0.34) : hex
+}
+
 /** Swap the shipped sky hexes, keeping any trailing alpha byte intact. */
 function recolor(value, accent) {
   if (typeof value !== 'string' || !value.includes('#')) return value
@@ -67,7 +84,10 @@ function recolor(value, accent) {
 
 /** Token table for a settings record: the skin palette plus the two variants. */
 export function buildTokens(settings) {
-  const accent = ACCENTS.find((item) => item.id === settings?.accent) ?? BASE_ACCENT
+  const custom = typeof settings?.accentCustom === 'string' && /^#[0-9a-f]{6}$/i.test(settings.accentCustom)
+    ? { id: 'custom', light: settings.accentCustom.toLowerCase(), dark: liftAccent(settings.accentCustom.toLowerCase()) }
+    : null
+  const accent = custom ?? ACCENTS.find((item) => item.id === settings?.accent) ?? BASE_ACCENT
   const scale = RADIUS_SCALES[settings?.radius] ?? RADIUS_SCALES.default
   const out = {}
   for (const [key, pair] of Object.entries(TOKENS)) {
@@ -140,6 +160,21 @@ function applyOptions(out, settings) {
   const tone = CODE_TONES[settings?.codeTone]
   if (tone !== undefined && tone !== null) {
     out['--dsw-alias-markdown-code-block'] = { light: tone.light, dark: tone.dark }
+  }
+
+  // A wallpaper needs something to show through, so the base surface thins out.
+  const image = settings?.background?.image
+  if (typeof image === 'string' && image !== '') {
+    const visible = Math.min(100, Math.max(0, Number(settings.background.opacity) || 0))
+    const keep = Math.round(100 - visible * 0.55)
+    for (const token of ['--dsw-alias-bg-base', '--dsw-alias-bg-layer-1']) {
+      const pair = out[token]
+      if (pair === undefined) continue
+      out[token] = {
+        light: `color-mix(in srgb, ${pair.light} ${keep}%, transparent)`,
+        dark: `color-mix(in srgb, ${pair.dark} ${keep}%, transparent)`,
+      }
+    }
   }
 
   return out

@@ -10,7 +10,7 @@ import {
   ACCENTS, RADIUS_SCALES, applyPreset, getSettings, getThemePreference, resetAll,
   resetAppearance, setAccent, setAppearance, setAllLayoutGroups, setDensity, setEffect,
   setEnabled, setLayoutGroup, setList, setRadius, setOption, setThemePreference, subscribe,
-  saveTheme, deleteTheme,
+  saveTheme, deleteTheme, setAccentCustom, setBackground,
 } from './store.js'
 import { OPTIONS } from './store.js'
 import { PRESETS, matchesPreset } from './presets.js'
@@ -149,6 +149,78 @@ function CustomCard({ active }) {
   React.createElement('span', { className: 'fto-themeName' }, '自定义'))
 }
 
+function Slider({ value, min, max, suffix, onChange }) {
+  return React.createElement('div', { className: 'fto-slider' },
+    React.createElement('input', {
+      type: 'range', min, max, value,
+      onChange: (event) => onChange(Number(event.target.value)),
+    }),
+    React.createElement('span', { className: 'fto-sliderValue' }, String(value) + (suffix ?? '')))
+}
+
+const MAX_WALLPAPER_BYTES = 700 * 1024
+
+/** Wallpaper: a local image or a URL, plus how much of it shows through. */
+function BackgroundPicker({ t, settings }) {
+  const bg = settings.background
+  const fileRef = React.useRef(null)
+  const [error, setError] = React.useState('')
+  const has = bg.image !== ''
+
+  const onFile = (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (file === undefined) return
+    if (!file.type.startsWith('image/')) {
+      setError(t('page.bgTooLarge'))
+      return
+    }
+    if (file.size > MAX_WALLPAPER_BYTES) {
+      setError(t('page.bgTooLarge'))
+      return
+    }
+    setError('')
+    const reader = new FileReader()
+    reader.onload = () => {
+      const url = typeof reader.result === 'string' ? reader.result : ''
+      if (url !== '') setBackground({ image: url })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  return React.createElement('div', { className: 'fto-bg' },
+    React.createElement(Feature, { title: t('page.bgImage') },
+      React.createElement('div', { className: 'fto-bgActions' },
+        React.createElement('button', {
+          type: 'button', className: 'fto-btn',
+          onClick: () => fileRef.current?.click(),
+        }, has ? t('page.bgReplace') : t('page.bgUpload')),
+        has ? React.createElement('button', {
+          type: 'button', className: 'fto-btn', onClick: () => setBackground({ image: '', blur: 0, opacity: 55 }),
+        }, t('page.bgClear')) : null,
+        React.createElement('input', {
+          ref: fileRef, type: 'file', accept: 'image/*',
+          style: { display: 'none' }, onChange: onFile,
+        }))),
+    React.createElement(Feature, { title: t('page.bgLink') },
+      React.createElement('input', {
+        className: 'fto-input', type: 'text', value: bg.image.startsWith('data:') ? '' : bg.image,
+        placeholder: bg.image.startsWith('data:') ? t('page.bgLocal') : t('page.bgLinkPlaceholder'),
+        onChange: (event) => setBackground({ image: event.target.value.trim() }),
+      })),
+    has ? React.createElement(Feature, { title: t('page.bgOpacity') },
+      React.createElement(Slider, {
+        value: bg.opacity, min: 0, max: 100, suffix: '%',
+        onChange: (value) => setBackground({ opacity: value }),
+      })) : null,
+    has ? React.createElement(Feature, { title: t('page.bgBlur') },
+      React.createElement(Slider, {
+        value: bg.blur, min: 0, max: 40, suffix: 'px',
+        onChange: (value) => setBackground({ blur: value }),
+      })) : null,
+    error === '' ? null : React.createElement('div', { className: 'fto-note' }, error))
+}
+
 /* --- brand ----------------------------------------------------------------- */
 
 function IconPicker({ t, settings }) {
@@ -270,6 +342,7 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
       setAllLayoutGroups(true, ALL_GROUPS)
       for (const id of spec.layout) setLayoutGroup(id, false)
       for (const [key, value] of Object.entries(spec.options ?? {})) setOption(key, value)
+      setAccentCustom(spec.accentCustom ?? '')
       saveTheme(spec.name)
       setNotice(translate('page.importDone').replace('{name}', spec.name))
     })
@@ -330,7 +403,16 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
               'aria-label': accent.label, title: accent.label,
               style: { background: accent.light },
               onClick: () => setAccent(accent.id),
-            })))),
+            })),
+        React.createElement('input', {
+          type: 'color', className: 'fto-colorInput',
+          value: settings.accentCustom === ''
+            ? (ACCENTS.find((a) => a.id === settings.accent) ?? ACCENTS[0]).light
+            : settings.accentCustom,
+          title: translate('page.accentCustom'),
+          'aria-label': translate('page.accentCustom'),
+          onChange: (event) => setAccentCustom(event.target.value),
+        }))),
         React.createElement(Feature, { title: translate('page.radius') },
           React.createElement(Seg, {
             value: settings.radius,
@@ -362,6 +444,9 @@ export function FitoutSettingsPage({ t, initialTuning = false }) {
           React.createElement(OptionSeg, { t: translate, settings, name: 'corner' })),
         React.createElement(Feature, { title: translate('page.codeTone') },
           React.createElement(OptionSeg, { t: translate, settings, name: 'codeTone' }))),
+
+      React.createElement(Group, { title: translate('page.bgGroup') },
+        React.createElement(BackgroundPicker, { t: translate, settings })),
 
       React.createElement(Group, {
         title: translate('page.layoutGroup'),

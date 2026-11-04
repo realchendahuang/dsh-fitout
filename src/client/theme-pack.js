@@ -51,6 +51,7 @@ const ACCENT_IDS = ACCENTS.map((accent) => accent.id)
 
 /** Read any supported pack into { name, accent, radius, density, source }. */
 const OPTION_KEYS = ['surface', 'fontSize', 'fontFamily', 'shadow', 'motion', 'corner', 'codeTone']
+// Wallpapers are local assets, not theme data: they never travel in a pack.
 
 function readOptions(source) {
   const out = {}
@@ -75,6 +76,7 @@ export function readPack(json) {
         ? json.layout.disabled.filter((id) => typeof id === 'string')
         : [],
       options: readOptions(json),
+      accentCustom: typeof json.accentCustom === 'string' && /^#[0-9a-f]{6}$/i.test(json.accentCustom) ? json.accentCustom.toLowerCase() : '',
       source: 'fitout',
     }
   }
@@ -95,6 +97,7 @@ export function readPack(json) {
       density: 'default',
       layout: [],
       options: {},
+      accentCustom: '',
       source: 'pack',
     }
   }
@@ -120,5 +123,6 @@ export function writePack(settings, name) {
     motion: settings.motion,
     corner: settings.corner,
     codeTone: settings.codeTone,
+    accentCustom: settings.accentCustom,
   }
 }

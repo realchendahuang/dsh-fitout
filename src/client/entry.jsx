@@ -50,6 +50,18 @@ const ZH = {
   'page.surface_paper': '暖纸',
   'page.surface_night': '夜蓝',
   'page.surface_nord': '极地',
+  'page.accentCustom': '自定义颜色',
+  'page.bgGroup': '背景',
+  'page.bgImage': '图片',
+  'page.bgUpload': '上传图片…',
+  'page.bgReplace': '换一张',
+  'page.bgClear': '清除',
+  'page.bgLink': '链接',
+  'page.bgLinkPlaceholder': '粘贴图片地址',
+  'page.bgLocal': '已使用本地图片',
+  'page.bgOpacity': '可见度',
+  'page.bgBlur': '模糊',
+  'page.bgTooLarge': '请选择图片文件，且不超过 700 KB',
   'page.textGroup': '质感',
   'page.fontSize': '字号',
   'page.fontSize_auto': '跟随',
@@ -152,6 +164,18 @@ const EN = {
   'page.surface_paper': 'Paper',
   'page.surface_night': 'Night',
   'page.surface_nord': 'Arctic',
+  'page.accentCustom': 'Custom colour',
+  'page.bgGroup': 'Background',
+  'page.bgImage': 'Image',
+  'page.bgUpload': 'Upload image…',
+  'page.bgReplace': 'Replace',
+  'page.bgClear': 'Clear',
+  'page.bgLink': 'Link',
+  'page.bgLinkPlaceholder': 'Paste an image URL',
+  'page.bgLocal': 'Using a local image',
+  'page.bgOpacity': 'Visibility',
+  'page.bgBlur': 'Blur',
+  'page.bgTooLarge': 'Choose an image file of 700 KB or less',
   'page.textGroup': 'Texture',
   'page.fontSize': 'Text size',
   'page.fontSize_auto': 'Follow',
@@ -305,6 +329,24 @@ export function apply(ctx) {
   let layoutTag = null
   let disposeRenderer = null
 
+  /** Wallpaper layer: one fixed ::before element painted from body variables. */
+  const syncWallpaper = (settings) => {
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    const bg = settings.background ?? {}
+    const on = settings.enabled && typeof bg.image === 'string' && bg.image !== ''
+    root.classList.toggle('fto-has-wallpaper', on)
+    if (!on) {
+      root.style.removeProperty('--fto-wallpaper')
+      root.style.removeProperty('--fto-wallpaper-opacity')
+      root.style.removeProperty('--fto-wallpaper-blur')
+      return
+    }
+    root.style.setProperty('--fto-wallpaper', 'url("' + bg.image + '")')
+    root.style.setProperty('--fto-wallpaper-opacity', String((bg.opacity ?? 55) / 100))
+    root.style.setProperty('--fto-wallpaper-blur', (bg.blur ?? 0) + 'px')
+  }
+
   /** html classes for the polish rules the token layer cannot express. */
   const syncRoot = (settings) => {
     if (typeof document === 'undefined') return
@@ -353,6 +395,7 @@ export function apply(ctx) {
   const applyAppearance = (settings) => {
     syncTokens(settings)
     syncRoot(settings)
+    syncWallpaper(settings)
     syncLayout(settings)
   }
 
@@ -411,7 +454,7 @@ export function apply(ctx) {
       layoutTag = null
     }
     if (typeof document !== 'undefined') {
-      document.documentElement.classList.remove('fto-underline-links', 'fto-dense-sidebar')
+      document.documentElement.classList.remove('fto-underline-links', 'fto-dense-sidebar', 'fto-has-wallpaper')
     }
   }, 'dsh-fitout: teardown')
 
