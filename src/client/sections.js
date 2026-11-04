@@ -34,7 +34,6 @@ body{
   --fto-mono:var(--ds-font-family-code,ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace);
   --fto-fs:var(--dsh-content-font-size,14px);
   --fto-fs2:calc(var(--dsh-content-font-size,14px) - 1px);
-  --fto-h:calc(32px + var(--dsh-content-font-delta,0px));
   --fto-ease:cubic-bezier(.16,1,.3,1);
   --fto-sparkle:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M8 1.2c.32 3.1 1.98 4.76 5.08 5.08v.04c-3.1.32-4.76 1.98-4.76 5.08h-.04c-.32-3.1-1.98-4.76-5.08-4.76V6.6C6.3 6.28 7.96 4.62 8 1.2z' fill='black'/></svg>");
   --fto-chevron:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M6 3.5L10.5 8L6 12.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -91,10 +90,11 @@ export const SECTIONS = Object.freeze([
   {
     id: "tools",
     title: "工具行与步骤",
-    desc: "步骤行与工具行的高度、字号、行尾箭头、入场动效和缩进。",
+    desc: "步骤行与工具行的字号、颜色、行尾箭头、入场动效和缩进。",
     css: `/* ═══ 1. 工具行 ═══════════════════════════════════════════════════════ */
+/* 不给行设固定高度：官方每个组件按自己的公式定高（思考行是 24px + 字号增量，
+   外层还带 contain:size），我们塞一个更大的高度会让文字溢出压到下一行。 */
 [data-disclosure-row]{
-  height:var(--fto-h);
   margin:0 -6px;
   padding:0 6px;
   border-radius:var(--fto-r-sm);
@@ -206,10 +206,9 @@ export const SECTIONS = Object.freeze([
   {
     id: "disclosures",
     title: "折叠头",
-    desc: "步骤折叠头与轮次折叠头的图标、状态点和详情小标题。",
+    desc: "步骤折叠头的图标、状态点和详情小标题。",
     css: `/* ═══ 3. 步骤折叠头 ═══════════════════════════════════════════════════ */
 [data-step-process] > div:first-child{
-  height:var(--fto-h);
   border-radius:var(--fto-r-sm);
   margin:0 -6px;
   padding:0 6px;
@@ -217,7 +216,6 @@ export const SECTIONS = Object.freeze([
 }
 [data-step-process] > div:first-child:hover{ background:var(--fto-hover); }
 [data-step-process] button[data-process-activity]{
-  height:var(--fto-h);
   width:100%;
   gap:8px;
   padding:0;
