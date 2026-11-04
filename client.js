@@ -2585,7 +2585,7 @@ window.__ModuleLoader__.load({
       return best;
     }
     var ACCENT_IDS = ACCENTS.map((accent) => accent.id);
-    var OPTION_KEYS = ["fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"];
+    var OPTION_KEYS = ["surface", "fontSize", "fontFamily", "shadow", "motion", "corner", "codeTone"];
     function readOptions(source) {
       const out = {};
       for (const key of OPTION_KEYS) {
@@ -2633,6 +2633,7 @@ window.__ModuleLoader__.load({
         density: settings.density,
         effects: { underline: settings.effects.underline, chip: settings.effects.chip },
         layout: { disabled: [...settings.layout.disabled] },
+        surface: settings.surface,
         fontSize: settings.fontSize,
         fontFamily: settings.fontFamily,
         shadow: settings.shadow,
