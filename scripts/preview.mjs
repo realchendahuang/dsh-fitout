@@ -78,7 +78,8 @@ const { TOKENS } = await import('file://' + resolve(root, 'src/client/tokens.js'
 const { CSS } = await import('file://' + resolve(root, 'src/client/styles.js'))
 const { BASE_CSS } = await import('file://' + resolve(root, 'src/client/sections.js'))
 
-const vars = Object.entries(TOKENS).map(([name, pair]) => `  ${name}: ${pair.light};`)
+const scheme = process.env.DARK === '1' ? 'dark' : 'light'
+const vars = Object.entries(TOKENS).map(([name, pair]) => `  ${name}: ${pair[scheme]};`)
   .concat([
     '  --dsw-font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;',
     '  --dsw-font-mono: ui-monospace, "SF Mono", Menlo, monospace;',
@@ -98,7 +99,7 @@ const html = `<!doctype html>
 :root {
 ${vars}
 }
-html,body{margin:0;padding:0;background:#f5f5f5;font-family:var(--dsw-font-family);color:var(--dsw-alias-label-primary)}
+html,body{margin:0;padding:0;background:${scheme === 'dark' ? '#0a0a0a' : '#f5f5f5'};font-family:var(--dsw-font-family);color:var(--dsw-alias-label-primary)}
 body{padding:20px;zoom:${zoom}}
 .card{max-width:720px;background:var(--dsw-alias-bg-layer-1);border-radius:12px;padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 ${CSS}

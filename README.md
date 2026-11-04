@@ -121,7 +121,11 @@ fitout.subscribe(fn)                // 订阅变化
 npm run gen:tokens     # 从 scripts/gen-tokens.py 生成 src/client/tokens.js
 npm run build:client   # esbuild → client.js
 npm run build          # 两步都跑
+npm run preview        # 把设置页离线渲染成 dist/preview.html（--tuned 展开微调，DARK=1 深色）
 ```
+
+`npm run preview` 是为了不启动 DSH 也能看面板：设置页是设置记录的纯函数，
+服务端渲染出来再注入 token 表与样式表，浏览器打开即可。改面板时先看这个，比反复重启快。
 
 源码布局：
 
