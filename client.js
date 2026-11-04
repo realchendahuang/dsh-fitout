@@ -201,7 +201,7 @@ window.__ModuleLoader__.load({
     });
     var DEFAULTS = Object.freeze({
       enabled: true,
-      preset: "neutral",
+      preset: "standard",
       list: "zcode",
       name: "",
       icon: { kind: "official", value: "" },
@@ -1633,23 +1633,40 @@ window.__ModuleLoader__.load({
     html.fto-dense-sidebar .fto-list-time{font-size:10px}
     html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
-    /* --- preset cards: the one decision the page leads with --- */
-    .fto-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px 0 4px}
-    .fto-preset{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:10px;text-align:left;
-      border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);
-      color:var(--dsw-alias-label-primary);cursor:pointer;transition:background-color .14s ease,border-color .14s ease}
-    .fto-preset:hover{background:var(--dsw-alias-interactive-bg-hover)}
-    .fto-preset[data-on="true"]{border-color:var(--dsw-alias-link,#0284c7)}
-    .fto-presetHead{display:flex;align-items:center;gap:8px;min-width:0}
-    .fto-presetDot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-    .fto-presetName{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .fto-presetBadge{margin-left:auto;font-size:11px;color:var(--dsw-alias-label-tertiary);white-space:nowrap}
-    .fto-preset[data-on="true"] .fto-presetBadge{color:var(--dsw-alias-link,#0284c7)}
-    .fto-presetDesc{font-size:11.5px;line-height:17px;color:var(--dsw-alias-label-tertiary)}
+    /* --- the theme shelf: a card is a whole look, not a setting --- */
+    .fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
+    .fto-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+    .fto-theme{display:flex;flex-direction:column;gap:7px;padding:0;border:0;background:transparent;
+      cursor:pointer;text-align:left;font:inherit}
+    .fto-theme[data-static="true"]{cursor:default}
+    .fto-themeArt{position:relative;display:block;height:54px;
+      background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l2);
+      transition:border-color .14s ease,box-shadow .14s ease}
+    .fto-themeArt::before{content:"";position:absolute;left:11px;top:15px;width:42%;height:5px;
+      border-radius:2px;background:var(--dsw-alias-label-tertiary);opacity:.5}
+    .fto-themeArt::after{content:"";position:absolute;left:11px;top:29px;width:26%;height:4px;
+      border-radius:2px;background:var(--dsw-alias-label-tertiary);opacity:.25}
+    .fto-theme:hover .fto-themeArt{border-color:var(--dsw-alias-border-l3)}
+    .fto-theme[data-on="true"] .fto-themeArt{
+      border-color:var(--dsw-alias-link,#0284c7);
+      box-shadow:0 0 0 1px var(--dsw-alias-link,#0284c7)}
+    .fto-themeDot{position:absolute;right:11px;bottom:11px;width:11px;height:11px;border-radius:50%}
+    .fto-themeName{padding-left:2px;font-size:12px;color:var(--dsw-alias-label-secondary)}
+    .fto-theme[data-on="true"] .fto-themeName{color:var(--dsw-alias-label-primary);font-weight:500}
 
-    /* Inline code: the shipped rule uses 0.875em, which resolves to 13.125px on a
-       15px body \u2014 a fractional size that renders soft. Pin it to a whole pixel. */
-    [data-chat-node-key] :not(pre) > code{font-size:13px}
+    .fto-tuneBtn{display:flex;align-items:center;justify-content:space-between;width:100%;
+      margin-top:22px;padding:11px 0;border:0;border-top:1px solid var(--dsw-alias-border-l2);
+      background:transparent;color:var(--dsw-alias-label-secondary);font-size:12px;cursor:pointer}
+    .fto-tuneBtn:hover{color:var(--dsw-alias-label-primary)}
+    .fto-tuneChevron{display:block;width:12px;height:12px;background:currentColor;
+      transform:rotate(90deg);transition:transform .16s ease;
+      -webkit-mask:var(--fto-chevron) center/contain no-repeat;
+      mask:var(--fto-chevron) center/contain no-repeat}
+    .fto-tuneBtn[data-open="true"] .fto-tuneChevron{transform:rotate(-90deg)}
+
+    .fto-cells{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;padding:8px 0 2px}
+    .fto-cell{display:flex;align-items:center;gap:8px;min-height:32px;
+      font-size:12px;color:var(--dsw-alias-label-secondary)}
 
     body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     ::selection{background:color-mix(in srgb, var(--dsw-alias-link,#0284c7) 28%, transparent)}
@@ -1874,10 +1891,8 @@ window.__ModuleLoader__.load({
     var ALL_GROUPS = SECTIONS.map((section) => section.id);
     var PRESETS = Object.freeze([
       Object.freeze({
-        id: "neutral",
+        id: "standard",
         name: "\u6807\u51C6",
-        en: "Standard",
-        desc: "\u4E2D\u6027\u914D\u8272\uFF0C\u5706\u89D2\u548C\u758F\u5BC6\u53D6\u6807\u51C6\u6863\uFF0C\u7248\u5F0F\u5168\u5F00\u3002",
         accent: "sky",
         radius: "default",
         density: "default",
@@ -1887,8 +1902,6 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "compact",
         name: "\u7D27\u51D1",
-        en: "Compact",
-        desc: "\u5706\u89D2\u66F4\u5C0F\u3001\u4FA7\u680F\u66F4\u7D27\uFF0C\u9002\u5408\u5C0F\u5C4F\u6216\u591A\u7A97\u53E3\u5E76\u6392\u3002",
         accent: "sky",
         radius: "compact",
         density: "compact",
@@ -1898,16 +1911,33 @@ window.__ModuleLoader__.load({
       Object.freeze({
         id: "relaxed",
         name: "\u5BBD\u677E",
-        en: "Relaxed",
-        desc: "\u5706\u89D2\u66F4\u5927\u3001\u7559\u767D\u66F4\u591A\uFF0C\u9002\u5408\u957F\u65F6\u95F4\u9605\u8BFB\u3002",
         accent: "sky",
         radius: "round",
+        density: "default",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "indigo",
+        name: "\u975B\u9752",
+        accent: "violet",
+        radius: "default",
+        density: "default",
+        effects: Object.freeze({ underline: true, chip: true }),
+        layout: Object.freeze({ disabled: Object.freeze([]) })
+      }),
+      Object.freeze({
+        id: "jade",
+        name: "\u9752\u74F7",
+        accent: "emerald",
+        radius: "compact",
         density: "default",
         effects: Object.freeze({ underline: true, chip: true }),
         layout: Object.freeze({ disabled: Object.freeze([]) })
       })
     ]);
     var PRESET_IDS = Object.freeze(PRESETS.map((preset) => preset.id));
+    var RENAMED = Object.freeze({ neutral: "standard", "zcode-neutral": "standard" });
     function matchesPreset(preset, settings) {
       if (preset === null || settings === null) return false;
       const sameEffects = Object.keys(preset.effects).every((key) => preset.effects[key] === settings.effects[key]);
@@ -1918,6 +1948,7 @@ window.__ModuleLoader__.load({
     // src/client/settings-page.jsx
     var MAX_ICON_BYTES = 256 * 1024;
     var ALL_GROUPS2 = SECTIONS.map((section) => section.id);
+    var RADIUS_PX = { compact: "7px", default: "10px", round: "14px" };
     function useSettings() {
       return import_react3.default.useSyncExternalStore(subscribe, getSettings, getSettings);
     }
@@ -1933,33 +1964,19 @@ window.__ModuleLoader__.load({
         onClick: () => onChange(!on)
       }, import_react3.default.createElement("span", { className: "fto-knob", "aria-hidden": "true" }));
     }
-    function Row({ title, description, children }) {
-      return import_react3.default.createElement(
-        "div",
-        { className: "fto-row" },
-        import_react3.default.createElement(
-          "div",
-          { className: "fto-copy" },
-          import_react3.default.createElement("div", { className: "fto-title" }, title),
-          description === void 0 ? null : import_react3.default.createElement("div", { className: "fto-desc" }, description)
-        ),
-        children
-      );
-    }
-    function Feature({ title, description, children }) {
+    function Feature({ title, children }) {
       return import_react3.default.createElement(
         "div",
         { className: "fto-feature" },
         import_react3.default.createElement(
           "div",
           { className: "fto-featureCopy" },
-          import_react3.default.createElement("div", { className: "fto-featureTitle" }, title),
-          description === void 0 ? null : import_react3.default.createElement("div", { className: "fto-featureDesc" }, description)
+          import_react3.default.createElement("div", { className: "fto-featureTitle" }, title)
         ),
         children
       );
     }
-    function Group({ title, note, tools, children }) {
+    function Group({ title, tools, children }) {
       return import_react3.default.createElement(
         "section",
         { className: "fto-group" },
@@ -1969,14 +1986,13 @@ window.__ModuleLoader__.load({
           import_react3.default.createElement("h3", { className: "fto-groupTitle" }, title),
           tools === void 0 ? null : import_react3.default.createElement("div", { className: "fto-groupTools" }, tools)
         ),
-        children,
-        note === void 0 ? null : import_react3.default.createElement("p", { className: "fto-groupNote" }, note)
+        children
       );
     }
-    function Seg({ value, choices, onChange, align }) {
+    function Seg({ value, choices, onChange }) {
       return import_react3.default.createElement(
         "div",
-        { className: "fto-seg", "data-align": align ?? "end" },
+        { className: "fto-seg" },
         choices.map((choice) => import_react3.default.createElement("button", {
           key: choice.id,
           type: "button",
@@ -1986,31 +2002,37 @@ window.__ModuleLoader__.load({
         }, import_react3.default.createElement("span", { className: "fto-segLabel" }, choice.label)))
       );
     }
-    function PresetCard({ preset, active, t }) {
+    function ThemeCard({ preset, active }) {
+      const accent = (ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]).light;
       return import_react3.default.createElement(
         "button",
         {
           type: "button",
-          className: "fto-preset",
+          className: "fto-theme",
           "data-on": active ? "true" : "false",
           onClick: () => applyPreset(preset)
         },
+        import_react3.default.createElement("span", {
+          className: "fto-themeArt",
+          style: { borderRadius: RADIUS_PX[preset.radius] ?? "10px" }
+        }, import_react3.default.createElement("span", { className: "fto-themeDot", style: { background: accent } })),
+        import_react3.default.createElement("span", { className: "fto-themeName" }, preset.name)
+      );
+    }
+    function CustomCard({ active }) {
+      return import_react3.default.createElement(
+        "div",
+        {
+          className: "fto-theme",
+          "data-on": active ? "true" : "false",
+          "data-static": "true"
+        },
         import_react3.default.createElement(
-          "div",
-          { className: "fto-presetHead" },
-          import_react3.default.createElement("span", {
-            className: "fto-presetDot",
-            "aria-hidden": "true",
-            style: { background: (ACCENTS.find((a) => a.id === preset.accent) ?? ACCENTS[0]).light }
-          }),
-          import_react3.default.createElement("span", { className: "fto-presetName" }, preset.name),
-          import_react3.default.createElement(
-            "span",
-            { className: "fto-presetBadge" },
-            active ? t("page.presetActive") : t("page.presetApply")
-          )
+          "span",
+          { className: "fto-themeArt", style: { borderRadius: "10px" } },
+          import_react3.default.createElement("span", { className: "fto-themeDot", style: { background: "var(--dsw-alias-label-tertiary)" } })
         ),
-        import_react3.default.createElement("div", { className: "fto-presetDesc" }, preset.desc)
+        import_react3.default.createElement("span", { className: "fto-themeName" }, "\u81EA\u5B9A\u4E49")
       );
     }
     function IconPicker({ t, settings }) {
@@ -2043,10 +2065,10 @@ window.__ModuleLoader__.load({
       };
       const options = [
         { kind: "official", label: t("page.iconOfficial"), node: null },
-        ...MARK_PRESETS.map((preset) => ({ kind: preset.id, label: preset.label, node: preset.render(22) }))
+        ...MARK_PRESETS.map((preset) => ({ kind: preset.id, label: preset.label, node: preset.render(20) }))
       ];
       if (settings.icon.kind === "custom" && settings.icon.value !== "") {
-        options.push({ kind: "custom", label: t("page.iconCustom"), node: renderMark(settings.icon, 22) });
+        options.push({ kind: "custom", label: t("page.iconCustom"), node: renderMark(settings.icon, 20) });
       }
       return import_react3.default.createElement(
         "div",
@@ -2061,8 +2083,7 @@ window.__ModuleLoader__.load({
             onClick: () => choose(option.kind),
             title: option.label
           },
-          option.node === null ? import_react3.default.createElement("span", { className: "fto-officialDot", "aria-hidden": "true" }) : option.node,
-          import_react3.default.createElement("span", { className: "fto-segLabel" }, option.label)
+          option.node === null ? import_react3.default.createElement("span", { className: "fto-officialDot", "aria-hidden": "true" }) : option.node
         ))),
         import_react3.default.createElement(
           "div",
@@ -2093,7 +2114,6 @@ window.__ModuleLoader__.load({
       return import_react3.default.createElement(Seg, {
         value: preference,
         choices,
-        align: "end",
         onChange: (id) => {
           setThemePreference(id);
           setLocal(id);
@@ -2102,211 +2122,209 @@ window.__ModuleLoader__.load({
     }
     function FitoutSettingsPage({ t }) {
       const settings = useSettings();
+      const [tuning, setTuning] = import_react3.default.useState(false);
       const translate = typeof t === "function" ? t : (key) => key;
-      const previewName = settings.name.trim() === "" ? translate("page.previewOfficial") : settings.name;
       const disabled = new Set(settings.layout.disabled);
-      const total = ALL_GROUPS2.length;
+      const isCustom = !PRESETS.some((preset) => settings.preset === preset.id && matchesPreset(preset, settings));
       return import_react3.default.createElement(
         "div",
         { className: "fto-page" },
         import_react3.default.createElement(
           "div",
-          { className: "fto-pageHead" },
+          { className: "fto-head" },
           import_react3.default.createElement("h2", { className: "fto-pageTitle" }, translate("page.title")),
-          import_react3.default.createElement("p", { className: "fto-pageDesc" }, translate("page.description"))
+          import_react3.default.createElement(Switch, {
+            on: settings.enabled,
+            label: translate("page.enable"),
+            onChange: setEnabled
+          })
         ),
-        import_react3.default.createElement(Row, {
-          title: translate("page.enable"),
-          description: translate("page.enableDesc")
-        }, import_react3.default.createElement(Switch, {
-          on: settings.enabled,
-          label: translate("page.enable"),
-          onChange: setEnabled
-        })),
-        /* --- 精装 ------------------------------------------------------------- */
-        import_react3.default.createElement(Group, {
-          title: translate("page.presetGroup"),
-          note: translate("page.presetNote")
-        }, import_react3.default.createElement(
+        import_react3.default.createElement(
           "div",
-          { className: "fto-presets" },
-          PRESETS.map((preset) => import_react3.default.createElement(PresetCard, {
+          { className: "fto-themes" },
+          PRESETS.map((preset) => import_react3.default.createElement(ThemeCard, {
             key: preset.id,
             preset,
-            t: translate,
             active: settings.preset === preset.id && matchesPreset(preset, settings)
-          }))
-        )),
-        /* --- 高定 ------------------------------------------------------------- */
-        import_react3.default.createElement(
-          Group,
-          { title: translate("page.customGroup"), note: translate("page.customNote") },
-          import_react3.default.createElement(Feature, {
-            title: translate("page.accent"),
-            description: translate("page.accentDesc")
-          }, import_react3.default.createElement(
-            "div",
-            { className: "fto-swatches" },
-            ACCENTS.map((accent) => import_react3.default.createElement("button", {
-              key: accent.id,
-              type: "button",
-              className: "fto-swatch",
-              "data-on": settings.accent === accent.id ? "true" : "false",
-              "aria-label": accent.label,
-              title: accent.label,
-              style: { background: accent.light },
-              onClick: () => setAccent(accent.id)
-            }))
-          )),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.radius"),
-            description: translate("page.radiusDesc")
-          }, import_react3.default.createElement(Seg, {
-            value: settings.radius,
-            choices: Object.keys(RADIUS_SCALES).map((id) => ({ id, label: translate("page.radius_" + id) })),
-            onChange: setRadius
           })),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.density"),
-            description: translate("page.densityDesc")
-          }, import_react3.default.createElement(Seg, {
-            value: settings.density,
-            choices: [
-              { id: "default", label: translate("page.density_default") },
-              { id: "compact", label: translate("page.density_compact") }
-            ],
-            onChange: setDensity
-          })),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.appearance"),
-            description: translate("page.appearanceDesc")
-          }, import_react3.default.createElement(AppearancePicker, { t: translate })),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.list"),
-            description: translate("page.listDesc")
-          }, import_react3.default.createElement(Seg, {
-            value: settings.list,
-            choices: [
-              { id: "zcode", label: translate("page.listZcode") },
-              { id: "native", label: translate("page.listNative") }
-            ],
-            onChange: setList
-          })),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.chip"),
-            description: translate("page.chipDesc")
-          }, import_react3.default.createElement(Switch, {
-            size: "sm",
-            label: translate("page.chip"),
-            on: settings.effects.chip,
-            onChange: (next) => setEffect("chip", next)
-          }))
+          import_react3.default.createElement(CustomCard, { active: isCustom })
         ),
-        /* --- 版式 ------------------------------------------------------------- */
         import_react3.default.createElement(
-          Group,
+          "button",
           {
-            title: translate("page.layoutGroup"),
-            note: translate("page.layoutNote"),
-            tools: import_react3.default.createElement(
-              import_react3.default.Fragment,
-              null,
-              import_react3.default.createElement("button", {
-                type: "button",
-                className: "fto-linkBtn",
-                onClick: () => setAllLayoutGroups(true, ALL_GROUPS2),
-                disabled: disabled.size === 0
-              }, translate("page.layoutAllOn")),
-              import_react3.default.createElement("button", {
-                type: "button",
-                className: "fto-linkBtn",
-                onClick: () => setAllLayoutGroups(false, ALL_GROUPS2),
-                disabled: disabled.size === total
-              }, translate("page.layoutAllOff"))
-            )
+            type: "button",
+            className: "fto-tuneBtn",
+            "data-open": tuning ? "true" : "false",
+            onClick: () => setTuning(!tuning)
           },
-          SECTIONS.map((section) => import_react3.default.createElement(Feature, {
-            key: section.id,
-            title: section.title,
-            description: section.desc
-          }, import_react3.default.createElement(Switch, {
-            size: "sm",
-            label: section.title,
-            on: !disabled.has(section.id),
-            onChange: (next) => setLayoutGroup(section.id, next)
-          }))),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.underline"),
-            description: translate("page.underlineDesc")
-          }, import_react3.default.createElement(Switch, {
-            size: "sm",
-            label: translate("page.underline"),
-            on: settings.effects.underline,
-            onChange: (next) => setEffect("underline", next)
-          })),
-          import_react3.default.createElement(Feature, {
-            title: translate("page.autoOlder"),
-            description: translate("page.autoOlderDesc")
-          }, import_react3.default.createElement(
-            "span",
-            { className: "fto-static", "data-tone": "on" },
-            import_react3.default.createElement("span", { className: "fto-staticDot", "aria-hidden": "true" }),
-            translate("page.autoOlderOn")
-          ))
+          import_react3.default.createElement("span", null, translate("page.tune")),
+          import_react3.default.createElement("span", { className: "fto-tuneChevron", "aria-hidden": "true" })
         ),
-        /* --- 品牌 ------------------------------------------------------------- */
-        import_react3.default.createElement(
-          Group,
-          { title: translate("page.brandGroup") },
-          import_react3.default.createElement(Row, {
-            title: translate("page.name"),
-            description: translate("page.nameDesc")
-          }, import_react3.default.createElement("input", {
-            className: "fto-input",
-            type: "text",
-            value: settings.name,
-            maxLength: 32,
-            placeholder: translate("page.namePlaceholder"),
-            onChange: (event) => setAppearance({ name: event.target.value })
-          })),
-          import_react3.default.createElement(Row, {
-            title: translate("page.icon"),
-            description: translate("page.iconDesc")
-          }, import_react3.default.createElement(IconPicker, { t: translate, settings })),
+        tuning ? import_react3.default.createElement(
+          "div",
+          { className: "fto-tune" },
           import_react3.default.createElement(
-            "div",
-            { className: "fto-previewRow" },
-            import_react3.default.createElement("div", { className: "fto-previewLabel" }, translate("page.preview")),
+            Group,
+            { title: translate("page.shapeGroup") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.accent") },
+              import_react3.default.createElement(
+                "div",
+                { className: "fto-swatches" },
+                ACCENTS.map((accent) => import_react3.default.createElement("button", {
+                  key: accent.id,
+                  type: "button",
+                  className: "fto-swatch",
+                  "data-on": settings.accent === accent.id ? "true" : "false",
+                  "aria-label": accent.label,
+                  title: accent.label,
+                  style: { background: accent.light },
+                  onClick: () => setAccent(accent.id)
+                }))
+              )
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.radius") },
+              import_react3.default.createElement(Seg, {
+                value: settings.radius,
+                choices: Object.keys(RADIUS_SCALES).map((id) => ({ id, label: translate("page.radius_" + id) })),
+                onChange: setRadius
+              })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.density") },
+              import_react3.default.createElement(Seg, {
+                value: settings.density,
+                choices: [
+                  { id: "default", label: translate("page.density_default") },
+                  { id: "compact", label: translate("page.density_compact") }
+                ],
+                onChange: setDensity
+              })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.appearance") },
+              import_react3.default.createElement(AppearancePicker, { t: translate })
+            )
+          ),
+          import_react3.default.createElement(
+            Group,
+            {
+              title: translate("page.layoutGroup"),
+              tools: import_react3.default.createElement(
+                import_react3.default.Fragment,
+                null,
+                import_react3.default.createElement("button", {
+                  type: "button",
+                  className: "fto-linkBtn",
+                  onClick: () => setAllLayoutGroups(true, ALL_GROUPS2),
+                  disabled: disabled.size === 0
+                }, translate("page.layoutAllOn")),
+                import_react3.default.createElement("button", {
+                  type: "button",
+                  className: "fto-linkBtn",
+                  onClick: () => setAllLayoutGroups(false, ALL_GROUPS2),
+                  disabled: disabled.size === ALL_GROUPS2.length
+                }, translate("page.layoutAllOff"))
+              )
+            },
             import_react3.default.createElement(
               "div",
-              { className: "fto-preview" },
-              renderMark(settings.icon, 24),
-              settings.icon.kind === "official" ? import_react3.default.createElement("span", { className: "fto-previewFallback", "aria-hidden": "true" }) : null,
-              import_react3.default.createElement("span", { className: "fto-previewName" }, previewName)
+              { className: "fto-cells" },
+              SECTIONS.map((section) => import_react3.default.createElement(
+                "div",
+                { key: section.id, className: "fto-cell" },
+                import_react3.default.createElement(Switch, {
+                  size: "sm",
+                  label: section.title,
+                  on: !disabled.has(section.id),
+                  onChange: (next) => setLayoutGroup(section.id, next)
+                }),
+                import_react3.default.createElement("span", null, section.title)
+              ))
+            )
+          ),
+          import_react3.default.createElement(
+            Group,
+            { title: translate("page.listGroup") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.list") },
+              import_react3.default.createElement(Seg, {
+                value: settings.list,
+                choices: [
+                  { id: "zcode", label: translate("page.listZcode") },
+                  { id: "native", label: translate("page.listNative") }
+                ],
+                onChange: setList
+              })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.chip") },
+              import_react3.default.createElement(Switch, {
+                size: "sm",
+                label: translate("page.chip"),
+                on: settings.effects.chip,
+                onChange: (next) => setEffect("chip", next)
+              })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.underline") },
+              import_react3.default.createElement(Switch, {
+                size: "sm",
+                label: translate("page.underline"),
+                on: settings.effects.underline,
+                onChange: (next) => setEffect("underline", next)
+              })
+            )
+          ),
+          import_react3.default.createElement(
+            Group,
+            { title: translate("page.brandGroup") },
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.name") },
+              import_react3.default.createElement("input", {
+                className: "fto-input",
+                type: "text",
+                value: settings.name,
+                maxLength: 32,
+                placeholder: translate("page.namePlaceholder"),
+                onChange: (event) => setAppearance({ name: event.target.value })
+              })
+            ),
+            import_react3.default.createElement(
+              Feature,
+              { title: translate("page.icon") },
+              import_react3.default.createElement(IconPicker, { t: translate, settings })
+            )
+          ),
+          import_react3.default.createElement(
+            Group,
+            { title: translate("page.maintainGroup") },
+            import_react3.default.createElement(
+              "div",
+              { className: "fto-btnRow" },
+              import_react3.default.createElement("button", {
+                type: "button",
+                className: "fto-btn",
+                onClick: resetAppearance
+              }, translate("page.reset")),
+              import_react3.default.createElement("button", {
+                type: "button",
+                className: "fto-btn",
+                "data-tone": "danger",
+                onClick: resetAll
+              }, translate("page.resetAll"))
             )
           )
-        ),
-        /* --- 维护 ------------------------------------------------------------- */
-        import_react3.default.createElement(
-          Group,
-          { title: translate("page.maintainGroup") },
-          import_react3.default.createElement(
-            "div",
-            { className: "fto-btnRow" },
-            import_react3.default.createElement("button", {
-              type: "button",
-              className: "fto-btn",
-              onClick: resetAppearance
-            }, translate("page.reset")),
-            import_react3.default.createElement("button", {
-              type: "button",
-              className: "fto-btn",
-              "data-tone": "danger",
-              onClick: resetAll
-            }, translate("page.resetAll"))
-          ),
-          import_react3.default.createElement("div", { className: "fto-note" }, translate("page.storageNote"))
-        )
+        ) : null
       );
     }
 
@@ -2766,67 +2784,45 @@ window.__ModuleLoader__.load({
     var VERSION = "0.1.0";
     var ZH = {
       title: "\u88C5\u4FEE",
-      description: "\u7ED9 DeepSeek Harness \u6362\u914D\u8272\u548C\u7248\u5F0F\u3002\u9AA8\u67B6\u662F\u5B98\u65B9\u7684\uFF0C\u88C5\u4FEE\u53EF\u4EE5\u4E00\u5904\u4E00\u5904\u6539\u3002",
+      description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
       section: "\u88C5\u4FEE",
       "page.title": "\u88C5\u4FEE",
-      "page.description": "\u4E0A\u9762\u662F\u9884\u8BBE\uFF0C\u9009\u4E00\u5957\u76F4\u63A5\u7528\uFF1B\u4E0B\u9762\u662F\u81EA\u5B9A\u4E49\uFF0C\u9010\u9879\u8C03\u6574\u3002\u6539\u4EFB\u4F55\u4E00\u9879\uFF0C\u9884\u8BBE\u5C31\u53D8\u6210\u300C\u81EA\u5B9A\u4E49\u300D\u3002",
       "page.enable": "\u542F\u7528\u88C5\u4FEE",
-      "page.enableDesc": "\u5173\u6389\u540E\u7ACB\u5373\u6062\u590D\u5B98\u65B9\u6837\u5F0F\uFF0C\u4F60\u7684\u8BBE\u7F6E\u90FD\u4F1A\u4FDD\u7559\u3002",
-      "page.presetGroup": "\u9884\u8BBE",
-      "page.presetNote": "\u9884\u8BBE\u53EA\u6539\u5706\u89D2\u3001\u758F\u5BC6\u548C\u7248\u5F0F\uFF0C\u4E0D\u52A8\u54C1\u724C\u4E0E\u4EFB\u52A1\u5217\u8868\u3002",
-      "page.presetActive": "\u4F7F\u7528\u4E2D",
-      "page.presetApply": "\u5957\u7528",
-      "page.customGroup": "\u81EA\u5B9A\u4E49",
-      "page.customNote": "\u6539\u4EFB\u610F\u4E00\u9879\uFF0C\u4E0A\u9762\u7684\u9884\u8BBE\u4F1A\u53D8\u6210\u300C\u81EA\u5B9A\u4E49\u300D\u3002",
+      "page.tune": "\u5FAE\u8C03",
+      "page.shapeGroup": "\u5F62\u72B6",
       "page.accent": "\u5F3A\u8C03\u8272",
-      "page.accentDesc": "\u94FE\u63A5\u3001\u9009\u4E2D\u6001\u3001\u7126\u70B9\u73AF\u548C\u54C1\u724C\u9AD8\u4EAE\u7528\u7684\u989C\u8272\u3002",
       "page.radius": "\u5706\u89D2",
-      "page.radiusDesc": "\u5361\u7247\u3001\u8F93\u5165\u6846\u548C\u6309\u94AE\u7684\u5706\u89D2\u5927\u5C0F\u3002",
       "page.radius_compact": "\u7D27\u51D1",
       "page.radius_default": "\u6807\u51C6",
       "page.radius_round": "\u5706\u6DA6",
-      "page.appearance": "\u660E\u6697\u504F\u597D",
-      "page.appearanceDesc": "\u76F4\u63A5\u5207\u6362 DSH \u7684\u660E\u6697\u8BBE\u7F6E\u3002",
+      "page.density": "\u4FA7\u680F\u5BC6\u5EA6",
+      "page.density_default": "\u6807\u51C6",
+      "page.density_compact": "\u7D27\u51D1",
+      "page.appearance": "\u660E\u6697",
       "page.themeSystem": "\u8DDF\u968F\u7CFB\u7EDF",
       "page.themeLight": "\u6D45\u8272",
       "page.themeDark": "\u6DF1\u8272",
-      "page.density": "\u4FA7\u680F\u5BC6\u5EA6",
-      "page.densityDesc": "\u4FA7\u680F\u4F1A\u8BDD\u884C\u7684\u9AD8\u5EA6\u548C\u5B57\u53F7\u3002",
-      "page.density_default": "\u6807\u51C6",
-      "page.density_compact": "\u7D27\u51D1",
+      "page.layoutGroup": "\u7248\u5F0F",
+      "page.layoutAllOn": "\u5168\u5F00",
+      "page.layoutAllOff": "\u5168\u5173",
+      "page.listGroup": "\u5217\u8868\u4E0E\u7EC6\u8282",
       "page.list": "\u4EFB\u52A1\u5217\u8868",
-      "page.listDesc": "\u6309\u9879\u76EE\u5206\u7EC4\u7684\u4EFB\u52A1\u5217\u8868\uFF0C\u4E5F\u53EF\u4EE5\u6362\u56DE\u5B98\u65B9\u90A3\u5957\uFF08\u5E26\u641C\u7D22\u3001\u62D6\u62FD\u548C\u5F52\u6863\uFF09\u3002",
       "page.listZcode": "\u5206\u7EC4",
       "page.listNative": "\u5B98\u65B9",
       "page.chip": "\u9879\u76EE\u6807\u7B7E",
-      "page.chipDesc": "\u5728\u4F1A\u8BDD\u6807\u9898\u65C1\u663E\u793A\u6240\u5C5E\u9879\u76EE\u3002",
-      "page.layoutGroup": "\u7248\u5F0F",
-      "page.layoutNote": "\u5341\u4E8C\u7EC4\u6837\u5F0F\uFF0C\u51B3\u5B9A\u5BF9\u8BDD\u533A\u600E\u4E48\u6392\u3002\u5173\u6389\u4E00\u7EC4\uFF0C\u90A3\u90E8\u5206\u6062\u590D\u5B98\u65B9\u6837\u5F0F\u3002",
-      "page.layoutAllOn": "\u5168\u90E8\u5F00\u542F",
-      "page.layoutAllOff": "\u5168\u90E8\u5173\u95ED",
       "page.underline": "\u94FE\u63A5\u4E0B\u5212\u7EBF",
-      "page.underlineDesc": "\u6B63\u6587\u91CC\u7684\u94FE\u63A5\u6539\u7528\u4E0B\u5212\u7EBF\uFF0C\u4E0D\u4F7F\u7528\u5F69\u8272\u6587\u5B57\u3002",
-      "page.autoOlder": "\u81EA\u52A8\u52A0\u8F7D\u66F4\u65E9",
-      "page.autoOlderDesc": "\u6EDA\u52A8\u5230\u63A5\u8FD1\u9876\u90E8\u65F6\u81EA\u52A8\u52A0\u8F7D\u4E0A\u4E00\u9875\uFF0C\u4E0D\u9700\u8981\u70B9\u300C\u52A0\u8F7D\u66F4\u65E9\u300D\u3002",
-      "page.autoOlderPinned": "\u8FD9\u4E00\u9879\u6CA1\u6709\u5F00\u5173\uFF0C\u5C5E\u4E8E\u56FA\u5B9A\u884C\u4E3A\u3002",
-      "page.autoOlderOn": "\u5E38\u5F00",
       "page.brandGroup": "\u54C1\u724C",
       "page.name": "\u540D\u79F0",
-      "page.nameDesc": "\u4FA7\u8FB9\u680F\u9876\u90E8\u663E\u793A\u7684\u6587\u5B57\u3002\u7559\u7A7A\u5219\u4F7F\u7528\u5B98\u65B9\u54C1\u724C\u3002",
       "page.namePlaceholder": "\u5B98\u65B9\u54C1\u724C",
       "page.icon": "\u56FE\u6807",
-      "page.iconDesc": "\u9ED8\u8BA4\u663E\u793A\u5B98\u65B9\u56FE\u6807\uFF0C\u4E5F\u53EF\u4EE5\u9009\u4E00\u4E2A\u9884\u8BBE\uFF0C\u6216\u4E0A\u4F20\u4E0D\u8D85\u8FC7 256 KB \u7684\u56FE\u7247\u3002",
       "page.iconOfficial": "\u5B98\u65B9",
       "page.iconCustom": "\u81EA\u5B9A\u4E49",
       "page.upload": "\u4E0A\u4F20\u56FE\u7247\u2026",
       "page.iconType": "\u8BF7\u9009\u62E9\u56FE\u7247\u6587\u4EF6\uFF08PNG / JPEG / SVG / WebP\uFF09",
       "page.iconTooLarge": "\u56FE\u7247\u4E0D\u80FD\u8D85\u8FC7 256 KB",
-      "page.preview": "\u9884\u89C8",
-      "page.previewOfficial": "\u5B98\u65B9\u54C1\u724C",
       "page.maintainGroup": "\u7EF4\u62A4",
       "page.reset": "\u6062\u590D\u9ED8\u8BA4",
       "page.resetAll": "\u5168\u90E8\u91CD\u7F6E",
-      "page.storageNote": "\u8BBE\u7F6E\u4FDD\u5B58\u5728\u672C\u673A\u6D4F\u89C8\u5668\u4E2D\uFF0C\u6362\u673A\u5668\u9700\u8981\u91CD\u65B0\u8BBE\u7F6E\u3002",
       "list.title": "\u4EFB\u52A1",
       "list.group": "\u5206\u7EC4",
       "list.recent": "\u6700\u8FD1",
@@ -2848,67 +2844,45 @@ window.__ModuleLoader__.load({
     };
     var EN = {
       title: "Fitout",
-      description: "Colour and layout for DeepSeek Harness. The frame is the product's; every fitting can be changed one at a time.",
+      description: "A theme shelf: pick one, or tune it yourself.",
       section: "Fitout",
       "page.title": "Fitout",
-      "page.description": "Presets on top \u2014 pick one and go. Your own hand below \u2014 change any field and the preset reads Custom.",
       "page.enable": "Enable fitout",
-      "page.enableDesc": "Turning this off restores the shipped look immediately. Your settings are kept.",
-      "page.presetGroup": "Presets",
-      "page.presetNote": "A preset only changes corners, density and layout \u2014 never the brand or the task list.",
-      "page.presetActive": "In use",
-      "page.presetApply": "Apply",
-      "page.customGroup": "Custom",
-      "page.customNote": "Change any field and the preset above reads Custom.",
+      "page.tune": "Fine tune",
+      "page.shapeGroup": "Shape",
       "page.accent": "Accent",
-      "page.accentDesc": "The colour used for links, selection, focus rings and brand highlights.",
       "page.radius": "Corners",
-      "page.radiusDesc": "Corner size for cards, inputs and buttons.",
       "page.radius_compact": "Tight",
       "page.radius_default": "Standard",
       "page.radius_round": "Round",
+      "page.density": "Sidebar density",
+      "page.density_default": "Standard",
+      "page.density_compact": "Compact",
       "page.appearance": "Light / dark",
-      "page.appearanceDesc": "Switch the DSH appearance directly.",
       "page.themeSystem": "System",
       "page.themeLight": "Light",
       "page.themeDark": "Dark",
-      "page.density": "Sidebar density",
-      "page.densityDesc": "Row height and font size in the sidebar.",
-      "page.density_default": "Standard",
-      "page.density_compact": "Compact",
+      "page.layoutGroup": "Layout",
+      "page.layoutAllOn": "All on",
+      "page.layoutAllOff": "All off",
+      "page.listGroup": "List & details",
       "page.list": "Task list",
-      "page.listDesc": "Sessions grouped by project; the shipped list (with search, drag and archive) is one click away.",
       "page.listZcode": "Grouped",
       "page.listNative": "Shipped",
       "page.chip": "Project tag",
-      "page.chipDesc": "Show the owning project next to the session title.",
-      "page.layoutGroup": "Layout",
-      "page.layoutNote": "Twelve style groups that decide how the conversation is arranged. Turn one off and that part returns to the shipped look.",
-      "page.layoutAllOn": "All on",
-      "page.layoutAllOff": "All off",
       "page.underline": "Underlined links",
-      "page.underlineDesc": "Links in the transcript use an underline instead of coloured text.",
-      "page.autoOlder": "Auto-load earlier",
-      "page.autoOlderDesc": 'Load the previous page when the view nears the top; no manual "Load earlier" click.',
-      "page.autoOlderPinned": "No switch for this one \u2014 it is fixed behaviour.",
-      "page.autoOlderOn": "Always on",
       "page.brandGroup": "Brand",
       "page.name": "Name",
-      "page.nameDesc": "Text shown at the top of the sidebar. Empty keeps the official brand.",
       "page.namePlaceholder": "Official brand",
       "page.icon": "Icon",
-      "page.iconDesc": "Official by default. Pick a preset, or upload an image no larger than 256 KB.",
       "page.iconOfficial": "Official",
       "page.iconCustom": "Custom",
       "page.upload": "Upload image\u2026",
       "page.iconType": "Choose an image file (PNG / JPEG / SVG / WebP)",
       "page.iconTooLarge": "The image must be 256 KB or smaller",
-      "page.preview": "Preview",
-      "page.previewOfficial": "Official brand",
       "page.maintainGroup": "Maintenance",
       "page.reset": "Reset to defaults",
       "page.resetAll": "Reset everything",
-      "page.storageNote": "Settings are stored in this browser. Another machine starts from the defaults.",
       "list.title": "Tasks",
       "list.group": "Groups",
       "list.recent": "Recent",

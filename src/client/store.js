@@ -42,7 +42,7 @@ export const RADIUS_SCALES = Object.freeze({
 
 const DEFAULTS = Object.freeze({
   enabled: true,
-  preset: 'neutral',
+  preset: 'standard',
   list: 'zcode',
   name: '',
   icon: { kind: 'official', value: '' },

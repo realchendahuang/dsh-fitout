@@ -169,23 +169,40 @@ html.fto-dense-sidebar .fto-list-title{font-size:12px}
 html.fto-dense-sidebar .fto-list-time{font-size:10px}
 html.fto-dense-sidebar .fto-list-group{margin-bottom:1px}
 
-/* --- preset cards: the one decision the page leads with --- */
-.fto-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px 0 4px}
-.fto-preset{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:10px;text-align:left;
-  border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);
-  color:var(--dsw-alias-label-primary);cursor:pointer;transition:background-color .14s ease,border-color .14s ease}
-.fto-preset:hover{background:var(--dsw-alias-interactive-bg-hover)}
-.fto-preset[data-on="true"]{border-color:var(--dsw-alias-link,#0284c7)}
-.fto-presetHead{display:flex;align-items:center;gap:8px;min-width:0}
-.fto-presetDot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-.fto-presetName{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fto-presetBadge{margin-left:auto;font-size:11px;color:var(--dsw-alias-label-tertiary);white-space:nowrap}
-.fto-preset[data-on="true"] .fto-presetBadge{color:var(--dsw-alias-link,#0284c7)}
-.fto-presetDesc{font-size:11.5px;line-height:17px;color:var(--dsw-alias-label-tertiary)}
+/* --- the theme shelf: a card is a whole look, not a setting --- */
+.fto-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 18px}
+.fto-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.fto-theme{display:flex;flex-direction:column;gap:7px;padding:0;border:0;background:transparent;
+  cursor:pointer;text-align:left;font:inherit}
+.fto-theme[data-static="true"]{cursor:default}
+.fto-themeArt{position:relative;display:block;height:54px;
+  background:var(--dsw-alias-bg-layer-2);border:1px solid var(--dsw-alias-border-l2);
+  transition:border-color .14s ease,box-shadow .14s ease}
+.fto-themeArt::before{content:"";position:absolute;left:11px;top:15px;width:42%;height:5px;
+  border-radius:2px;background:var(--dsw-alias-label-tertiary);opacity:.5}
+.fto-themeArt::after{content:"";position:absolute;left:11px;top:29px;width:26%;height:4px;
+  border-radius:2px;background:var(--dsw-alias-label-tertiary);opacity:.25}
+.fto-theme:hover .fto-themeArt{border-color:var(--dsw-alias-border-l3)}
+.fto-theme[data-on="true"] .fto-themeArt{
+  border-color:var(--dsw-alias-link,#0284c7);
+  box-shadow:0 0 0 1px var(--dsw-alias-link,#0284c7)}
+.fto-themeDot{position:absolute;right:11px;bottom:11px;width:11px;height:11px;border-radius:50%}
+.fto-themeName{padding-left:2px;font-size:12px;color:var(--dsw-alias-label-secondary)}
+.fto-theme[data-on="true"] .fto-themeName{color:var(--dsw-alias-label-primary);font-weight:500}
 
-/* Inline code: the shipped rule uses 0.875em, which resolves to 13.125px on a
-   15px body — a fractional size that renders soft. Pin it to a whole pixel. */
-[data-chat-node-key] :not(pre) > code{font-size:13px}
+.fto-tuneBtn{display:flex;align-items:center;justify-content:space-between;width:100%;
+  margin-top:22px;padding:11px 0;border:0;border-top:1px solid var(--dsw-alias-border-l2);
+  background:transparent;color:var(--dsw-alias-label-secondary);font-size:12px;cursor:pointer}
+.fto-tuneBtn:hover{color:var(--dsw-alias-label-primary)}
+.fto-tuneChevron{display:block;width:12px;height:12px;background:currentColor;
+  transform:rotate(90deg);transition:transform .16s ease;
+  -webkit-mask:var(--fto-chevron) center/contain no-repeat;
+  mask:var(--fto-chevron) center/contain no-repeat}
+.fto-tuneBtn[data-open="true"] .fto-tuneChevron{transform:rotate(-90deg)}
+
+.fto-cells{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;padding:8px 0 2px}
+.fto-cell{display:flex;align-items:center;gap:8px;min-height:32px;
+  font-size:12px;color:var(--dsw-alias-label-secondary)}
 
 body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 ::selection{background:color-mix(in srgb, var(--dsw-alias-link,#0284c7) 28%, transparent)}

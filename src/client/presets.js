@@ -12,10 +12,8 @@ const ALL_GROUPS = SECTIONS.map((section) => section.id)
 
 export const PRESETS = Object.freeze([
   Object.freeze({
-    id: 'neutral',
+    id: 'standard',
     name: '标准',
-    en: 'Standard',
-    desc: '中性配色，圆角和疏密取标准档，版式全开。',
     accent: 'sky',
     radius: 'default',
     density: 'default',
@@ -25,8 +23,6 @@ export const PRESETS = Object.freeze([
   Object.freeze({
     id: 'compact',
     name: '紧凑',
-    en: 'Compact',
-    desc: '圆角更小、侧栏更紧，适合小屏或多窗口并排。',
     accent: 'sky',
     radius: 'compact',
     density: 'compact',
@@ -36,10 +32,26 @@ export const PRESETS = Object.freeze([
   Object.freeze({
     id: 'relaxed',
     name: '宽松',
-    en: 'Relaxed',
-    desc: '圆角更大、留白更多，适合长时间阅读。',
     accent: 'sky',
     radius: 'round',
+    density: 'default',
+    effects: Object.freeze({ underline: true, chip: true }),
+    layout: Object.freeze({ disabled: Object.freeze([]) }),
+  }),
+  Object.freeze({
+    id: 'indigo',
+    name: '靛青',
+    accent: 'violet',
+    radius: 'default',
+    density: 'default',
+    effects: Object.freeze({ underline: true, chip: true }),
+    layout: Object.freeze({ disabled: Object.freeze([]) }),
+  }),
+  Object.freeze({
+    id: 'jade',
+    name: '青瓷',
+    accent: 'emerald',
+    radius: 'compact',
     density: 'default',
     effects: Object.freeze({ underline: true, chip: true }),
     layout: Object.freeze({ disabled: Object.freeze([]) }),
@@ -48,8 +60,12 @@ export const PRESETS = Object.freeze([
 
 export const PRESET_IDS = Object.freeze(PRESETS.map((preset) => preset.id))
 
+const RENAMED = Object.freeze({ neutral: 'standard', 'zcode-neutral': 'standard' })
+
 export function findPreset(id) {
-  return PRESETS.find((preset) => preset.id === id) ?? null
+  return PRESETS.find((preset) => preset.id === id)
+    ?? PRESETS.find((preset) => preset.id === RENAMED[id])
+    ?? null
 }
 
 /** True when every field still matches the named preset. */
