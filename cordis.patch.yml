@@ -1,0 +1,7 @@
+# dsh-fitout bundle patch: one row, no config.
+# The client half (theme tokens, layout groups, brand slots, settings panel) is
+# loaded from `dsh.client` in package.json; this row only makes the profile know
+# the package.
+- insert:
+    - id: dsh-fitout
+      name: dsh-fitout
