@@ -33,7 +33,7 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.11.1'
+const VERSION = '0.12.0'
 
 export const ZH = {
   title: '装修',
@@ -72,7 +72,8 @@ export const ZH = {
   'page.weight': '字重',
   'page.weight_normal': '常规',
   'page.weight_medium': '中等',
-  'page.weight_heavy': '偏粗',
+  'page.weight_bold': '偏粗',
+  'page.weight_xbold': '最粗',
   'page.fontRole_text': '正文',
   'page.fontRole_code': '代码',
   'page.fontRole_terminal': '终端',
@@ -168,7 +169,8 @@ const EN = {
   'page.weight': 'Weight',
   'page.weight_normal': 'Regular',
   'page.weight_medium': 'Medium',
-  'page.weight_heavy': 'Heavy',
+  'page.weight_bold': 'Bold',
+  'page.weight_xbold': 'Heaviest',
   'page.fontRole_text': 'Body',
   'page.fontRole_code': 'Code',
   'page.fontRole_terminal': 'Terminal',

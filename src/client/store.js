@@ -66,7 +66,7 @@ const DEFAULTS = Object.freeze({
   radiusCustom: 0,
   font: Object.freeze({ text: '', code: '', terminal: '' }),
   type: Object.freeze({ ...TYPE_DEFAULTS }),
-  weight: 'medium',
+  weight: 'xbold',
   shadow: 'soft',
   motion: 'normal',
   corner: 'round',
@@ -80,7 +80,7 @@ const DEFAULTS = Object.freeze({
 export const OPTIONS = Object.freeze({
   surface: Object.freeze(['neutral', 'paper', 'night', 'nord']),
   measure: Object.freeze(['auto', 'narrow', 'wide']),
-  weight: Object.freeze(['normal', 'medium', 'heavy']),
+  weight: Object.freeze(['normal', 'medium', 'bold', 'xbold']),
   shadow: Object.freeze(['flat', 'soft', 'lifted']),
   motion: Object.freeze(['off', 'normal', 'slow']),
   corner: Object.freeze(['round', 'squircle']),
@@ -300,11 +300,31 @@ function readAccent(raw) {
   return typeof raw === 'string' && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : ''
 }
 
+const WEIGHT_MIGRATION = 'dsh-fitout:weight-bumped'
+
+/** 0.11 shipped with a lighter default; lift an untouched old record once.
+ *
+ * Without this, anyone who already had a settings record would keep reading at
+ * the old default forever, because a stored value always beats a new default.
+ */
+function migrateWeight(parsed) {
+  try {
+    if (globalThis.localStorage?.getItem(WEIGHT_MIGRATION) !== null) return parsed
+    globalThis.localStorage?.setItem(WEIGHT_MIGRATION, '1')
+    if (parsed?.weight === 'medium' || parsed?.weight === 'heavy' || parsed?.weight === undefined) {
+      return { ...parsed, weight: 'xbold' }
+    }
+  } catch {
+    /* storage unavailable: the default already applies */
+  }
+  return parsed
+}
+
 function readStored() {
   try {
     const raw = globalThis.localStorage?.getItem(KEY)
     if (raw !== null && raw !== undefined) {
-      const parsed = JSON.parse(raw)
+      const parsed = migrateWeight(JSON.parse(raw))
       return {
         enabled: parsed?.enabled !== false,
         preset: typeof parsed?.preset === 'string' ? parsed.preset : DEFAULTS.preset,

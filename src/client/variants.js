@@ -44,7 +44,14 @@ const MEASURES = Object.freeze({ auto: null, narrow: '620px', wide: '960px' })
  * rule on any ancestor is overridden one level down. Rebuilding the shorthand
  * with a weight in front is the only way that survives.
  */
-const WEIGHTS = Object.freeze({ normal: '400', medium: '500', heavy: '600' })
+const WEIGHTS = Object.freeze({ normal: '400', medium: '500', bold: '600', xbold: '600' })
+
+/** Extra ink on top of the weight, for faces that top out at 600.
+ *
+ * A stroke is centred on the glyph outline, so it never changes advance widths:
+ * text gets heavier without reflowing, which a heavier weight would cause.
+ */
+const STROKES = Object.freeze({ xbold: '0.3px' })
 
 const CONTENT_SIZE = 'var(--dsh-content-font-size,14px)'
 const CONTENT_LINE = 'calc(24px + var(--dsh-content-font-delta))'
@@ -164,6 +171,8 @@ function applyOptions(out, settings) {
   }
 
   const weight = WEIGHTS[settings?.weight]
+  const stroke = STROKES[settings?.weight]
+  out['--fto-text-stroke'] = both(stroke ?? '0px')
   if (weight !== undefined) {
     out['--fto-body-weight'] = both(weight)
     for (const [token, value] of Object.entries(weightedMarkdownTokens(weight))) {

@@ -47,6 +47,11 @@ export const CSS = `
 /* --- ZCode header additions --- */
 .fto-chip-chip{display:inline-flex;align-items:center;gap:5px;height:24px;max-width:220px;padding:0 8px;border-radius:6px;color:var(--dsw-alias-label-tertiary);font-size:12px}
 .fto-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* --- reading weight: a stroke, not a font-weight, because a stroke is drawn
+   around the glyph outline and leaves every advance width alone. The value is a
+   custom property the token layer publishes; 0px is a no-op. --- */
+[data-chat-node-key]{-webkit-text-stroke:var(--fto-text-stroke,0px) currentColor}
+
 /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
 html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background-image:var(--fto-wallpaper);background-size:cover;background-position:center;

@@ -219,7 +219,7 @@ window.__ModuleLoader__.load({
       radiusCustom: 0,
       font: Object.freeze({ text: "", code: "", terminal: "" }),
       type: Object.freeze({ ...TYPE_DEFAULTS }),
-      weight: "medium",
+      weight: "xbold",
       shadow: "soft",
       motion: "normal",
       corner: "round",
@@ -231,7 +231,7 @@ window.__ModuleLoader__.load({
     var OPTIONS = Object.freeze({
       surface: Object.freeze(["neutral", "paper", "night", "nord"]),
       measure: Object.freeze(["auto", "narrow", "wide"]),
-      weight: Object.freeze(["normal", "medium", "heavy"]),
+      weight: Object.freeze(["normal", "medium", "bold", "xbold"]),
       shadow: Object.freeze(["flat", "soft", "lifted"]),
       motion: Object.freeze(["off", "normal", "slow"]),
       corner: Object.freeze(["round", "squircle"]),
@@ -420,11 +420,23 @@ window.__ModuleLoader__.load({
     function readAccent(raw) {
       return typeof raw === "string" && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : "";
     }
+    var WEIGHT_MIGRATION = "dsh-fitout:weight-bumped";
+    function migrateWeight(parsed) {
+      try {
+        if (globalThis.localStorage?.getItem(WEIGHT_MIGRATION) !== null) return parsed;
+        globalThis.localStorage?.setItem(WEIGHT_MIGRATION, "1");
+        if (parsed?.weight === "medium" || parsed?.weight === "heavy" || parsed?.weight === void 0) {
+          return { ...parsed, weight: "xbold" };
+        }
+      } catch {
+      }
+      return parsed;
+    }
     function readStored() {
       try {
         const raw = globalThis.localStorage?.getItem(KEY);
         if (raw !== null && raw !== void 0) {
-          const parsed = JSON.parse(raw);
+          const parsed = migrateWeight(JSON.parse(raw));
           return {
             enabled: parsed?.enabled !== false,
             preset: typeof parsed?.preset === "string" ? parsed.preset : DEFAULTS.preset,
@@ -961,7 +973,8 @@ window.__ModuleLoader__.load({
       dark: { light: "#1b1b1c", dark: "#0f0f10" }
     });
     var MEASURES = Object.freeze({ auto: null, narrow: "620px", wide: "960px" });
-    var WEIGHTS = Object.freeze({ normal: "400", medium: "500", heavy: "600" });
+    var WEIGHTS = Object.freeze({ normal: "400", medium: "500", bold: "600", xbold: "600" });
+    var STROKES = Object.freeze({ xbold: "0.3px" });
     var CONTENT_SIZE = "var(--dsh-content-font-size,14px)";
     var CONTENT_LINE = "calc(24px + var(--dsh-content-font-delta))";
     var SECONDARY_SIZE = "var(--dsh-content-font-size-secondary,13px)";
@@ -1051,6 +1064,8 @@ window.__ModuleLoader__.load({
         }
       }
       const weight = WEIGHTS[settings?.weight];
+      const stroke = STROKES[settings?.weight];
+      out["--fto-text-stroke"] = both(stroke ?? "0px");
       if (weight !== void 0) {
         out["--fto-body-weight"] = both(weight);
         for (const [token, value] of Object.entries(weightedMarkdownTokens(weight))) {
@@ -1141,6 +1156,11 @@ window.__ModuleLoader__.load({
     /* --- ZCode header additions --- */
     .fto-chip-chip{display:inline-flex;align-items:center;gap:5px;height:24px;max-width:220px;padding:0 8px;border-radius:6px;color:var(--dsw-alias-label-tertiary);font-size:12px}
     .fto-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    /* --- reading weight: a stroke, not a font-weight, because a stroke is drawn
+       around the glyph outline and leaves every advance width alone. The value is a
+       custom property the token layer publishes; 0px is a no-op. --- */
+    [data-chat-node-key]{-webkit-text-stroke:var(--fto-text-stroke,0px) currentColor}
+
     /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
     html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
       background-image:var(--fto-wallpaper);background-size:cover;background-position:center;
@@ -1558,7 +1578,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font("", "", ""),
         type: type(14, 11, 13),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1573,7 +1593,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"PT Sans", "PingFang SC", "Helvetica Neue", sans-serif', '"Menlo", "Monaco", monospace', '"Menlo", "Monaco", monospace'),
         type: type(13, 10, 12),
-        weight: "normal",
+        weight: "xbold",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1588,7 +1608,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Seravek", "PingFang SC", sans-serif', NF_MONO, MONO),
         type: type(16, 12, 14),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -1603,7 +1623,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Helvetica Neue", "PingFang SC", "Arial", sans-serif', MONO, MONO),
         type: type(14, 11, 13),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1618,7 +1638,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Iowan Old Style", "Songti SC", "Georgia", serif', '"Courier New", "Courier", monospace', MONO),
         type: type(15, 12, 13),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1633,7 +1653,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Avenir Next", "Yuanti SC", sans-serif', '"Andale Mono", "Menlo", monospace', MONO),
         type: type(15, 12, 13),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1648,7 +1668,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Charter", "Songti SC", "Georgia", serif', MONO, MONO),
         type: type(16, 12, 13),
-        weight: "medium",
+        weight: "xbold",
         shadow: "lifted",
         motion: "slow",
         corner: "squircle",
@@ -1663,7 +1683,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Menlo", "PingFang SC", monospace', NF_MONO, MONO),
         type: type(13, 11, 13),
-        weight: "normal",
+        weight: "xbold",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1678,7 +1698,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Hiragino Sans GB", "PingFang SC", sans-serif', '"PT Mono", "Menlo", monospace', MONO),
         type: type(14, 11, 13),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1693,7 +1713,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Hoefler Text", "Kaiti SC", "Georgia", serif', '"Monaco", "Menlo", monospace', '"Monaco", "Menlo", monospace'),
         type: type(15, 11, 14),
-        weight: "medium",
+        weight: "xbold",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -2608,7 +2628,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.11.1";
+    var VERSION = "0.12.0";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
@@ -2646,7 +2666,8 @@ window.__ModuleLoader__.load({
       "page.weight": "\u5B57\u91CD",
       "page.weight_normal": "\u5E38\u89C4",
       "page.weight_medium": "\u4E2D\u7B49",
-      "page.weight_heavy": "\u504F\u7C97",
+      "page.weight_bold": "\u504F\u7C97",
+      "page.weight_xbold": "\u6700\u7C97",
       "page.fontRole_text": "\u6B63\u6587",
       "page.fontRole_code": "\u4EE3\u7801",
       "page.fontRole_terminal": "\u7EC8\u7AEF",
@@ -2736,7 +2757,8 @@ window.__ModuleLoader__.load({
       "page.weight": "Weight",
       "page.weight_normal": "Regular",
       "page.weight_medium": "Medium",
-      "page.weight_heavy": "Heavy",
+      "page.weight_bold": "Bold",
+      "page.weight_xbold": "Heaviest",
       "page.fontRole_text": "Body",
       "page.fontRole_code": "Code",
       "page.fontRole_terminal": "Terminal",
