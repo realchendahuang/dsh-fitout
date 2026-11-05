@@ -98,7 +98,7 @@ window.__ModuleLoader__.load({
       "--dsw-alias-interactive-bg-hover-accent": { light: "#0284c724", dark: "#38bdf83d" },
       "--dsw-alias-interactive-bg-hover-danger": { light: "#dc26260d", dark: "#f8717126" },
       "--dsw-alias-interactive-bg-hover-solid": { light: "#f5f5f5", dark: "#2e2e2e" },
-      "--dsw-alias-label-caption": { light: "#a3a3a3", dark: "#737373" },
+      "--dsw-alias-label-caption": { light: "#737373", dark: "#a3a3a3" },
       "--dsw-alias-label-deep-diving": { light: "color-mix(in srgb, #0284c7 70%, #0a0a0a)", dark: "color-mix(in srgb, #38bdf8 55%, #a3a3a3)" },
       "--dsw-alias-label-deep-diving-shimmer": { light: "color-mix(in srgb, #0284c7 30%, #0a0a0a)", dark: "color-mix(in srgb, #7dd3fc 65%, #38bdf8)" },
       "--dsw-alias-label-dimmed": { light: "#e5e5e5", dark: "#404040" },
@@ -108,9 +108,9 @@ window.__ModuleLoader__.load({
       "--dsw-alias-label-primary-dimmed": { light: "#262626", dark: "#ededed" },
       "--dsw-alias-label-primary-foreground": { light: "#ffffff", dark: "#0a0a0a" },
       "--dsw-alias-label-primary-inverted": { light: "#ffffff", dark: "#262626" },
-      "--dsw-alias-label-secondary": { light: "#525252", dark: "#a3a3a3" },
+      "--dsw-alias-label-secondary": { light: "#404040", dark: "#d4d4d4" },
       "--dsw-alias-label-shimmer": { light: "color-mix(in srgb, #0a0a0a 30%, transparent)", dark: "color-mix(in srgb, #ffffff 45%, transparent)" },
-      "--dsw-alias-label-tertiary": { light: "#737373", dark: "#737373" },
+      "--dsw-alias-label-tertiary": { light: "#525252", dark: "#a3a3a3" },
       "--dsw-alias-link": { light: "#0284c7", dark: "#38bdf8" },
       "--dsw-alias-markdown-citation": { light: "#f5f5f5", dark: "#2e2e2e" },
       "--dsw-alias-markdown-code-block": { light: "#fafafa", dark: "#111111" },
@@ -219,7 +219,7 @@ window.__ModuleLoader__.load({
       radiusCustom: 0,
       font: Object.freeze({ text: "", code: "", terminal: "" }),
       type: Object.freeze({ ...TYPE_DEFAULTS }),
-      weight: "xbold",
+      weight: "bold",
       shadow: "soft",
       motion: "normal",
       corner: "round",
@@ -421,12 +421,21 @@ window.__ModuleLoader__.load({
       return typeof raw === "string" && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : "";
     }
     var WEIGHT_MIGRATION = "dsh-fitout:weight-bumped";
+    var WEIGHT_REBALANCE = "dsh-fitout:weight-rebalanced";
     function migrateWeight(parsed) {
       try {
+        if (globalThis.localStorage?.getItem(WEIGHT_REBALANCE) === null) {
+          globalThis.localStorage?.setItem(WEIGHT_REBALANCE, "1");
+          const stored = parsed?.weight;
+          if (stored === "xbold" || stored === "medium" || stored === "heavy" || stored === void 0) {
+            return { ...parsed, weight: "bold" };
+          }
+          return parsed;
+        }
         if (globalThis.localStorage?.getItem(WEIGHT_MIGRATION) !== null) return parsed;
         globalThis.localStorage?.setItem(WEIGHT_MIGRATION, "1");
         if (parsed?.weight === "medium" || parsed?.weight === "heavy" || parsed?.weight === void 0) {
-          return { ...parsed, weight: "xbold" };
+          return { ...parsed, weight: "bold" };
         }
       } catch {
       }
@@ -973,6 +982,7 @@ window.__ModuleLoader__.load({
       dark: { light: "#1b1b1c", dark: "#0f0f10" }
     });
     var MEASURES = Object.freeze({ auto: null, narrow: "620px", wide: "960px" });
+    var PROCESS_INK = Object.freeze({ light: "#4b4b52", dark: "#b9bdc6" });
     var WEIGHTS = Object.freeze({ normal: "400", medium: "500", bold: "600", xbold: "600" });
     var STROKES = Object.freeze({ xbold: "0.3px" });
     var CONTENT_SIZE = "var(--dsh-content-font-size,14px)";
@@ -1063,6 +1073,7 @@ window.__ModuleLoader__.load({
           out[token] = both(scale[slot] + "px");
         }
       }
+      out["--fto-process-ink"] = { ...PROCESS_INK };
       const weight = WEIGHTS[settings?.weight];
       const stroke = STROKES[settings?.weight];
       out["--fto-text-stroke"] = both(stroke ?? "0px");
@@ -1160,6 +1171,10 @@ window.__ModuleLoader__.load({
        around the glyph outline and leaves every advance width alone. The value is a
        custom property the token layer publishes; 0px is a no-op. --- */
     [data-chat-node-key]{-webkit-text-stroke:var(--fto-text-stroke,0px) currentColor}
+
+    /* --- process lines (tool calls, thinking rows) read darker than the shipped
+       inherit lands. Text colour only. --- */
+    [data-chat-node-key] [data-disclosure-row]{color:var(--fto-process-ink, inherit)}
 
     /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
     html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
@@ -1578,7 +1593,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font("", "", ""),
         type: type(14, 11, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1593,7 +1608,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"PT Sans", "PingFang SC", "Helvetica Neue", sans-serif', '"Menlo", "Monaco", monospace', '"Menlo", "Monaco", monospace'),
         type: type(13, 10, 12),
-        weight: "xbold",
+        weight: "bold",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1608,7 +1623,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Seravek", "PingFang SC", sans-serif', NF_MONO, MONO),
         type: type(16, 12, 14),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -1623,7 +1638,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Helvetica Neue", "PingFang SC", "Arial", sans-serif', MONO, MONO),
         type: type(14, 11, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1638,7 +1653,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Iowan Old Style", "Songti SC", "Georgia", serif', '"Courier New", "Courier", monospace', MONO),
         type: type(15, 12, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1653,7 +1668,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Avenir Next", "Yuanti SC", sans-serif', '"Andale Mono", "Menlo", monospace', MONO),
         type: type(15, 12, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1668,7 +1683,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Charter", "Songti SC", "Georgia", serif', MONO, MONO),
         type: type(16, 12, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "lifted",
         motion: "slow",
         corner: "squircle",
@@ -1683,7 +1698,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Menlo", "PingFang SC", monospace', NF_MONO, MONO),
         type: type(13, 11, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1698,7 +1713,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Hiragino Sans GB", "PingFang SC", sans-serif', '"PT Mono", "Menlo", monospace', MONO),
         type: type(14, 11, 13),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1713,7 +1728,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Hoefler Text", "Kaiti SC", "Georgia", serif', '"Monaco", "Menlo", monospace', '"Monaco", "Menlo", monospace'),
         type: type(15, 11, 14),
-        weight: "xbold",
+        weight: "bold",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -2628,7 +2643,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.12.0";
+    var VERSION = "0.12.1";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",

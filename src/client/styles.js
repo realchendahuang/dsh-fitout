@@ -52,6 +52,10 @@ export const CSS = `
    custom property the token layer publishes; 0px is a no-op. --- */
 [data-chat-node-key]{-webkit-text-stroke:var(--fto-text-stroke,0px) currentColor}
 
+/* --- process lines (tool calls, thinking rows) read darker than the shipped
+   inherit lands. Text colour only. --- */
+[data-chat-node-key] [data-disclosure-row]{color:var(--fto-process-ink, inherit)}
+
 /* --- wallpaper: one fixed layer behind everything, painted from root vars --- */
 html.fto-has-wallpaper body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background-image:var(--fto-wallpaper);background-size:cover;background-position:center;

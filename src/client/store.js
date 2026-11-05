@@ -66,7 +66,7 @@ const DEFAULTS = Object.freeze({
   radiusCustom: 0,
   font: Object.freeze({ text: '', code: '', terminal: '' }),
   type: Object.freeze({ ...TYPE_DEFAULTS }),
-  weight: 'xbold',
+  weight: 'bold',
   shadow: 'soft',
   motion: 'normal',
   corner: 'round',
@@ -301,18 +301,27 @@ function readAccent(raw) {
 }
 
 const WEIGHT_MIGRATION = 'dsh-fitout:weight-bumped'
+const WEIGHT_REBALANCE = 'dsh-fitout:weight-rebalanced'
 
-/** 0.11 shipped with a lighter default; lift an untouched old record once.
+/** Lift a stored weight to the current default, exactly once per generation.
  *
- * Without this, anyone who already had a settings record would keep reading at
- * the old default forever, because a stored value always beats a new default.
+ * A stored value always beats a new default, so without this an existing record
+ * would keep reading at whatever the old build defaulted to, forever.
  */
 function migrateWeight(parsed) {
   try {
+    if (globalThis.localStorage?.getItem(WEIGHT_REBALANCE) === null) {
+      globalThis.localStorage?.setItem(WEIGHT_REBALANCE, '1')
+      const stored = parsed?.weight
+      if (stored === 'xbold' || stored === 'medium' || stored === 'heavy' || stored === undefined) {
+        return { ...parsed, weight: 'bold' }
+      }
+      return parsed
+    }
     if (globalThis.localStorage?.getItem(WEIGHT_MIGRATION) !== null) return parsed
     globalThis.localStorage?.setItem(WEIGHT_MIGRATION, '1')
     if (parsed?.weight === 'medium' || parsed?.weight === 'heavy' || parsed?.weight === undefined) {
-      return { ...parsed, weight: 'xbold' }
+      return { ...parsed, weight: 'bold' }
     }
   } catch {
     /* storage unavailable: the default already applies */

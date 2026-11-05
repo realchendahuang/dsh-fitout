@@ -36,6 +36,14 @@ const CODE_TONES = Object.freeze({
 
 const MEASURES = Object.freeze({ auto: null, narrow: '620px', wide: '960px' })
 
+/** The grey the process lines (tool calls, thinking rows) read in.
+ *
+ * They inherit from wherever the shipped flow container puts its colour, which
+ * lands lighter than these lines deserve: they are skimmable history, not
+ * decoration. Published as a pair so light and dark stay independent.
+ */
+const PROCESS_INK = Object.freeze({ light: '#4b4b52', dark: '#b9bdc6' })
+
 /** Reading weight for conversation text. 400 is the shipped value.
  *
  * These have to land on the *composite* font tokens, not on font-weight: the
@@ -169,6 +177,8 @@ function applyOptions(out, settings) {
       out[token] = both(scale[slot] + 'px')
     }
   }
+
+  out['--fto-process-ink'] = { ...PROCESS_INK }
 
   const weight = WEIGHTS[settings?.weight]
   const stroke = STROKES[settings?.weight]

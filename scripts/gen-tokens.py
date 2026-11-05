@@ -92,7 +92,7 @@ ALIAS = {
     "--dsw-alias-interactive-bg-hover-danger": (f"{RED['600']}0d", f"{RED['400']}26"),
     "--dsw-alias-interactive-bg-hover-solid": (N["100"], "#2e2e2e"),
     # labels
-    "--dsw-alias-label-caption": (N["400"], N["500"]),
+    "--dsw-alias-label-caption": (N["500"], N["400"]),
     "--dsw-alias-label-deep-diving": (
         f"color-mix(in srgb, {SKY['600']} 70%, {N['1000']})",
         f"color-mix(in srgb, {SKY['400']} 55%, {N['400']})",
@@ -109,9 +109,9 @@ ALIAS = {
     "--dsw-alias-label-primary-dimmed": (N["800"], "#ededed"),
     "--dsw-alias-label-primary-foreground": (N["0"], N["1000"]),
     "--dsw-alias-label-primary-inverted": (N["0"], N["800"]),
-    "--dsw-alias-label-secondary": (N["600"], N["400"]),
+    "--dsw-alias-label-secondary": (N["700"], N["300"]),
     "--dsw-alias-label-shimmer": ("color-mix(in srgb, #0a0a0a 30%, transparent)", "color-mix(in srgb, #ffffff 45%, transparent)"),
-    "--dsw-alias-label-tertiary": (N["500"], N["500"]),
+    "--dsw-alias-label-tertiary": (N["600"], N["400"]),
     "--dsw-alias-link": (SKY["600"], SKY["400"]),
     # markdown
     "--dsw-alias-markdown-citation": (N["100"], "#2e2e2e"),
