@@ -33,7 +33,7 @@ export const name = 'dsh-fitout'
 export const inject = ['slots', 'theme', 'locale']
 
 const NS = 'settings.fitout'
-const VERSION = '0.12.1'
+const VERSION = '0.12.2'
 
 export const ZH = {
   title: '装修',

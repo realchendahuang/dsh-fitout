@@ -66,7 +66,8 @@ const DEFAULTS = Object.freeze({
   radiusCustom: 0,
   font: Object.freeze({ text: '', code: '', terminal: '' }),
   type: Object.freeze({ ...TYPE_DEFAULTS }),
-  weight: 'bold',
+  weight: 'normal',
+  weightSet: false,
   shadow: 'soft',
   motion: 'normal',
   corner: 'round',
@@ -107,6 +108,7 @@ export function clone(state) {
     font: { ...state.font },
     type: { ...state.type },
     weight: state.weight,
+    weightSet: state.weightSet === true,
     background: { ...state.background },
     accentCustom: state.accentCustom,
     shadow: state.shadow,
@@ -300,33 +302,16 @@ function readAccent(raw) {
   return typeof raw === 'string' && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : ''
 }
 
-const WEIGHT_MIGRATION = 'dsh-fitout:weight-bumped'
-const WEIGHT_REBALANCE = 'dsh-fitout:weight-rebalanced'
-
-/** Lift a stored weight to the current default, exactly once per generation.
+/** Follow the current default unless the reader picked a weight themselves.
  *
- * A stored value always beats a new default, so without this an existing record
- * would keep reading at whatever the old build defaulted to, forever.
+ * A stored value always beats a new default, so a build that re-tunes the
+ * default would never reach an existing record — and keeping a list of
+ * one-off migration flags instead is how that ends up unmaintainable.
  */
 function migrateWeight(parsed) {
-  try {
-    if (globalThis.localStorage?.getItem(WEIGHT_REBALANCE) === null) {
-      globalThis.localStorage?.setItem(WEIGHT_REBALANCE, '1')
-      const stored = parsed?.weight
-      if (stored === 'xbold' || stored === 'medium' || stored === 'heavy' || stored === undefined) {
-        return { ...parsed, weight: 'bold' }
-      }
-      return parsed
-    }
-    if (globalThis.localStorage?.getItem(WEIGHT_MIGRATION) !== null) return parsed
-    globalThis.localStorage?.setItem(WEIGHT_MIGRATION, '1')
-    if (parsed?.weight === 'medium' || parsed?.weight === 'heavy' || parsed?.weight === undefined) {
-      return { ...parsed, weight: 'bold' }
-    }
-  } catch {
-    /* storage unavailable: the default already applies */
-  }
-  return parsed
+  if (parsed === null || typeof parsed !== 'object') return parsed
+  if (parsed.weightSet === true) return parsed
+  return { ...parsed, weight: DEFAULTS.weight }
 }
 
 function readStored() {
@@ -535,6 +520,7 @@ export function saveTheme(name) {
     font: state.font,
     type: state.type,
     weight: state.weight,
+    weightSet: state.weightSet === true,
     shadow: state.shadow,
     motion: state.motion,
     corner: state.corner,
@@ -633,11 +619,16 @@ export function setTypeSize(role, value) {
   pushFonts(record)
 }
 
-/** Body text weight: how heavy the conversation reads. */
+/** Body text weight: how heavy the conversation reads.
+ *
+ * Marks the record as an explicit choice, so a later build changing the default
+ * can lift untouched records without stomping on this one.
+ */
 export function setWeight(id) {
   const allowed = OPTIONS.weight
-  if (!allowed.includes(id) || state.weight === id) return
-  commit(custom({ ...state, weight: id }))
+  if (!allowed.includes(id)) return
+  if (state.weight === id && state.weightSet === true) return
+  commit(custom({ ...state, weight: id, weightSet: true }))
 }
 
 /** An arbitrary accent hex; '' restores the preset hues. */

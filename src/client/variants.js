@@ -183,7 +183,7 @@ function applyOptions(out, settings) {
   const weight = WEIGHTS[settings?.weight]
   const stroke = STROKES[settings?.weight]
   out['--fto-text-stroke'] = both(stroke ?? '0px')
-  if (weight !== undefined) {
+  if (weight !== undefined && weight !== '400') {
     out['--fto-body-weight'] = both(weight)
     for (const [token, value] of Object.entries(weightedMarkdownTokens(weight))) {
       out[token] = both(value)

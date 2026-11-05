@@ -219,7 +219,8 @@ window.__ModuleLoader__.load({
       radiusCustom: 0,
       font: Object.freeze({ text: "", code: "", terminal: "" }),
       type: Object.freeze({ ...TYPE_DEFAULTS }),
-      weight: "bold",
+      weight: "normal",
+      weightSet: false,
       shadow: "soft",
       motion: "normal",
       corner: "round",
@@ -256,6 +257,7 @@ window.__ModuleLoader__.load({
         font: { ...state2.font },
         type: { ...state2.type },
         weight: state2.weight,
+        weightSet: state2.weightSet === true,
         background: { ...state2.background },
         accentCustom: state2.accentCustom,
         shadow: state2.shadow,
@@ -420,26 +422,10 @@ window.__ModuleLoader__.load({
     function readAccent(raw) {
       return typeof raw === "string" && /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : "";
     }
-    var WEIGHT_MIGRATION = "dsh-fitout:weight-bumped";
-    var WEIGHT_REBALANCE = "dsh-fitout:weight-rebalanced";
     function migrateWeight(parsed) {
-      try {
-        if (globalThis.localStorage?.getItem(WEIGHT_REBALANCE) === null) {
-          globalThis.localStorage?.setItem(WEIGHT_REBALANCE, "1");
-          const stored = parsed?.weight;
-          if (stored === "xbold" || stored === "medium" || stored === "heavy" || stored === void 0) {
-            return { ...parsed, weight: "bold" };
-          }
-          return parsed;
-        }
-        if (globalThis.localStorage?.getItem(WEIGHT_MIGRATION) !== null) return parsed;
-        globalThis.localStorage?.setItem(WEIGHT_MIGRATION, "1");
-        if (parsed?.weight === "medium" || parsed?.weight === "heavy" || parsed?.weight === void 0) {
-          return { ...parsed, weight: "bold" };
-        }
-      } catch {
-      }
-      return parsed;
+      if (parsed === null || typeof parsed !== "object") return parsed;
+      if (parsed.weightSet === true) return parsed;
+      return { ...parsed, weight: DEFAULTS.weight };
     }
     function readStored() {
       try {
@@ -594,6 +580,7 @@ window.__ModuleLoader__.load({
         font: state.font,
         type: state.type,
         weight: state.weight,
+        weightSet: state.weightSet === true,
         shadow: state.shadow,
         motion: state.motion,
         corner: state.corner,
@@ -1077,7 +1064,7 @@ window.__ModuleLoader__.load({
       const weight = WEIGHTS[settings?.weight];
       const stroke = STROKES[settings?.weight];
       out["--fto-text-stroke"] = both(stroke ?? "0px");
-      if (weight !== void 0) {
+      if (weight !== void 0 && weight !== "400") {
         out["--fto-body-weight"] = both(weight);
         for (const [token, value] of Object.entries(weightedMarkdownTokens(weight))) {
           out[token] = both(value);
@@ -1593,7 +1580,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font("", "", ""),
         type: type(14, 11, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1608,7 +1595,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"PT Sans", "PingFang SC", "Helvetica Neue", sans-serif', '"Menlo", "Monaco", monospace', '"Menlo", "Monaco", monospace'),
         type: type(13, 10, 12),
-        weight: "bold",
+        weight: "normal",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1623,7 +1610,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Seravek", "PingFang SC", sans-serif', NF_MONO, MONO),
         type: type(16, 12, 14),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -1638,7 +1625,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Helvetica Neue", "PingFang SC", "Arial", sans-serif', MONO, MONO),
         type: type(14, 11, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1653,7 +1640,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Iowan Old Style", "Songti SC", "Georgia", serif', '"Courier New", "Courier", monospace', MONO),
         type: type(15, 12, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1668,7 +1655,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Avenir Next", "Yuanti SC", sans-serif', '"Andale Mono", "Menlo", monospace', MONO),
         type: type(15, 12, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1683,7 +1670,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Charter", "Songti SC", "Georgia", serif', MONO, MONO),
         type: type(16, 12, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "lifted",
         motion: "slow",
         corner: "squircle",
@@ -1698,7 +1685,7 @@ window.__ModuleLoader__.load({
         radius: "compact",
         font: font('"Menlo", "PingFang SC", monospace', NF_MONO, MONO),
         type: type(13, 11, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "flat",
         motion: "off",
         corner: "round",
@@ -1713,7 +1700,7 @@ window.__ModuleLoader__.load({
         radius: "default",
         font: font('"Hiragino Sans GB", "PingFang SC", sans-serif', '"PT Mono", "Menlo", monospace', MONO),
         type: type(14, 11, 13),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "normal",
         corner: "round",
@@ -1728,7 +1715,7 @@ window.__ModuleLoader__.load({
         radius: "round",
         font: font('"Hoefler Text", "Kaiti SC", "Georgia", serif', '"Monaco", "Menlo", monospace', '"Monaco", "Menlo", monospace'),
         type: type(15, 11, 14),
-        weight: "bold",
+        weight: "normal",
         shadow: "soft",
         motion: "slow",
         corner: "round",
@@ -2643,7 +2630,7 @@ window.__ModuleLoader__.load({
     var name = "dsh-fitout";
     var inject = ["slots", "theme", "locale"];
     var NS = "settings.fitout";
-    var VERSION = "0.12.1";
+    var VERSION = "0.12.2";
     var ZH = {
       title: "\u88C5\u4FEE",
       description: "\u4E3B\u9898\u5546\u5E97\uFF1A\u6311\u4E00\u5957\uFF0C\u6216\u8005\u81EA\u5DF1\u8C03\u3002",
